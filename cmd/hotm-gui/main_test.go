@@ -60,6 +60,18 @@ func TestItemsColorIsLegible(t *testing.T) {
 	}
 }
 
+// TestInvokeCommandForPicksCarriedCharm covers the I key's real
+// target-selection logic (see invokeCarriedDemon's doc comment): with
+// no text input, it scans the player's items for any demon's Charm.
+func TestInvokeCommandForPicksCarriedCharm(t *testing.T) {
+	if got := invokeCommandFor([]string{"Grimoire", "sword"}); got != "INVOKE ASTAROT" {
+		t.Errorf("invokeCommandFor with a carried Sword = %q, want \"INVOKE ASTAROT\"", got)
+	}
+	if got := invokeCommandFor([]string{"Grimoire"}); got != "INVOKE" {
+		t.Errorf("invokeCommandFor with no Charm carried = %q, want bare \"INVOKE\"", got)
+	}
+}
+
 // TestStatsLine constructs a bare *GUI directly (not via NewGUI, which
 // touches ebiten's audio/image APIs and needs a real display/audio
 // device) since statsLine only reads gui.g.Player - a pure formatting

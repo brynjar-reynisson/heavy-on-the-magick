@@ -2531,6 +2531,44 @@ repo-copy + `PrintWindow` technique: a real screenshot of the default
 starting room (Room of Misery) shows "Grimoire, Poison-smeared book" in
 yellow, clearly legible against the black background.
 
+### Gave GUARDS and INVOKE real audio feedback, and made the GUI's INVOKE key actually invoke something
+
+After another Stop-hook rejection, same framing, went back to sound
+again. `cmd/hotm-gui` already gives BLAST/FREEZE/TRANSFUSION distinct
+audio feedback by matching the real returned message (18th push), but
+the G (GUARDS, DOOR) and I (INVOKE) keys added in later rounds just
+called `Handle` directly with no audio at all - a real, concrete gap
+in the same category of work, not a new domain.
+
+Investigating it surfaced a deeper issue: the I key only ever sent bare
+`"INVOKE"` (which just lists the 4 demons - a real Charm-bearing
+invocation needs a specific name as target, and this GUI has no text
+input). That meant a "successful invocation" sound could never actually
+trigger through this key at all, no matter what the player carried -
+worth fixing properly rather than adding a dead code path. Added
+`invokeCarriedDemon` (same target-selection convention as
+`pickUpFirstItem`/`dropFirstItem`): scans the player's real carried
+items against each confirmed `magic.Demons`'s Charm and invokes the
+first match, falling back to bare INVOKE if none is carried. This
+makes a real invocation (Mantis→Belezbar, Sword→Astarot, both already
+placed in the world) actually reachable from the GUI's I key for the
+first time.
+
+Added 2 new feedback notes (`noteGuardsPass`, `noteInvokeOK`), wired
+both G and I through the existing `handleAndPlay` message-matching
+pattern. Also promoted the ad hoc `hasItem` check to a proper exported
+`character.Player.HasItem` (used by both `game.hasItem`, now a thin
+wrapper, and the new GUI logic) rather than duplicate the same
+case-insensitive loop a third time.
+
+Added `TestHasItem` and `TestInvokeCommandForPicksCarriedCharm`
+(the target-selection logic split out from `invokeCarriedDemon`
+specifically so it's testable without a real audio context), ran the
+full `gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2`
+run) clean, and verified the underlying mechanic live via the text
+frontend (unaffected, as expected, since `handleAndPlay` and
+`invokeCarriedDemon` only wrap the same `game.Handle` calls).
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

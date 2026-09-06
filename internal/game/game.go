@@ -435,12 +435,7 @@ func (g *Game) passGuards() string {
 
 // hasItem reports whether the player is carrying an item by name.
 func (g *Game) hasItem(name string) bool {
-	for _, item := range g.Player.Items {
-		if strings.EqualFold(item, name) {
-			return true
-		}
-	}
-	return false
+	return g.Player.HasItem(name)
 }
 
 // payToll handles a real, distinct door mechanic (see world.Room.TollItem's

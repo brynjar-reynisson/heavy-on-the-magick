@@ -2,6 +2,16 @@ package character
 
 import "testing"
 
+func TestHasItem(t *testing.T) {
+	p := &Player{Items: []string{"Grimoire", "Sword"}}
+	if !p.HasItem("sword") {
+		t.Error("HasItem should be case-insensitive and find a carried item")
+	}
+	if p.HasItem("Mantis") {
+		t.Error("HasItem should not find an item that isn't carried")
+	}
+}
+
 func TestNewPlayerStatsWithinBounds(t *testing.T) {
 	// Roll several times since stats are random - a single sample
 	// wouldn't catch an off-by-one in the bounds.

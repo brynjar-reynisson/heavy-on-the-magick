@@ -2,7 +2,10 @@
 // grade/stat system.
 package character
 
-import "math/rand/v2"
+import (
+	"math/rand/v2"
+	"strings"
+)
 
 // Grade is one of the Hermetic Order of the Golden Dawn ranks the game
 // borrows for its progression system. Confirmed present as literal strings
@@ -95,6 +98,18 @@ type Player struct {
 	// Items is Axil's carried inventory — real objects can be picked up
 	// from a world.Room and carried (see game.Handle's PICKUP/DROP).
 	Items []string
+}
+
+// HasItem reports whether the player is carrying an item by name
+// (case-insensitive, matching how object names are otherwise compared
+// throughout this port).
+func (p *Player) HasItem(name string) bool {
+	for _, item := range p.Items {
+		if strings.EqualFold(item, name) {
+			return true
+		}
+	}
+	return false
 }
 
 // Stat roll ranges. The original randomizes Stamina/Skill/Luck within

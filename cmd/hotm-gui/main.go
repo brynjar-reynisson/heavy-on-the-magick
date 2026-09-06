@@ -24,6 +24,7 @@ import (
 	hotmaudio "github.com/brynjar-reynisson/heavy-on-the-magick/internal/audio"
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/game"
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/graphics"
+	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/magic"
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/parser"
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/world"
 )
@@ -161,10 +162,10 @@ func (gui *GUI) Update() error {
 		gui.appendLog(gui.g.Handle(parser.Parse("EXAMINE")))
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyI) {
-		gui.appendLog(gui.g.Handle(parser.Parse("INVOKE")))
+		gui.invokeCarriedDemon()
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
-		gui.appendLog(gui.g.Handle(parser.Parse("GUARDS, DOOR")))
+		gui.handleAndPlay("GUARDS, DOOR")
 	}
 	return nil
 }
@@ -197,6 +198,34 @@ func (gui *GUI) pickUpFirstItem() {
 	gui.appendLog(gui.g.Handle(parser.Parse(cmd)))
 }
 
+// invokeCarriedDemon handles the I key. The GUI has no text input, so
+// INVOKE (which takes a specific demon name, see parser.Parse) can't
+// offer a free-form target the way the text frontend can - this
+// instead scans the player's real carried Items against each confirmed
+// magic.Demons's Charm and invokes the first match, going through the
+// exact same game.Game.Handle("INVOKE ...") path either way (same
+// target-selection convention as pickUpFirstItem/dropFirstItem above).
+// With no matching Charm carried, falls back to bare INVOKE (lists the
+// 4 demons and their requirements) rather than doing nothing.
+func (gui *GUI) invokeCarriedDemon() {
+	gui.handleAndPlay(invokeCommandFor(gui.g.Player.Items))
+}
+
+// invokeCommandFor picks which real game.Handle("INVOKE ...") command
+// invokeCarriedDemon should send, given the player's carried items -
+// split out from invokeCarriedDemon so the target-selection logic is
+// testable without needing a real audio context.
+func invokeCommandFor(items []string) string {
+	for _, d := range magic.Demons {
+		for _, item := range items {
+			if strings.EqualFold(item, d.Charm) {
+				return "INVOKE " + d.Name
+			}
+		}
+	}
+	return "INVOKE"
+}
+
 // Event feedback notes. Only PitchTable itself is confirmed real data
 // (extracted from the game's memory); which specific note plays for which
 // game event here is this port's own choice, not an extracted mapping —
@@ -207,6 +236,8 @@ const (
 	noteCombatDefeat = 30 // target destroyed/frozen solid
 	noteHeal         = 35 // TRANSFUSION
 	noteDeath        = 0  // player's Stamina reaches 0
+	noteGuardsPass   = 20 // GUARDS, DOOR successfully clears a real obstacle
+	noteInvokeOK     = 40 // INVOKE succeeds (the player carries the demon's Charm)
 )
 
 // handleAndPlay runs a combat/utility command through the exact same
@@ -225,6 +256,10 @@ func (gui *GUI) handleAndPlay(verb string) {
 		gui.playBlip(noteHeal)
 	case strings.Contains(result, "still standing"):
 		gui.playBlip(noteCombatHit)
+	case strings.Contains(result, "let you pass"):
+		gui.playBlip(noteGuardsPass)
+	case strings.Contains(result, "You invoke"):
+		gui.playBlip(noteInvokeOK)
 	}
 }
 
