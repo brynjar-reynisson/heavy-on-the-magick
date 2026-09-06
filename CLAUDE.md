@@ -2274,6 +2274,33 @@ Updated the stale "41-cell"/"fully-connected" framing in `game.go` and
 suite (with a repeated `-count=2` run) clean, and verified live: normal
 Level 3 movement/monsters/items/map all still work exactly as before.
 
+### Astarot's Charm found and placed: a second demon invocation now reachable in real gameplay
+
+After another Stop-hook rejection, same framing, went back to the
+numbered-map cross-referencing technique that found Belezbar's Mantis
+2 rounds ago and applied it to Level 1's Wolfdorp (an already-playable
+CollodonsPile room). The numbered map poster's key list gives room #65
+as "Rock, two stalagmites, stalactite, sword", and re-examining that
+poster's own Level 1 grid confirms #65 sits within the "WOLFDORP"
+banner-labeled cluster (tight-cropped and visually confirmed, not
+guessed). Separately, `level_items.go`'s `LevelOneItems` - sourced
+independently from the OTHER poster (`heavymap-levels1-2.jpg`) many
+rounds ago - already lists a "Sword" on Level 1 with no room precision.
+Two unrelated sources agreeing Level 1 has a sword, one of them at
+zone-level confidence for Wolfdorp specifically - the same rigor as the
+Mantis placement.
+
+"Sword" is Astarot's confirmed real Charm (`magic.Demons`). Added it to
+Wolfdorp's `Items`, making Astarot's already-implemented but previously
+unreachable invocation succeed in real gameplay for the first time -
+the second demon (after Belezbar) whose invocation now genuinely works,
+not just Belezbar's own special case. Added
+`TestCollodonsPileWolfdorpHasSword`, ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live: navigated to Wolfdorp, `PICK UP SWORD`, then
+`INVOKE ASTAROT` - "Transports the player to a named location, if its
+name is known" - succeeded for real.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

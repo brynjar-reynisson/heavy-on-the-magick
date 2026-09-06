@@ -77,3 +77,20 @@ func TestCollodonsPileSecondaryExits(t *testing.T) {
 		t.Errorf("Room of Arrows -North-> %q, want Wolfdorp", got)
 	}
 }
+
+// TestCollodonsPileWolfdorpHasSword pins the real, cross-referenced
+// Sword placement (Astarot's confirmed Charm) - see CollodonsPile's doc
+// comment for the two-source sourcing.
+func TestCollodonsPileWolfdorpHasSword(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomWolfdorp]
+	found := false
+	for _, item := range room.Items {
+		if item == "Sword" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Wolfdorp Items = %v, want it to include \"Sword\"", room.Items)
+	}
+}

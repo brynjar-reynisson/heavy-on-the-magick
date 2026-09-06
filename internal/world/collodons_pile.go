@@ -95,6 +95,20 @@ package world
 // left unchanged rather than guessed which source is more authoritative.
 // The poster also spells this room "Sothic Complex" — a third source
 // agreeing with the vocabulary-based correction above.
+//
+// Wolfdorp's "Sword" (round 52): cross-referenced from TWO independent
+// sources. The numbered map poster's key list gives room #65 as "Rock,
+// two stalagmites, stalactite, sword", and #65 sits within the
+// "WOLFDORP" banner-labeled cluster on that same poster's Level 1 grid
+// (tight-cropped and visually confirmed, not guessed). Separately,
+// level_items.go's LevelOneItems (from the OTHER poster,
+// heavymap-levels1-2.jpg, extracted in an earlier round) independently
+// lists a "Sword" on Level 1 with no room precision. Two unrelated
+// sources agreeing Level 1 has a sword, one of them at zone-level
+// confidence for Wolfdorp specifically, matches the Mantis/Belezbar
+// precedent (Level3Grid) closely enough to place it here. "Sword" is
+// Astarot's confirmed real Charm (magic.Demons) — this makes Astarot's
+// invocation reachable in real gameplay for the first time.
 func CollodonsPile() *World {
 	w := New(roomMisery)
 	for _, r := range []*Room{
@@ -104,7 +118,7 @@ func CollodonsPile() *World {
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget"}},
 		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}},
-		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf"}},
+		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}},
 		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Items: []string{"Slat"}},
 		{ID: roomArrows, Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{East: roomNidus, North: roomWolfdorp}},
