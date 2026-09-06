@@ -48,6 +48,44 @@ func TestRenderASCIIMapMarksItems(t *testing.T) {
 	}
 }
 
+// TestRenderASCIIMapMarksGuards covers the real Guards obstacle marker
+// (see roomMarker's doc comment) using Level1Grid's confirmed D4 Guards
+// placement (see level1_grid.go).
+func TestRenderASCIIMapMarksGuards(t *testing.T) {
+	w := Level1Grid()
+	w.Move(South) // B1
+	w.Move(South) // C1
+	w.Move(East)  // C2
+	w.Move(East)  // C3
+	w.Move(East)  // C4
+	w.Move(South) // D4, has a real Guards obstacle
+	if !w.Rooms[w.Current].Guards {
+		t.Fatalf("test setup bug: expected to be in a room with Guards, got %+v", w.Rooms[w.Current])
+	}
+	out := RenderASCIIMap(w)
+	if !strings.Contains(out, "#") {
+		t.Errorf("RenderASCIIMap with a real Guards obstacle = %q, want it marked with #", out)
+	}
+}
+
+// TestRenderASCIIMapDoesNotMarkClearedGuards mirrors the defeated-
+// monster test above for Guards: once cleared (game.passGuards sets
+// Guards=false), the map should stop marking the room.
+func TestRenderASCIIMapDoesNotMarkClearedGuards(t *testing.T) {
+	w := Level1Grid()
+	w.Move(South)
+	w.Move(South)
+	w.Move(East)
+	w.Move(East)
+	w.Move(East)
+	w.Move(South) // D4
+	w.Rooms[w.Current].Guards = false
+	out := RenderASCIIMap(w)
+	if strings.Contains(out, "#") {
+		t.Errorf("RenderASCIIMap with cleared Guards = %q, should not still show #", out)
+	}
+}
+
 func TestRenderASCIIMapInconsistentFallsBackToList(t *testing.T) {
 	w := New(0)
 	a := &Room{ID: 0, Name: "A", Exits: map[Direction]RoomID{East: 1, SouthEast: 2}, Visited: true}

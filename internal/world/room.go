@@ -13,6 +13,8 @@
 // doc comment for exactly what's confirmed vs. placeholder.
 package world
 
+import "maps"
+
 // Direction is one of the 8 compass directions a Room can have an Exit in.
 type Direction int
 
@@ -120,4 +122,21 @@ type Room struct {
 	// it clears them. Set for real, tight-crop-verified placements only
 	// (see level1_grid.go).
 	Guards bool
+}
+
+// clone returns a deep copy of r, safe to mutate independently of the
+// original — see AddRoom's doc comment for why this matters.
+func (r *Room) clone() *Room {
+	c := *r
+	if r.Exits != nil {
+		c.Exits = make(map[Direction]RoomID, len(r.Exits))
+		maps.Copy(c.Exits, r.Exits)
+	}
+	if r.DoorPasswords != nil {
+		c.DoorPasswords = append([]string(nil), r.DoorPasswords...)
+	}
+	if r.Items != nil {
+		c.Items = append([]string(nil), r.Items...)
+	}
+	return &c
 }

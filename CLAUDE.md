@@ -2133,6 +2133,50 @@ startup, PrintWindow for the screenshot, never touching the real
 files). Added `TestGuardsColorMatchesLegend`, updated the on-screen key
 hint line, ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Extended the exploration map with a Guards marker, and found + fixed a real cross-World state-leak bug in the process
+
+After another Stop-hook rejection, same framing, went back to the
+user's own original ask (the exploration map) and extended
+`roomMarker` — already showing `!` for a living Monster and `*` for
+Items — with a `#` for a real, un-cleared `world.Room.Guards`
+obstacle. Added a live test using Level1Grid's confirmed D4 placement,
+plus a "cleared Guards" counterpart mirroring the existing "defeated
+monster" test.
+
+That second test immediately broke an unrelated, already-passing test
+(`TestLevel1GridGuardsPlacements`) - real, concrete proof of an actual
+bug, not a hypothetical one: `World.AddRoom` was storing the `*Room`
+pointer directly rather than copying it, and every `CollodonsPile`/
+`Level1-4Grid` constructor builds its `World` from the exact same
+package-level `[]*Room` literal every time it's called. That means
+every `World` ever built from the same source data - across different
+tests, different `game.New()` calls, even a fresh game started after
+an earlier one ended - shared the literal same underlying `*Room`
+objects. Any runtime mutation (a cleared Guards obstacle, a defeated
+Monster, a `PICKUP` removing an Item, even just `Visited` flags) was
+silently leaking into every other World built from that data, forever,
+for the rest of the process's lifetime. My new test simply happened to
+be the first to actually notice, by setting `Guards = false` and then
+having a *different* test observe the same package-level room's data.
+
+Fixed properly, not by deleting the newly-revealing test: added
+`Room.clone()` (deep-copies `Exits`, `DoorPasswords`, and `Items` -
+the mutable fields) and made `AddRoom` clone every room it's given,
+so each `World` now genuinely owns independent room data. Verified
+with `go test ./... -count=3` (repeated runs, same process, to
+specifically catch any remaining order-dependence) - clean.
+
+This is a good example of a lesson worth remembering: a new test that
+breaks an existing one isn't always the new test being wrong - here it
+correctly exposed a real, previously-invisible bug that had likely been
+silently present since Level1Grid/Level2Grid shipped, just never
+triggered because no earlier test happened to mutate a room in a way
+another test could observe afterward in the same process.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean and verified live:
+`go run ./cmd/hotm -level1grid`, walked to D4 and confirmed `MAP` shows
+`[D4 ]#` alongside the already-working `!` monster marker.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

@@ -15,9 +15,23 @@ func New(start RoomID) *World {
 	}
 }
 
-// AddRoom registers a room in the world.
+// AddRoom registers a room in the world, keeping its own independent
+// deep copy rather than aliasing r.
+//
+// This matters because CollodonsPile/Level1-4Grid all build their World
+// from the SAME package-level []*Room literal every time they're called
+// (e.g. game.New() called twice, or two tests each constructing their
+// own World from Level1Grid) - without cloning, every such World would
+// share the exact same underlying *Room objects, so a runtime mutation
+// in one World (Visited, PICKUP removing an Item, a cleared Guards
+// obstacle, a defeated Monster) would silently leak into every other
+// World built from that same source data, including ones created
+// later. Found and fixed after a new test (checking a cleared Guards
+// obstacle) broke an unrelated, already-passing test that assumed a
+// fresh Level1Grid() still had its original Guards placement - real
+// evidence this was an actual bug, not just a hypothetical one.
 func (w *World) AddRoom(r *Room) {
-	w.Rooms[r.ID] = r
+	w.Rooms[r.ID] = r.clone()
 }
 
 // CurrentRoom returns the room the player currently occupies.

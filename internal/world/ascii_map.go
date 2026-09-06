@@ -51,13 +51,21 @@ func RenderASCIIMap(w *World) string {
 
 // roomMarker is a real, at-a-glance indicator of what's actually in a
 // room right now — "!" for a living Monster (real per-room data, see
-// CollodonsPile/Level1Grid's doc comments for sourcing), "*" for one or
-// more Items, or a blank if neither. A defeated Monster (MonsterHealth
-// <= 0) no longer marks the room, so the map reflects real combat state
-// as the player changes it, not just static room contents.
+// CollodonsPile/Level1Grid's doc comments for sourcing), "#" for a real,
+// un-cleared Guards obstacle (world.Room.Guards — see its doc comment),
+// "*" for one or more Items, or a blank if none of those. A defeated
+// Monster (MonsterHealth <= 0) or a passed Guards obstacle no longer
+// marks the room, so the map reflects real, changing state as the
+// player clears it, not just static room contents. Only one character
+// is shown even if a room has more than one of these (the fixed-width
+// grid layout has no room for more) — Monster takes priority as the
+// most immediately dangerous, then Guards, then Items.
 func roomMarker(r *Room) string {
 	if r.Monster != "" && r.MonsterHealth > 0 {
 		return "!"
+	}
+	if r.Guards {
+		return "#"
 	}
 	if len(r.Items) > 0 {
 		return "*"
