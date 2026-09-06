@@ -2301,6 +2301,45 @@ clean, and verified live: navigated to Wolfdorp, `PICK UP SWORD`, then
 `INVOKE ASTAROT` - "Transports the player to a named location, if its
 name is known" - succeeded for real.
 
+### Untangled the numbered-map poster's own Level layout, and found the strongest-confidence item placement in the whole port
+
+After another Stop-hook rejection, same framing, tried to find the
+remaining 2 demon Charms' locations (Sunflower/Magot, Erlstone/Asmodee)
+using the same numbered-map technique as Mantis/Sword. First had to
+straighten out a real point of confusion: the numbered map poster's own
+"LEVEL 1/2/3/4" labels are NOT arranged as a simple 2x2 grid the way
+earlier rounds assumed - re-viewing the full poster at once shows Level
+1 top, Level 2 middle-left, Level 3 middle-right (smaller), Level 4
+bottom. Tight-cropping the actual "LEVEL 2" label and its grid confirms
+it contains "Eye Of Heaven", "Room of Icthys", "Room of Flox", "Room of
+Horns" - all matching Level2Grid's already-shipped named cells, a solid
+anchor for future rounds needing this poster's Level 2 section again.
+
+That crop also, unprompted, answered a much higher-confidence question:
+it labels one exact room "START / Room of Misery / 1, 2" - i.e. Room of
+Misery isn't just SOMEWHERE in Level 2, it's numbered cells #1 and #2 on
+this poster specifically, no zone-level inference needed at all (the
+poster's key list gives #1 as "Grimoire" and #2 as "Poison-smeared
+book"). #1 exactly matching the already-independently-sourced Grimoire
+(from the CASA walkthrough, a completely different source) is a clean,
+strong validation that this numbered-cell reading is correct - and #2,
+never placed anywhere before, was added on the same footing. This is
+the single most confident item placement in the whole file: an exact
+numbered match against an already-known-correct room, not a zone-level
+inference like Mantis/Sword.
+
+The Sunflower/Erlstone search itself came up short this round - #7
+(Sunflower) sits somewhere in the same immediate Room-of-Misery cluster
+but its exact cell is obscured by a marker icon in the source image and
+wasn't confidently resolved; left unplaced rather than guessed, a real
+open item for a future round now that this poster's Level 2 layout is
+finally untangled.
+
+Added `TestCollodonsPileRoomOfMiseryHasBothNumberedItems`, ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live: `LOOK` in Room of Misery now shows both
+items, and `PICK UP POISON-SMEARED BOOK` works for real.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

@@ -94,3 +94,23 @@ func TestCollodonsPileWolfdorpHasSword(t *testing.T) {
 		t.Errorf("Wolfdorp Items = %v, want it to include \"Sword\"", room.Items)
 	}
 }
+
+// TestCollodonsPileRoomOfMiseryHasBothNumberedItems pins Room of
+// Misery's 2 items - the numbered map poster labels this exact room
+// "1, 2", the strongest-confidence item placement in this file (see
+// CollodonsPile's doc comment).
+func TestCollodonsPileRoomOfMiseryHasBothNumberedItems(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomMisery]
+	want := map[string]bool{"Grimoire": false, "Poison-smeared book": false}
+	for _, item := range room.Items {
+		if _, ok := want[item]; ok {
+			want[item] = true
+		}
+	}
+	for item, found := range want {
+		if !found {
+			t.Errorf("Room of Misery Items = %v, want it to include %q", room.Items, item)
+		}
+	}
+}

@@ -109,10 +109,20 @@ package world
 // precedent (Level3Grid) closely enough to place it here. "Sword" is
 // Astarot's confirmed real Charm (magic.Demons) — this makes Astarot's
 // invocation reachable in real gameplay for the first time.
+//
+// Room of Misery's "Poison-smeared book" (round 53): the numbered map
+// poster labels this exact room "START / Room of Misery / 1, 2" - i.e.
+// Room of Misery IS numbered cells #1 and #2 on that poster, no
+// zone-level guessing needed at all (the strongest-confidence item
+// placement in this file). #1 is "Grimoire" - already placed here
+// independently via the CASA walkthrough, an exact cross-source match
+// that validates this numbered-cell reading. #2 is "Poison-smeared
+// book", not previously placed anywhere; added here on the same
+// footing as the already-confirmed Grimoire.
 func CollodonsPile() *World {
 	w := New(roomMisery)
 	for _, r := range []*Room{
-		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta}, Items: []string{"Grimoire"}},
+		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta}, Items: []string{"Grimoire", "Poison-smeared book"}},
 		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}},
 		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "monster", MonsterHealth: 3, Items: []string{"Clasp"}},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
