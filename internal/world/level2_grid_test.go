@@ -2,9 +2,26 @@ package world
 
 import "testing"
 
-func TestLevel2GridHas50Cells(t *testing.T) {
-	if len(level2Cells) != 50 {
-		t.Fatalf("len(level2Cells) = %d, want 50 (the validated main connected component)", len(level2Cells))
+func TestLevel2GridHas52Cells(t *testing.T) {
+	if len(level2Cells) != 52 {
+		t.Fatalf("len(level2Cells) = %d, want 52 (the validated 50-cell main component plus 2 isolated named cells from the Room of Misery pocket)", len(level2Cells))
+	}
+}
+
+// TestLevel2GridRoomOfMiseryPocketNamedCells pins the 2 real, tight-crop-
+// verified named cells added from Room of Misery's pocket (see this
+// file's doc comment) - F4 is the game's confirmed real starting room.
+func TestLevel2GridRoomOfMiseryPocketNamedCells(t *testing.T) {
+	w := Level2Grid()
+	want := map[string]string{"F3": "Sign", "F4": "Room of Misery"}
+	for code, name := range want {
+		room := w.Rooms[level2Room(code)]
+		if room == nil || room.Name != name {
+			t.Errorf("room %s Name = %v, want %q", code, room, name)
+		}
+		if len(room.Exits) != 0 {
+			t.Errorf("room %s Exits = %v, want none (connectivity not confirmed)", code, room.Exits)
+		}
 	}
 }
 

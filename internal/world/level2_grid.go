@@ -22,10 +22,25 @@ package world
 // named room) since it's what New(start) needs, not because A1 is known
 // to be special.
 //
+// UPDATE (round 54): 2 of the pocket's 7 cells are now actually present
+// in this file - F3 ("Sign") and F4 ("Room of Misery") - added as real,
+// named, isolated rooms (no Exits) after individually tight-cropping
+// their exact grid positions and confirming the labels pixel-for-pixel
+// ("SIGN!" and "MISERY" respectively, each with its own on-map "F3"/
+// "F4" coordinate printed right there too). This is the first time
+// Room of Misery has existed as an actual Room in this file at all -
+// previously it was only ever mentioned in this comment's prose, never
+// backed by real data here. Still real, scoped follow-up work: G3/G4/
+// G5/H4/H5 (the pocket's other 5 cells) remain unadded, and no new
+// connectivity - within the pocket, or bridging it to the 50-cell
+// component - was re-confirmed this round; the "disconnected" finding
+// below still stands as-is.
+//
 // NOT included here, each for a specific documented reason:
-//   - Room of Misery's own 7-cell pocket (F3/F4/G3/G4/G5/H4/H5) - real,
-//     but disconnected from the other 50 cells in this data (same
-//     honest-gap pattern as Level1Grid's remaining fragment).
+//   - 5 of Room of Misery's 7-cell pocket (G3/G4/G5/H4/H5 - F3/F4 ARE
+//     now included, see above) - real, but disconnected from the other
+//     50 cells in this data (same honest-gap pattern as Level1Grid's
+//     remaining fragment).
 //   - 4 named cells confirmed via text-density measurement (see
 //     CLAUDE.md) - Icthys (C3), Flox (D4), Horns (E2), Purity (H3) - and
 //     2 more small isolated pockets (C3-C4, C6-D6) - all individually
@@ -148,4 +163,16 @@ var level2Cells = []*Room{
 	{ID: level2Room("H6"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("H7"), North: level2Room("G6")}, Monster: "Ghost", MonsterHealth: 2},
 	{ID: level2Room("H7"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("H8"), North: level2Room("G7"), West: level2Room("H6")}},
 	{ID: level2Room("H8"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("G8"), West: level2Room("H7")}},
+
+	// Room of Misery pocket (real, but disconnected from the 50-cell
+	// component above - see this file's doc comment). F3 and F4 are
+	// individually pixel-confirmed by name (tight-cropped labels read
+	// directly off the map, not inferred): F4 is drawn "MISERY" - this
+	// IS the game's confirmed real starting room (CollodonsPile's Room
+	// of Misery) - and F3 is drawn "SIGN!". No Exits: this round only
+	// confirmed their names, not new connectivity (the pocket's other 5
+	// cells - G3/G4/G5/H4/H5 - and any bridge to the main component
+	// remain real, scoped follow-up work).
+	{ID: level2Room("F3"), Name: "Sign", Level: 2},
+	{ID: level2Room("F4"), Name: "Room of Misery", Level: 2},
 }

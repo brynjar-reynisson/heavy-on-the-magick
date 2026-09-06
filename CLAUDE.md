@@ -2340,6 +2340,41 @@ Added `TestCollodonsPileRoomOfMiseryHasBothNumberedItems`, ran the full
 clean, and verified live: `LOOK` in Room of Misery now shows both
 items, and `PICK UP POISON-SMEARED BOOK` works for real.
 
+### Room of Misery finally exists as real data in Level2Grid, not just prose
+
+After another Stop-hook rejection, same framing, went looking for
+Sunflower/Erlstone's exact cells again - a dead end confirmed a second
+time (room #7's number is genuinely covered by a marker icon in the
+source image, not just hard to read; left unplaced). While looking,
+re-examined Level2Grid's already-documented "Room of Misery pocket"
+(F3/F4/G3/G4/G5/H4/H5 - real, but disconnected from the main 50-cell
+component, per a much earlier round) and noticed something the earlier
+round hadn't acted on: this file's own doc comment has said for a long
+time that F4 IS Room of Misery, "the confirmed real starting room" -
+but F4 (and the whole pocket) was never actually added as a Room in
+`level2Cells` at all. It only ever existed in this comment's prose.
+
+Tight-cropped F3 and F4 individually and confirmed pixel-for-pixel:
+F4 is drawn "MISERY" (with its own on-map "F4" coordinate label right
+there too), F3 is drawn "SIGN!". Added both as real, named, isolated
+rooms (no Exits - this round confirmed their NAMES, not new
+connectivity; the pocket's other 5 cells and any bridge to the main
+component remain real, scoped follow-up work, and the "disconnected"
+finding stands as-is). File is now honestly 52 cells (50 main + 2
+newly-real named cells), not 50.
+
+This is a small but real milestone: it's the first time the game's
+actual confirmed starting room has existed as real Room data in
+Level2Grid specifically (CollodonsPile already had it, obviously, but
+Level2Grid's own per-cell version of it was pure commentary until now).
+Deliberately did NOT change `Level2Grid`'s own start room to F4 - it
+has no Exits, so starting there would strand the player with zero
+moves; A1 remains the anchor.
+
+Added `TestLevel2GridRoomOfMiseryPocketNamedCells`, ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live that normal Level 2 play is unaffected.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**
