@@ -2234,6 +2234,46 @@ Ran the full `gofmt`/`build`/`vet`/`test` suite clean, and regenerated
 (~21s, matching the note-tick count exactly) as before, confirming the
 fix only changed waveform smoothness, not timing.
 
+### Found what D4's gap in Level3Grid actually was: a real named special room, plus a genuine cross-source naming discrepancy
+
+After another Stop-hook rejection, same framing, went back to something
+that had been sitting unexplained for many rounds: Level3Grid's 41-cell
+component has always had a gap at D4 (C4 has no South exit, E4 no North
+exit) with no explanation on file for why. Tight-cropped that exact
+grid position directly and found a clean answer: a "SOTHIC COMPLEX"
+label, drawn as an irregular special-room shape rather than a standard
+grid box - the same reason Level1Grid needed manual handling for Agile
+Stair/Furnace Room/Room of Stings/Exit. This wasn't a detection failure
+on an ordinary cell; the automated border-scan simply doesn't recognize
+non-standard room shapes, by design (see Level1Grid's doc comment).
+
+Added it as a real, named, deliberately isolated room (no Exits -
+connectivity genuinely not confirmed; the map shows directional arrows
+near it, but this project has consistently declined to interpret that
+ambiguous stairwell-style marker as an ordinary corridor elsewhere).
+File is now honestly described as 42 cells (41 connected + 1 isolated
+named room), not 41 - `TestLevel3GridHas42Cells` and
+`TestLevel3GridSothicComplexIsIsolated` pin both facts; the existing
+41-cell full-connectivity test was renamed, not weakened, to make clear
+it's about the original component specifically.
+
+**A genuine, real cross-source discrepancy surfaced in the process**:
+CollodonsPile (from the CASA walkthrough, an entirely independent
+source) already has its own "Sothic Complex" room - on Level 2. And
+this same clean map's own Level 2 section separately shows "Sothic
+Complex" as a whole named zone there too. So the name is confirmed real
+on BOTH levels of this one map. Whether that's the same physical
+location (like Agile Stair, already confirmed to span levels via
+stairwells) or two genuinely distinct rooms sharing a name isn't
+settled by any source checked so far - documented plainly as an open
+question rather than silently "resolved" by picking one and discarding
+the other.
+
+Updated the stale "41-cell"/"fully-connected" framing in `game.go` and
+`cmd/hotm/main.go` to match. Ran the full `gofmt`/`build`/`vet`/`test`
+suite (with a repeated `-count=2` run) clean, and verified live: normal
+Level 3 movement/monsters/items/map all still work exactly as before.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

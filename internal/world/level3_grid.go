@@ -1,10 +1,13 @@
 package world
 
-// Level3Grid is a real, connected 41-cell room graph for the dungeon's
-// Level 3, extracted from the same clean, computer-rendered grid map as
+// Level3Grid is a real, 42-cell room graph for the dungeon's Level 3,
+// extracted from the same clean, computer-rendered grid map as
 // Level1Grid/Level2Grid (heavymap-grid-clean.gif). Cells are addressed
 // the same way: a row letter A-H and a column number 1-8, offset into a
-// distinct RoomID range via level3Room.
+// distinct RoomID range via level3Room. 41 of the 42 form one fully
+// connected component reachable from the start room; the 42nd (D4,
+// "Sothic Complex") is a real, named, deliberately isolated special
+// room - see the "SOTHIC COMPLEX" section below.
 //
 // CALIBRATION HISTORY - CORRECTED (this matters for anyone diffing old
 // output against this file): an earlier round found only 7 of the
@@ -66,6 +69,31 @@ package world
 // demons' Charms (Erlstone/Sword/Mantis/Sunflower) - a real, sourced
 // fact left unplaced rather than force a guess at what it's for.
 //
+// SOTHIC COMPLEX (D4): the map itself explains why D4 was never found
+// by the automated border-color-span extraction that produced the
+// other 41 cells (C4 has no South exit, E4 has no North exit - the
+// "gap" they'd normally close). Directly tight-cropping that grid
+// position shows a "SOTHIC COMPLEX" label drawn as an irregular special
+// room shape, not a standard grid box - the same reason Level1Grid
+// needed manual handling for Agile Stair/Furnace Room/Room of Stings/
+// Exit. Added here as a real, named room with no Exits (connectivity
+// genuinely not confirmed - the visible diagonal/directional arrows
+// near it are the same ambiguous stairwell-style markers this project
+// has consistently declined to interpret as ordinary corridors
+// elsewhere, e.g. Level1Grid's A7/A8 doc comment).
+//
+// REAL CROSS-SOURCE DISCREPANCY, left unresolved rather than guessed
+// at: CollodonsPile (sourced independently from the CASA walkthrough)
+// already has its own "Sothic Complex" room at Level 2, and this clean
+// map's own Level 2 grid section separately shows "Sothic Complex" as
+// a whole named zone there too - so the name is confirmed real on BOTH
+// Level 2 and Level 3 of this same map. Whether that's the same
+// physical location (like Agile Stair, confirmed elsewhere to span
+// multiple levels via stairwells) or two distinct rooms that happen to
+// share a name isn't something any source found so far settles, so
+// both are kept as-is rather than "resolving" the discrepancy by
+// guessing.
+//
 // Same honest scope as Level2Grid otherwise: room descriptions use the
 // same placeholder convention as everywhere else, and no other item
 // placements were extracted for this file.
@@ -122,6 +150,7 @@ var level3Cells = []*Room{
 	{ID: level3Room("C3"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("B3"), South: level3Room("D3"), West: level3Room("C2")}},
 	{ID: level3Room("C4"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("C5"), North: level3Room("B4")}, Monster: "Troll", MonsterHealth: 3},
 	{ID: level3Room("C5"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("C6"), North: level3Room("B5"), South: level3Room("D5"), West: level3Room("C4")}},
+	{ID: level3Room("D4"), Name: "Sothic Complex", Level: 3},
 	{ID: level3Room("C6"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("C7"), North: level3Room("B6"), South: level3Room("D6"), West: level3Room("C5")}, Monster: "Troll", MonsterHealth: 3},
 	{ID: level3Room("C7"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("C8"), North: level3Room("B7"), South: level3Room("D7"), West: level3Room("C6")}},
 	{ID: level3Room("C8"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("B8"), South: level3Room("D8"), West: level3Room("C7")}},

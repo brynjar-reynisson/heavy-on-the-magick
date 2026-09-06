@@ -2,9 +2,25 @@ package world
 
 import "testing"
 
-func TestLevel3GridHas41Cells(t *testing.T) {
-	if len(level3Cells) != 41 {
-		t.Fatalf("len(level3Cells) = %d, want 41 (the validated main connected component)", len(level3Cells))
+func TestLevel3GridHas42Cells(t *testing.T) {
+	if len(level3Cells) != 42 {
+		t.Fatalf("len(level3Cells) = %d, want 42 (the validated 41-cell connected component plus the isolated named Sothic Complex)", len(level3Cells))
+	}
+}
+
+// TestLevel3GridSothicComplexIsIsolated pins the real, named-but-
+// unconnected D4 cell (see Level3Grid's doc comment: it's drawn as an
+// irregular special room, not a standard grid box, which is why the
+// automated border-detection pass never found exits for it - the same
+// situation as Level1Grid's A7/A8/G5/H5).
+func TestLevel3GridSothicComplexIsIsolated(t *testing.T) {
+	w := Level3Grid()
+	room := w.Rooms[level3Room("D4")]
+	if room == nil || room.Name != "Sothic Complex" {
+		t.Fatalf("expected a room named Sothic Complex at D4, got %+v", room)
+	}
+	if len(room.Exits) != 0 {
+		t.Errorf("Sothic Complex (D4) has Exits %v, want none (connectivity not confirmed)", room.Exits)
 	}
 }
 
@@ -66,12 +82,15 @@ func TestLevel3GridHasMantisCharm(t *testing.T) {
 	}
 }
 
-// TestLevel3GridIsFullyConnected pins that this 41-cell component,
-// like Level2Grid's 50 (but unlike Level1Grid's 44/64), is entirely
-// reachable from the start room - it was deliberately built from one
-// whole connected component, not assembled from a partially-connected
-// automated pass.
-func TestLevel3GridIsFullyConnected(t *testing.T) {
+// TestLevel3GridMainComponentIsFullyConnected pins that the original
+// 41-cell component, like Level2Grid's 50 (but unlike Level1Grid's
+// 44/64), is entirely reachable from the start room - it was
+// deliberately built from one whole connected component, not assembled
+// from a partially-connected automated pass. The 42nd cell (Sothic
+// Complex, D4) is a real, later-added, deliberately isolated named room
+// (see TestLevel3GridSothicComplexIsIsolated) and is correctly NOT part
+// of this count.
+func TestLevel3GridMainComponentIsFullyConnected(t *testing.T) {
 	w := Level3Grid()
 	visited := map[RoomID]bool{w.Current: true}
 	queue := []RoomID{w.Current}
