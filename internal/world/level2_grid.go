@@ -39,27 +39,27 @@ package world
 // bridging it to the 50-cell component - so the "disconnected" finding
 // below still stands as-is, and remains real, scoped follow-up work.
 //
-// OPEN QUESTION surfaced while checking this: the "4 named cells"
-// bullet below (Icthys/Flox/Horns/Purity) says Flox is at D4 - but
-// level2Cells already has a D4 in the MAIN 50-cell component, with a
-// real West exit to D3, not isolated at all. Either Flox's coordinate
-// was misassigned by the earlier text-density-based pass, or something
-// else is off - not resolved this round (that pass predates the
-// tight-crop-verification discipline used everywhere else in this
-// file), left as a real discrepancy for a future round rather than
-// guessed at.
-//
-// NOT included here, each for a specific documented reason:
-//   - Icthys (C3), Flox (D4 - see the open question above), Horns (E2),
-//     Purity (H3): real per an earlier round's text-density measurement,
-//     but not individually tight-crop-verified the way everything else
-//     in this file now is, and (per the D4 conflict above) at least one
-//     may be miscalibrated - left out until re-verified properly. 2
-//     more small isolated pockets (C3-C4, C6-D6) were also found and
-//     border-checked as confirmed-isolated in that same earlier pass -
-//     not a detection failure (same pattern as Level1Grid's A7/A8/G5/
-//     H5) - but likewise not re-verified to the current standard, so
-//     also not included.
+// RESOLVED (round 56): round 54-55 flagged an open question - the "4
+// named cells" bullet (Icthys/Flox/Horns/Purity, from an earlier,
+// less rigorous text-density-based pass) said Flox is at D4, but
+// level2Cells already had a D4 in the MAIN 50-cell component with a
+// real West exit to D3, seemingly contradicting "isolated". Tight-
+// cropping all 4 coordinates directly resolved it cleanly, no
+// conflict after all: Flox (D4) was simply never isolated in the
+// first place - that earlier pass's "isolated" claim was wrong for
+// this one cell specifically. D4 already had real, correct
+// connectivity; it was just missing its Name, now added. The other
+// 3 - Icthys (C3), Horns (E2), Purity (H3) - really are absent from
+// level2Cells entirely (not merely unnamed like D4 was), consistent
+// with "isolated"; each is individually tight-crop-verified by name
+// here (matching pixel-for-pixel: "ICTHYS", "HORNS", "PURITY") and
+// added as real, named, isolated cells (no Exits - connectivity for
+// these 3 is not re-confirmed this round, same honest convention as
+// the Room of Misery pocket cells above). 2 more small isolated
+// pockets (C3-C4, C6-D6) were also found and border-checked as
+// confirmed-isolated in that same earlier pass - not a detection
+// failure (same pattern as Level1Grid's A7/A8/G5/H5) - but not
+// individually re-verified to the current standard, so not included.
 //   - Item icon placements: NOT extracted for this file (real follow-up
 //     work, not guessed). 3 monster placements WERE added in a later
 //     round (Wraith at A5, Slug at C2, Ghost at H6) - each individually
@@ -144,17 +144,19 @@ var level2Cells = []*Room{
 	{ID: level2Room("B7"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("A7"), West: level2Room("B6")}},
 	{ID: level2Room("C1"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("C2"), South: level2Room("D1")}},
 	{ID: level2Room("C2"), Level: 2, Exits: map[Direction]RoomID{South: level2Room("D2"), West: level2Room("C1")}, Monster: "Slug", MonsterHealth: 2},
+	{ID: level2Room("C3"), Name: "Icthys", Level: 2},
 	{ID: level2Room("C5"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("B5"), South: level2Room("D5")}},
 	{ID: level2Room("C7"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("C8"), South: level2Room("D7")}},
 	{ID: level2Room("C8"), Level: 2, Exits: map[Direction]RoomID{South: level2Room("D8"), West: level2Room("C7")}, Guards: true},
 	{ID: level2Room("D1"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("D2"), North: level2Room("C1"), South: level2Room("E1")}},
 	{ID: level2Room("D2"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("D3"), North: level2Room("C2"), West: level2Room("D1")}},
 	{ID: level2Room("D3"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("D4"), South: level2Room("E3"), West: level2Room("D2")}},
-	{ID: level2Room("D4"), Level: 2, Exits: map[Direction]RoomID{West: level2Room("D3")}},
+	{ID: level2Room("D4"), Name: "Flox", Level: 2, Exits: map[Direction]RoomID{West: level2Room("D3")}},
 	{ID: level2Room("D5"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("C5"), South: level2Room("E5")}},
 	{ID: level2Room("D7"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("D8"), North: level2Room("C7"), South: level2Room("E7")}},
 	{ID: level2Room("D8"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("C8"), West: level2Room("D7")}, Guards: true},
 	{ID: level2Room("E1"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("D1"), South: level2Room("F1")}},
+	{ID: level2Room("E2"), Name: "Horns", Level: 2},
 	{ID: level2Room("E3"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("E4"), North: level2Room("D3")}},
 	{ID: level2Room("E4"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("E5"), West: level2Room("E3")}},
 	{ID: level2Room("E5"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("E6"), North: level2Room("D5"), South: level2Room("F5"), West: level2Room("E4")}},
@@ -174,6 +176,7 @@ var level2Cells = []*Room{
 	{ID: level2Room("G8"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("F8"), South: level2Room("H8"), West: level2Room("G7")}},
 	{ID: level2Room("H1"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("H2"), North: level2Room("G1")}},
 	{ID: level2Room("H2"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("G2"), West: level2Room("H1")}},
+	{ID: level2Room("H3"), Name: "Purity", Level: 2},
 	{ID: level2Room("H6"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("H7"), North: level2Room("G6")}, Monster: "Ghost", MonsterHealth: 2},
 	{ID: level2Room("H7"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("H8"), North: level2Room("G7"), West: level2Room("H6")}},
 	{ID: level2Room("H8"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("G8"), West: level2Room("H7")}},

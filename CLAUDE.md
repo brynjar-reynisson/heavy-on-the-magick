@@ -2410,6 +2410,39 @@ untrue) and cleaned up formatting. Added
 `gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
 clean, and verified live that normal Level 2 play is unaffected.
 
+### Resolved the Flox/D4 discrepancy, and named 3 more real cells in Level2Grid
+
+After another Stop-hook rejection, same framing, went straight back to
+the discrepancy flagged 2 rounds ago rather than let it sit as a
+standing open question: tight-cropped D4 directly and it does read
+"FLOX", confirming the coordinate was never wrong. The actual resolution
+turned out simple - D4 was ALREADY a normal, connected cell in the main
+50-cell component (real West exit to D3, itself reciprocally confirmed
+by tight-cropping D3 too), just missing its Name. The earlier "isolated"
+claim for Flox specifically was just wrong; no real conflict once
+checked directly. Added `Name: "Flox"` to the existing D4 entry - zero
+connectivity risk, pure labeling.
+
+Checked the other 3 cells from that same old "4 named cells" bullet
+(Icthys, Horns, Purity) and found they're a genuinely different case:
+truly absent from `level2Cells` entirely (not merely unnamed like Flox
+was), consistent with them really being isolated. Individually tight-
+cropped all 3 with the current calibration and confirmed pixel-for-
+pixel ("ICTHYS" at C3, "HORNS" at E2, "PURITY" at H3, matching the old
+pass's coordinates exactly this time) - added as real, named, isolated
+cells (no Exits), same honest convention as the Room of Misery pocket.
+File is now 60 cells (was 57): 50 main + 7 pocket + 3 newly-named
+isolated cells, with Flox correctly recognized as part of the 50, not
+a 61st.
+
+Added `TestLevel2GridFloxIsInMainComponent` and
+`TestLevel2GridOtherNamedIsolatedCells`, ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
+live: computed the real shortest path to Flox (via a disposable, never-
+committed temporary test file, deleted immediately after use) and
+walked it in `go run ./cmd/hotm -level2grid` - `LOOK` now shows "Flox"
+by name for the first time.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

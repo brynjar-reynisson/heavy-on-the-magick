@@ -2,9 +2,40 @@ package world
 
 import "testing"
 
-func TestLevel2GridHas57Cells(t *testing.T) {
-	if len(level2Cells) != 57 {
-		t.Fatalf("len(level2Cells) = %d, want 57 (the validated 50-cell main component plus the full 7-cell Room of Misery pocket)", len(level2Cells))
+func TestLevel2GridHas60Cells(t *testing.T) {
+	if len(level2Cells) != 60 {
+		t.Fatalf("len(level2Cells) = %d, want 60 (the validated 50-cell main component, the full 7-cell Room of Misery pocket, and 3 isolated named cells: Icthys/Horns/Purity)", len(level2Cells))
+	}
+}
+
+// TestLevel2GridFloxIsInMainComponent pins the round-56 fix: Flox (D4)
+// was never actually isolated - it's a real cell in the main component
+// that was just missing its name (see this file's doc comment).
+func TestLevel2GridFloxIsInMainComponent(t *testing.T) {
+	w := Level2Grid()
+	room := w.Rooms[level2Room("D4")]
+	if room == nil || room.Name != "Flox" {
+		t.Fatalf("room D4 = %+v, want Name \"Flox\"", room)
+	}
+	if len(room.Exits) == 0 {
+		t.Error("Flox (D4) should have real Exits (it's part of the main connected component, not isolated)")
+	}
+}
+
+// TestLevel2GridOtherNamedIsolatedCells pins Icthys/Horns/Purity - real,
+// tight-crop-verified named cells that (unlike Flox) really are absent
+// from the main component.
+func TestLevel2GridOtherNamedIsolatedCells(t *testing.T) {
+	w := Level2Grid()
+	want := map[string]string{"C3": "Icthys", "E2": "Horns", "H3": "Purity"}
+	for code, name := range want {
+		room := w.Rooms[level2Room(code)]
+		if room == nil || room.Name != name {
+			t.Errorf("room %s Name = %v, want %q", code, room, name)
+		}
+		if len(room.Exits) != 0 {
+			t.Errorf("room %s Exits = %v, want none (connectivity not confirmed)", code, room.Exits)
+		}
 	}
 }
 
