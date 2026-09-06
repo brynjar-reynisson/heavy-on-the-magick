@@ -2569,6 +2569,48 @@ run) clean, and verified the underlying mechanic live via the text
 frontend (unaffected, as expected, since `handleAndPlay` and
 `invokeCarriedDemon` only wrap the same `game.Handle` calls).
 
+### Re-examined the original hand-drawn Level 1-2 poster at full resolution: real new confirmations, but a placement dead end for a real reason
+
+After another Stop-hook rejection, same framing, went looking for
+Magot's Sunflower and Asmodee's Erlstone again - this time by re-
+viewing `heavymap-levels1-2.jpg` (the OTHER, hand-drawn poster,
+`level_items.go`'s source) at full resolution instead of the clean map
+or numbered map already exhausted for this search. It's much more
+legible than earlier passes treated it: individual item labels sit in
+recognizable grid cells, not just "somewhere on this level."
+
+Two real, useful confirmations came out of it:
+  - **"SUN-FLOWER" is directly visible** in Level Two's grid, in the
+    same bottom-right cluster as "TOLL", "NICKEL KEY", and "LOAF" -
+    real, independent (a second, different poster) confirmation that
+    Magot's Charm exists and is on Level 2, corroborating the numbered
+    map's own "#7, Chest (sunflower)" entry from a completely different
+    source.
+  - **"+ ONE MAGICK GRADE"** is a real, previously-unknown location
+    marker on Level Two, distinct from any item - i.e. a second real
+    "Grade promotion" spot in the game besides Secunda Porta's door
+    (the only one currently modeled). Real, sourced, not yet actionable
+    without a location.
+
+Neither could be safely placed at an exact `Level2Grid` cell this
+round: I tried anchoring this poster's own row/column grid against
+Level2Grid's already-confirmed Room of Misery position (Grimoire is
+also directly visible on this poster, in a distinctly-colored cell),
+and the two countings didn't agree - a real, honest sign that this
+poster's cell grid doesn't align cleanly with Level2Grid's lettered
+grid the way the numbered map's did for Mantis/Sword. Rather than force
+a guess through a mismatch I can't resolve, left both unplaced. This is
+the same limitation `level_items.go`'s doc comment already named many
+rounds ago ("only the item-to-level association is captured here, not
+exact grid position") - this round's attempt to push past that limit
+for two specific items didn't succeed, but confirms *why* not, rather
+than silently trying and getting it wrong.
+
+A quiet round: real, verified findings, no shippable code change - a
+legitimate outcome per this project's own established practice (a
+well-verified negative/confirmatory result is real progress, not a
+stall), not forced into a placement that would have been a guess.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**
