@@ -38,12 +38,21 @@ package world
 // than their old labels implied) were checked for an easy bridge to this
 // one and found closed, not just unexamined.
 //
-// Same honest scope as Level2Grid/Level3Grid: monster/item icon
-// placements were NOT extracted for this file (real follow-up work,
-// blocked on the same connectivity-extraction gap above - a monster
-// icon found via color/position scan can't be safely wired in without
-// knowing this file's real exits for that cell), and room descriptions
-// use the same placeholder convention as everywhere else.
+// Monster placement: ran the same pixel-fraction color scan used for
+// Levels 1-3 against this file's already-correct 17-cell component
+// (unlike the not-yet-extracted rows above it, this component's exits
+// are real and known, so a scan hit here CAN be safely wired in).
+// Found 2 candidates; tight-crop-verified both - one (near G7) was a
+// stairwell direction arrow, correctly excluded (same false-positive
+// pattern seen throughout this project's icon scans); the other is a
+// real, confirmed Medusa at H5 (bright red "m", the same color wraith
+// also uses - letter shape is what distinguishes them, per the map's
+// own legend). MonsterHealth uses the established "tougher monster"
+// placeholder value of 3 (same as Cyclops/Troll/Wyvern).
+//
+// Item icon placements were NOT extracted for this file (real
+// follow-up work, same as Levels 1-3), and room descriptions use the
+// same placeholder convention as everywhere else.
 func Level4Grid() *World {
 	w := New(level4Room("F2"))
 	for _, r := range level4Cells {
@@ -91,7 +100,7 @@ var level4Cells = []*Room{
 	{ID: level4Room("G8"), Level: 4, Exits: map[Direction]RoomID{North: level4Room("F8"), West: level4Room("G7")}},
 	{ID: level4Room("H3"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("H4"), North: level4Room("G3")}},
 	{ID: level4Room("H4"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("H5"), West: level4Room("H3")}},
-	{ID: level4Room("H5"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("H6"), North: level4Room("G5"), West: level4Room("H4")}},
+	{ID: level4Room("H5"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("H6"), North: level4Room("G5"), West: level4Room("H4")}, Monster: "Medusa", MonsterHealth: 3},
 	{ID: level4Room("H6"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("H7"), North: level4Room("G6"), West: level4Room("H5")}},
 	{ID: level4Room("H7"), Level: 4, Exits: map[Direction]RoomID{North: level4Room("G7"), West: level4Room("H6")}},
 }

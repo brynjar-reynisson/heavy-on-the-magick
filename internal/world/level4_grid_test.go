@@ -24,6 +24,20 @@ func TestLevel4GridExitsAreReciprocal(t *testing.T) {
 	}
 }
 
+// TestLevel4GridHasVerifiedMonster pins the one monster placement in
+// this file - a Medusa at H5, tight-crop-verified against the map's own
+// icon legend (see Level4Grid's doc comment).
+func TestLevel4GridHasVerifiedMonster(t *testing.T) {
+	w := Level4Grid()
+	room := w.Rooms[level4Room("H5")]
+	if room == nil || room.Monster != "Medusa" {
+		t.Fatalf("room H5 Monster = %v, want \"Medusa\"", room)
+	}
+	if room.MonsterHealth <= 0 {
+		t.Errorf("room H5 MonsterHealth = %d, want > 0", room.MonsterHealth)
+	}
+}
+
 func TestLevel4GridIsFullyConnected(t *testing.T) {
 	w := Level4Grid()
 	visited := map[RoomID]bool{w.Current: true}

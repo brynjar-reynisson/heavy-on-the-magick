@@ -2177,6 +2177,31 @@ Ran the full `gofmt`/`build`/`vet`/`test` suite clean and verified live:
 `go run ./cmd/hotm -level1grid`, walked to D4 and confirmed `MAP` shows
 `[D4 ]#` alongside the already-working `!` monster marker.
 
+### Level 4 gets its first real monster, now that its calibration is trustworthy
+
+After another Stop-hook rejection, same framing, went back to Level 4 -
+its calibration was fixed by relabeling a few rounds ago, but no
+monster scan had ever been run against the corrected coordinates (the
+file's own doc comment still said icon placements were blocked on the
+same connectivity gap as the not-yet-extracted rows, which was true for
+those rows but NOT for this file's already-correct 17-cell component).
+Ran the same pixel-fraction color scan used for Levels 1-3 against just
+that component (F2-H7). Found 2 candidates; tight-crop-verified both -
+one (near G7) was a stairwell arrow, correctly excluded, and the other
+is a real, confirmed **Medusa at H5** (bright red "m" - the same red
+wraith also uses, distinguished by letter shape per the map's own
+legend).
+
+Added it with the established "tougher monster" MonsterHealth
+placeholder (3, same as Cyclops/Troll/Wyvern), corrected the file's
+doc comment to be precise about what's actually blocked (the
+unconnected rows above this component) versus what's already safe to
+extend (this component itself), added `TestLevel4GridHasVerifiedMonster`,
+ran the full `gofmt`/`build`/`vet`/`test` suite (including a repeated
+`-count=2` run, habit from last round's isolation-bug fix) clean, and
+verified live: `go run ./cmd/hotm -level4grid`, walked to H5, and
+BLASTed the real Medusa to death for real Experience Points.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**
