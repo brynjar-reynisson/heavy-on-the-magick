@@ -2640,6 +2640,45 @@ the room's other item), `EXAMINE SWORD` (nothing by that name present)
 correctly says so, and after picking it up, `EXAMINE GRIMOIRE` reports
 "You are carrying a Grimoire" with correct casing.
 
+### Re-fetched the CASA walkthrough with fresh, targeted questions: 2 more items placed, and a real new combat-alternative mechanic
+
+After another Stop-hook rejection, same framing, went back to the
+original source that's produced the most real content in this whole
+project (the CASA walkthrough) and re-fetched it with a deliberately
+more detailed, targeted question set - specifically asking for exact
+item-to-room associations and any TARGET/VERB or monster-interaction
+facts not yet captured. This source has been re-read several times
+before, but never with this specific combination of questions.
+
+Two real findings resolved long-standing gaps:
+  - **Nougat and a Scroll are both in Trollwynd; a second, separate
+    Scroll is in Sothic Complex.** Both rooms already exist and are
+    playable in `CollodonsPile`. An earlier pass had found "Scroll" and
+    "Nougat" but reported them with vague/multiple locations and
+    deliberately left them unplaced rather than guess - this fresh
+    re-read gives exact rooms for both, resolving 2 of those 3 (Key
+    remains genuinely spread across 4 rooms with no single location,
+    still correctly unplaced).
+  - **A real, previously-unknown alternate combat mechanic**: the
+    walkthrough states Werewolves are "killable by walking through
+    after dropping NOUGAT" - a real way to defeat a Werewolf without
+    BLAST/FREEZE at all. Implemented as `game.checkNougatWerewolf`,
+    called from both `drop` (dropping Nougat in a Werewolf's room is
+    read as the real trigger) and `move` (covers Nougat already present
+    for any other reason): whenever the current room has both a live
+    Werewolf and a Nougat, the Werewolf is defeated automatically.
+
+Added `TestNougatDefeatsWerewolfOnDrop` and
+`TestCollodonsPileTrollwyndAndSothicComplexHaveScrollNougat`, ran the
+full `gofmt`/`build`/`vet`/`test` suite clean, and verified live in two
+parts (the mechanic can't be demonstrated as one natural playthrough
+yet, honestly noted: Nougat only exists in `CollodonsPile`, Werewolves
+only in `Level1Grid`/`Level2Grid`, and the 5 graphs aren't merged) -
+`go run ./cmd/hotm` confirmed real Nougat/Scroll pickup at Trollwynd
+and a second Scroll at Sothic Complex, and
+`TestNougatDefeatsWerewolfOnDrop` exercises the actual mechanic against
+a real Werewolf in `Level1Grid`.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

@@ -114,3 +114,30 @@ func TestCollodonsPileRoomOfMiseryHasBothNumberedItems(t *testing.T) {
 		}
 	}
 }
+
+// TestCollodonsPileTrollwyndAndSothicComplexHaveScrollNougat pins the
+// round-63 walkthrough re-read: Nougat and a Scroll in Trollwynd, plus
+// a second, separate Scroll in Sothic Complex - resolving 2 of the 3
+// items an earlier pass had left unplaced as "vague/multiple locations"
+// (see CollodonsPile's doc comment).
+func TestCollodonsPileTrollwyndAndSothicComplexHaveScrollNougat(t *testing.T) {
+	w := CollodonsPile()
+	want := map[RoomID][]string{
+		roomTrollwynd:     {"Nougat", "Scroll"},
+		roomSothicComplex: {"Scroll"},
+	}
+	for roomID, items := range want {
+		room := w.Rooms[roomID]
+		for _, want := range items {
+			found := false
+			for _, item := range room.Items {
+				if item == want {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("room %q Items = %v, want it to include %q", room.Name, room.Items, want)
+			}
+		}
+	}
+}

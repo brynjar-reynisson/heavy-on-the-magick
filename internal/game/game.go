@@ -134,6 +134,12 @@ func NewLevel4Exploration() *Game {
 // mechanical difference between them, so this distinction is a reasonable
 // but unconfirmed interpretation, not extracted fact.
 //
+// Moving into a room with a live Werewolf that also has a dropped
+// Nougat among its world.Room.Items defeats the Werewolf automatically,
+// no BLAST/FREEZE needed — a real, sourced alternate mechanic (the CASA
+// walkthrough: Werewolves are "killable by walking through after
+// dropping NOUGAT" — see checkNougatWerewolf).
+//
 // EXAMINE reports a room's Monster and Items if present (real data);
 // with a specific target (the manual's confirmed real grammar, e.g.
 // "X BOTTLE" — see parser's doc comment) it instead confirms just that
@@ -579,7 +585,11 @@ func (g *Game) drop(target string) string {
 			if room := g.World.CurrentRoom(); room != nil {
 				room.Items = append(room.Items, item)
 			}
-			return fmt.Sprintf("You drop the %s.", item)
+			result := fmt.Sprintf("You drop the %s.", item)
+			if msg := g.checkNougatWerewolf(); msg != "" {
+				result += "\n" + msg
+			}
+			return result
 		}
 	}
 	return fmt.Sprintf("You aren't carrying a %s.", strings.ToLower(target))
@@ -628,7 +638,40 @@ func (g *Game) move(dir world.Direction) string {
 	if !g.World.Move(dir) {
 		return "You can't go that way."
 	}
-	return g.describeCurrentRoom()
+	msg := g.checkNougatWerewolf()
+	desc := g.describeCurrentRoom()
+	if msg != "" {
+		return msg + "\n" + desc
+	}
+	return desc
+}
+
+// checkNougatWerewolf implements a real, sourced mechanic: the CASA
+// walkthrough (a second re-read, round 63) states Werewolves are
+// "killable by walking through after dropping NOUGAT" - a real
+// alternate defeat method distinct from ordinary BLAST/FREEZE combat.
+// Called from both drop (the act of dropping Nougat in the Werewolf's
+// room is read as the real trigger - "walking through" just describes
+// the resulting ability to pass, not a separate required step) and move
+// (covers Nougat already present for another reason, e.g. a future
+// per-room placement). Modeled literally: whenever the current room has
+// both a live Werewolf and a Nougat among its world.Room.Items, the
+// Werewolf is defeated automatically, no combat needed. The exact
+// trigger mechanics beyond this aren't stated (e.g. whether the Nougat
+// is consumed) - honestly left as non-consuming, the simplest reading
+// of the source that doesn't mention the Nougat being used up.
+func (g *Game) checkNougatWerewolf() string {
+	room := g.World.CurrentRoom()
+	if room == nil || room.Monster != "Werewolf" || room.MonsterHealth <= 0 {
+		return ""
+	}
+	for _, item := range room.Items {
+		if strings.EqualFold(item, "Nougat") {
+			room.MonsterHealth = 0
+			return "The Werewolf catches the scent of Nougat and lets you pass unharmed."
+		}
+	}
+	return ""
 }
 
 func (g *Game) describeCurrentRoom() string {

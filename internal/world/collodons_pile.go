@@ -79,8 +79,21 @@ package world
 // Wolfdorp, Slat in Morfang, Nugget in Methos, Clasp in Trollwynd. A few
 // other items the same pass surfaced ("Scroll", "Nougat", "Key") were
 // reported with vague/multiple locations ("two instances", "multiple
-// locations") rather than one specific room, so they're deliberately NOT
-// placed here — assigning them to a guessed room would be fabrication.
+// locations") rather than one specific room, so they were deliberately
+// NOT placed then — assigning them to a guessed room would have been
+// fabrication.
+//
+// CORRECTED (round 63): a fresh, more detailed re-read of the same CASA
+// walkthrough resolved 2 of those 3 - it gives Nougat and a Scroll both
+// specifically in the Trollwynd area, and a SECOND separate Scroll
+// specifically in Sothic Complex (i.e. 2 real Scroll instances at 2
+// named rooms, matching the original pass's "two instances" hedge -
+// that wasn't vague after all, just under-extracted the first time).
+// Key remains genuinely spread across 4 different rooms with no single
+// location, so it's still deliberately unplaced. The same re-read also
+// surfaced a real, previously-unknown mechanic: Werewolves are
+// "killable by walking through after dropping NOUGAT" - see
+// game.checkNougatWerewolf, wired in for the first time this round.
 //
 // A fan-made numbered map poster (see numbered_room_contents.go) provides
 // good independent cross-confirmation and one open discrepancy worth
@@ -124,10 +137,10 @@ func CollodonsPile() *World {
 	for _, r := range []*Room{
 		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta}, Items: []string{"Grimoire", "Poison-smeared book"}},
 		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}},
-		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "monster", MonsterHealth: 3, Items: []string{"Clasp"}},
+		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "monster", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll"}},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget"}},
-		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}},
+		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll"}},
 		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}},
 		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Items: []string{"Slat"}},

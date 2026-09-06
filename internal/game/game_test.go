@@ -714,6 +714,29 @@ func TestLevel1ExplorationReachingExitWins(t *testing.T) {
 	}
 }
 
+// TestNougatDefeatsWerewolfOnDrop covers the real, sourced alternate
+// mechanic (CASA walkthrough: Werewolves "killable by walking through
+// after dropping NOUGAT" — see checkNougatWerewolf). Path to C2 (a real
+// Werewolf, per Level1Grid): A1-South-B1-South-C1-East-C2.
+func TestNougatDefeatsWerewolfOnDrop(t *testing.T) {
+	g := NewLevel1Exploration()
+	for _, dir := range []string{"SOUTH", "SOUTH", "EAST"} {
+		g.Handle(parser.Parse(dir))
+	}
+	room := g.World.CurrentRoom()
+	if room.Monster != "Werewolf" || room.MonsterHealth <= 0 {
+		t.Fatalf("test setup bug: expected a live Werewolf at C2, got %+v", room)
+	}
+	g.Player.Items = append(g.Player.Items, "Nougat")
+	got := g.Handle(parser.Parse("DROP NOUGAT"))
+	if room.MonsterHealth > 0 {
+		t.Errorf("Werewolf should be defeated after dropping Nougat, MonsterHealth = %d", room.MonsterHealth)
+	}
+	if !strings.Contains(got, "Nougat") {
+		t.Errorf("Handle(DROP NOUGAT) with a live Werewolf present = %q, want it to mention the Nougat mechanic", got)
+	}
+}
+
 func TestLevel1ExplorationMovementAndCombat(t *testing.T) {
 	g := NewLevel1Exploration()
 	// A1 (start) has a real Ghost, per world.Level1Grid's extracted data.
