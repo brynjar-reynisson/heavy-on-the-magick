@@ -2375,6 +2375,41 @@ Added `TestLevel2GridRoomOfMiseryPocketNamedCells`, ran the full
 `gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
 clean, and verified live that normal Level 2 play is unaffected.
 
+### Completed Level2Grid's Room of Misery pocket, and surfaced a real Flox/D4 discrepancy
+
+Continued straight on from last round's F3/F4 addition, after another
+Stop-hook rejection with the same framing. The Sunflower search hit its
+now-familiar dead end a third time (the marker icon over room #7's
+number hasn't moved). Instead of stopping there, finished what last
+round started: tight-cropped the pocket's remaining 5 cells (G3, G4,
+G5, H4, H5). G3/G4/H4 are plain unlabeled cells; **G5 and H5 each carry
+a real, tight-crop-verified Guards obstacle** - the same confirmed red
+icon already used elsewhere on this map, found here just by looking
+since a 5-cell pocket is small enough to check by eye rather than
+needing the pixel-fraction scan used for the 50-cell component. All 5
+added with the same honest "no Exits, names/contents confirmed but not
+new connectivity" convention as F3/F4. `Level2Grid`'s Room of Misery
+pocket is now fully present as real data for the first time - all 7
+cells, not 2 - file is honestly 57 cells (was 52), not 50.
+
+**Found a real discrepancy while doing this**: the file's older
+"4 named cells" bullet (from an earlier, less rigorous text-density-
+based pass) places "Flox" at D4 - but `level2Cells` already has a D4
+in the MAIN 50-cell component, with a real West exit to D3, not
+isolated at all. Either Flox's coordinate was misassigned by that
+earlier pass, or something else is off. Not resolved this round (that
+pass predates the tight-crop-verification discipline used everywhere
+else in this file now) - documented as a real, open discrepancy rather
+than silently picked one way or guessed at, the same honesty standard
+as the Sothic Complex/CollodonsPile naming conflict from 2 rounds ago.
+
+Updated the file's doc comment throughout (including the now-stale
+"G5/H5 aren't wired in" Guards paragraph, which this round makes
+untrue) and cleaned up formatting. Added
+`TestLevel2GridRoomOfMiseryPocketIsComplete`, ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live that normal Level 2 play is unaffected.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

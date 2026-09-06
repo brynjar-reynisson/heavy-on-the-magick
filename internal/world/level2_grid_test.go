@@ -2,15 +2,15 @@ package world
 
 import "testing"
 
-func TestLevel2GridHas52Cells(t *testing.T) {
-	if len(level2Cells) != 52 {
-		t.Fatalf("len(level2Cells) = %d, want 52 (the validated 50-cell main component plus 2 isolated named cells from the Room of Misery pocket)", len(level2Cells))
+func TestLevel2GridHas57Cells(t *testing.T) {
+	if len(level2Cells) != 57 {
+		t.Fatalf("len(level2Cells) = %d, want 57 (the validated 50-cell main component plus the full 7-cell Room of Misery pocket)", len(level2Cells))
 	}
 }
 
 // TestLevel2GridRoomOfMiseryPocketNamedCells pins the 2 real, tight-crop-
-// verified named cells added from Room of Misery's pocket (see this
-// file's doc comment) - F4 is the game's confirmed real starting room.
+// verified named cells in Room of Misery's pocket (see this file's doc
+// comment) - F4 is the game's confirmed real starting room.
 func TestLevel2GridRoomOfMiseryPocketNamedCells(t *testing.T) {
 	w := Level2Grid()
 	want := map[string]string{"F3": "Sign", "F4": "Room of Misery"}
@@ -21,6 +21,24 @@ func TestLevel2GridRoomOfMiseryPocketNamedCells(t *testing.T) {
 		}
 		if len(room.Exits) != 0 {
 			t.Errorf("room %s Exits = %v, want none (connectivity not confirmed)", code, room.Exits)
+		}
+	}
+}
+
+// TestLevel2GridRoomOfMiseryPocketIsComplete pins that all 7 pocket
+// cells now exist (round 55 added the remaining G3/G4/G5/H4/H5), with
+// real, tight-crop-verified Guards obstacles at G5 and H5.
+func TestLevel2GridRoomOfMiseryPocketIsComplete(t *testing.T) {
+	w := Level2Grid()
+	for _, code := range []string{"G3", "G4", "G5", "H4", "H5"} {
+		if w.Rooms[level2Room(code)] == nil {
+			t.Errorf("Level2Grid is missing pocket cell %s", code)
+		}
+	}
+	for _, code := range []string{"G5", "H5"} {
+		room := w.Rooms[level2Room(code)]
+		if room == nil || !room.Guards {
+			t.Errorf("room %s Guards = %v, want true", code, room != nil && room.Guards)
 		}
 	}
 }

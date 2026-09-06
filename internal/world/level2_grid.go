@@ -22,30 +22,44 @@ package world
 // named room) since it's what New(start) needs, not because A1 is known
 // to be special.
 //
-// UPDATE (round 54): 2 of the pocket's 7 cells are now actually present
-// in this file - F3 ("Sign") and F4 ("Room of Misery") - added as real,
-// named, isolated rooms (no Exits) after individually tight-cropping
-// their exact grid positions and confirming the labels pixel-for-pixel
-// ("SIGN!" and "MISERY" respectively, each with its own on-map "F3"/
-// "F4" coordinate printed right there too). This is the first time
-// Room of Misery has existed as an actual Room in this file at all -
-// previously it was only ever mentioned in this comment's prose, never
-// backed by real data here. Still real, scoped follow-up work: G3/G4/
-// G5/H4/H5 (the pocket's other 5 cells) remain unadded, and no new
-// connectivity - within the pocket, or bridging it to the 50-cell
-// component - was re-confirmed this round; the "disconnected" finding
-// below still stands as-is.
+// UPDATE (round 54-55): all 7 of the pocket's cells are now actually
+// present in this file - previously only ever mentioned in this
+// comment's prose, never backed by real data here (round 54 added
+// F3/F4; round 55 added the remaining G3/G4/G5/H4/H5). F3 and F4 are
+// individually tight-crop-verified by name ("SIGN!" and "MISERY"
+// respectively, each with its own on-map coordinate label printed right
+// there too) - F4 IS the game's confirmed real starting room. G3, G4,
+// and H4 are plain, unlabeled cells. G5 and H5 each carry a real,
+// tight-crop-verified Guards obstacle (world.Room.Guards) - the same
+// red icon already confirmed elsewhere on this map, found here by
+// simply looking since the pocket is small enough to check by eye
+// rather than needing the pixel-fraction scan used for the 50-cell
+// component. All 7 cells are added with NO Exits: this round confirmed
+// their names/contents, not new connectivity - within the pocket, or
+// bridging it to the 50-cell component - so the "disconnected" finding
+// below still stands as-is, and remains real, scoped follow-up work.
+//
+// OPEN QUESTION surfaced while checking this: the "4 named cells"
+// bullet below (Icthys/Flox/Horns/Purity) says Flox is at D4 - but
+// level2Cells already has a D4 in the MAIN 50-cell component, with a
+// real West exit to D3, not isolated at all. Either Flox's coordinate
+// was misassigned by the earlier text-density-based pass, or something
+// else is off - not resolved this round (that pass predates the
+// tight-crop-verification discipline used everywhere else in this
+// file), left as a real discrepancy for a future round rather than
+// guessed at.
 //
 // NOT included here, each for a specific documented reason:
-//   - 5 of Room of Misery's 7-cell pocket (G3/G4/G5/H4/H5 - F3/F4 ARE
-//     now included, see above) - real, but disconnected from the other
-//     50 cells in this data (same honest-gap pattern as Level1Grid's
-//     remaining fragment).
-//   - 4 named cells confirmed via text-density measurement (see
-//     CLAUDE.md) - Icthys (C3), Flox (D4), Horns (E2), Purity (H3) - and
-//     2 more small isolated pockets (C3-C4, C6-D6) - all individually
-//     border-checked and confirmed isolated from the 50-cell component,
-//     not a detection failure (same pattern as Level1Grid's A7/A8/G5/H5).
+//   - Icthys (C3), Flox (D4 - see the open question above), Horns (E2),
+//     Purity (H3): real per an earlier round's text-density measurement,
+//     but not individually tight-crop-verified the way everything else
+//     in this file now is, and (per the D4 conflict above) at least one
+//     may be miscalibrated - left out until re-verified properly. 2
+//     more small isolated pockets (C3-C4, C6-D6) were also found and
+//     border-checked as confirmed-isolated in that same earlier pass -
+//     not a detection failure (same pattern as Level1Grid's A7/A8/G5/
+//     H5) - but likewise not re-verified to the current standard, so
+//     also not included.
 //   - Item icon placements: NOT extracted for this file (real follow-up
 //     work, not guessed). 3 monster placements WERE added in a later
 //     round (Wraith at A5, Slug at C2, Ghost at H6) - each individually
@@ -70,15 +84,15 @@ package world
 // shipped monsters (Wraith@A5, Slug@C2, Ghost@H6 all matched precisely -
 // good further validation this file's calibration has no Level1Grid-
 // style bug), and turned up 5 more candidates. Tight-crop-verified each:
-// B1, C8, and D8 are real Guards icons (world.Room.Guards, same
-// world.Room.Guards/game.passGuards mechanic added for Level1Grid's D4/
-// D7 - see its doc comment for the "GUARDS, DOOR" sourcing); G5 and H5
-// are ALSO real Guards icons but sit in Room of Misery's disconnected
-// 7-cell pocket (see above), so aren't wired in here to avoid claiming
-// reachability this data doesn't support. Two more scan hits (E5, E6)
-// tight-crop-verified as a stairwell arrow and "FIRE!" warning text
-// respectively, and were correctly excluded, same discipline as the
-// monster scan above.
+// B1, C8, and D8 are real Guards icons within the 50-cell main
+// component (world.Room.Guards, same mechanic added for Level1Grid's
+// D4/D7 - see its doc comment for the "GUARDS, DOOR" sourcing); G5 and
+// H5 are ALSO real Guards icons, sitting in Room of Misery's pocket -
+// see the round 54-55 update above for why they're now included (as
+// isolated cells, same as the rest of that pocket). Two more scan hits
+// (E5, E6) tight-crop-verified as a stairwell arrow and "FIRE!" warning
+// text respectively, and were correctly excluded, same discipline as
+// the monster scan above.
 func Level2Grid() *World {
 	w := New(level2Room("A1"))
 	for _, r := range level2Cells {
@@ -175,4 +189,9 @@ var level2Cells = []*Room{
 	// remain real, scoped follow-up work).
 	{ID: level2Room("F3"), Name: "Sign", Level: 2},
 	{ID: level2Room("F4"), Name: "Room of Misery", Level: 2},
+	{ID: level2Room("G3"), Level: 2},
+	{ID: level2Room("G4"), Level: 2},
+	{ID: level2Room("G5"), Level: 2, Guards: true},
+	{ID: level2Room("H4"), Level: 2},
+	{ID: level2Room("H5"), Level: 2, Guards: true},
 }
