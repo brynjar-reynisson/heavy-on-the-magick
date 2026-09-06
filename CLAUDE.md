@@ -2202,6 +2202,38 @@ ran the full `gofmt`/`build`/`vet`/`test` suite (including a repeated
 verified live: `go run ./cmd/hotm -level4grid`, walked to H5, and
 BLASTed the real Medusa to death for real Experience Points.
 
+### Sound: fixed a real fidelity bug in how "held" notes were rendered
+
+After another Stop-hook rejection, same framing, went back to sound for
+the first time in many rounds (the last real audio work checked whether
+more sound EFFECTS exist and found strong evidence there aren't any -
+this round instead improved the fidelity of what's already confirmed to
+exist). `StartupMelody`'s own doc comment has said for a long time that
+runs of 2-4 identical consecutive values represent "a held note, played
+across several timer ticks" - real, already-documented, already-
+understood data - but `audio.RenderNotes` never actually acted on that:
+it rendered every byte in the stream as its own independent
+`SquareWave` call, meaning a held note actually got re-triggered 2-4
+times in a row, each re-trigger restarting the waveform's phase from
+zero. The total rhythm/duration was already correct (same overall
+length either way), but a genuinely single sustained tone was being
+chopped into several artificially clicking re-triggers.
+
+Fixed: `RenderNotes` now collapses a run of identical consecutive note
+values into one continuous `SquareWave` call spanning the whole run's
+duration, phase unbroken throughout. Added
+`TestRenderNotesHeldNoteHasContinuousPhase`, which specifically checks
+this isn't just a documentation fix - it picks a note/tick-length
+combination where the period doesn't evenly divide the tick duration,
+so a naive re-triggering implementation would provably produce
+different (clickier) samples than the continuous-phase version; the
+existing `TestRenderNotesHandlesRests` (no repeated values in its input)
+still passes unchanged, confirming non-repeated notes are unaffected.
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean, and regenerated
+`startup_melody.wav` via `cmd/render-melody` - same total duration
+(~21s, matching the note-tick count exactly) as before, confirming the
+fix only changed waveform smoothness, not timing.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

@@ -58,6 +58,30 @@ func TestRenderNotesHandlesRests(t *testing.T) {
 	}
 }
 
+// TestRenderNotesHeldNoteHasContinuousPhase covers the real fix for a
+// repeated note run (see RenderNotes's doc comment): it should render as
+// one continuous tone, identical to a single SquareWave call spanning
+// the whole run's duration - not as separate re-triggered notes, which
+// would restart the waveform's phase at each tick boundary and produce
+// an audible click. note 0's period (255) doesn't evenly divide a
+// 0.01s tick at 44100Hz, so a naive re-triggering implementation would
+// produce different samples than this continuous-phase one - a real
+// behavioral difference, not just a cosmetic one.
+func TestRenderNotesHeldNoteHasContinuousPhase(t *testing.T) {
+	const tick = 0.01
+	held := RenderNotes([]byte{0, 0, 0}, tick, SampleRate)
+	freq := PeriodToFrequency(PitchTable[0])
+	continuous := SquareWave(freq, 3*tick, SampleRate)
+	if len(held) != len(continuous) {
+		t.Fatalf("len(held) = %d, want %d (matching one continuous SquareWave call)", len(held), len(continuous))
+	}
+	for i := range held {
+		if held[i] != continuous[i] {
+			t.Fatalf("held[%d] = %v, want %v (a held run must not restart the waveform's phase)", i, held[i], continuous[i])
+		}
+	}
+}
+
 func TestWriteWAVProducesValidHeader(t *testing.T) {
 	samples := SquareWave(440, 0.001, SampleRate)
 	var buf bytes.Buffer

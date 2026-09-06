@@ -60,18 +60,38 @@ func SquareWave(freqHz, durationSec float64, sampleRate int) []float32 {
 }
 
 // RenderNotes renders a stream of PitchTable indices (as found in
-// StartupMelody) to PCM samples, each note held for noteDurationSec.
-// Values that IsRest reports as silence markers produce silence instead
-// of a (meaningless) PitchTable lookup.
+// StartupMelody) to PCM samples, each timer tick held for
+// noteDurationSec. Values that IsRest reports as silence markers produce
+// silence instead of a (meaningless) PitchTable lookup.
+//
+// A run of consecutive identical note values is real, confirmed data for
+// a single HELD note (see StartupMelody's doc comment: "runs of the same
+// value 2-4 times in a row (a held note, played across several timer
+// ticks)") - rendered as one continuous SquareWave call spanning the
+// whole run's duration, not N separate re-triggered notes. This matters
+// audibly: re-triggering restarts the square wave's phase from zero
+// every time, producing an artificial click/stutter at each tick
+// boundary within what's actually one sustained tone in the source data.
+// Total duration is unchanged either way (len(run) * noteDurationSec),
+// so this only affects the waveform's smoothness, not the rhythm/timing
+// this project has already gotten right.
 func RenderNotes(notes []byte, noteDurationSec float64, sampleRate int) []float32 {
 	var out []float32
-	for _, n := range notes {
-		if IsRest(n) || int(n) >= len(PitchTable) {
-			out = append(out, make([]float32, int(noteDurationSec*float64(sampleRate)))...)
-			continue
+	i := 0
+	for i < len(notes) {
+		n := notes[i]
+		runLen := 1
+		for i+runLen < len(notes) && notes[i+runLen] == n {
+			runLen++
 		}
-		freq := PeriodToFrequency(PitchTable[n])
-		out = append(out, SquareWave(freq, noteDurationSec, sampleRate)...)
+		duration := float64(runLen) * noteDurationSec
+		if IsRest(n) || int(n) >= len(PitchTable) {
+			out = append(out, make([]float32, int(duration*float64(sampleRate)))...)
+		} else {
+			freq := PeriodToFrequency(PitchTable[n])
+			out = append(out, SquareWave(freq, duration, sampleRate)...)
+		}
+		i += runLen
 	}
 	return out
 }
