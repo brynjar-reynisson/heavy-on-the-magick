@@ -2503,6 +2503,34 @@ Added `TestLevel4GridTheChasmIsInMainComponent` and
 `test` suite (with a repeated `-count=2` run) clean, and verified live:
 `go run ./cmd/hotm -level4grid` now shows "The Chasm" by name.
 
+### Items now render in the live GUI too, completing the monster/guards/items HUD trio
+
+After another Stop-hook rejection, same framing, checked Level1Grid for
+the named-special-room technique first (per last round's plan) and
+found nothing new - all 64 of its cells are already present in the
+file, some isolated, but none missing a real name the map shows. No
+gap to explain there, a real (if quiet) negative result. Pivoted back
+to graphics instead: `cmd/hotm-gui` already draws the current room's
+Monster and Guards state (last 2 rounds) but never its Items - real
+per-room item data has existed since very early in this project, shown
+only as plain log text, never in the live HUD area.
+
+Added `drawItems`, rendering the current room's real Items next to the
+monster/guards indicators. Honestly documented a real constraint this
+time: the clean map's own confirmed "object" icon color is black, but
+this GUI's background is also black, so using the "true" confirmed
+color (like monsterGlyphColor/guardsColor do) would render invisible
+text - `itemsColor` is explicitly flagged as NOT the confirmed icon
+color, just a legible plain-yellow stand-in, an honesty distinction
+worth being explicit about rather than silently picking a color and
+implying it's sourced like the other two.
+
+Added `TestItemsColorIsLegible`, ran the full `gofmt`/`build`/`vet`/
+`test` suite clean, and verified live via the disposable-throwaway-
+repo-copy + `PrintWindow` technique: a real screenshot of the default
+starting room (Room of Misery) shows "Grimoire, Poison-smeared book" in
+yellow, clearly legible against the black background.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

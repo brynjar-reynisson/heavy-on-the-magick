@@ -51,6 +51,15 @@ func TestGuardsColorMatchesLegend(t *testing.T) {
 	}
 }
 
+// TestItemsColorIsLegible pins itemsColor away from black - see its
+// doc comment for why the confirmed real "object" icon color (black)
+// can't be used against this GUI's black background.
+func TestItemsColorIsLegible(t *testing.T) {
+	if itemsColor == (color.RGBA{0, 0, 0, 255}) {
+		t.Error("itemsColor must not be black - it would be invisible against this GUI's black background")
+	}
+}
+
 // TestStatsLine constructs a bare *GUI directly (not via NewGUI, which
 // touches ebiten's audio/image APIs and needs a real display/audio
 // device) since statsLine only reads gui.g.Player - a pure formatting

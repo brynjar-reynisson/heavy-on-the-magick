@@ -260,6 +260,7 @@ func (gui *GUI) Draw(screen *ebiten.Image) {
 
 	gui.drawMonster(screen)
 	gui.drawGuards(screen)
+	gui.drawItems(screen)
 
 	statsOpts := &etext.DrawOptions{}
 	statsOpts.GeoM.Translate(8, 76) // just below the 64px-tall HUD row (drawn at y=8)
@@ -340,6 +341,28 @@ func (gui *GUI) drawGuards(screen *ebiten.Image) {
 	opts.GeoM.Translate(280, 26) // just below drawMonster's (280, 8) - verified visible live, unlike an earlier (400, 8) attempt that rendered nothing on screen for reasons not fully understood
 	opts.ColorScale.ScaleWithColor(guardsColor)
 	etext.Draw(screen, "I Guards", face, opts)
+}
+
+// itemsColor: the clean grid map's own legend draws its generic
+// "object" icon in black ("xx") - but this GUI's background is also
+// black, so rendering real Items in that confirmed color would be
+// invisible. Unlike monsterGlyphColor/guardsColor, this is honestly NOT
+// the confirmed icon color, just a legible stand-in (plain yellow,
+// matching this project's existing HUD color conventions elsewhere).
+var itemsColor = color.RGBA{255, 255, 0, 255}
+
+// drawItems renders the current room's real Items (if any) as a plain
+// list next to the monster/guards indicators - previously only ever
+// shown as log text ("You see: Grimoire"), never in the live HUD area.
+func (gui *GUI) drawItems(screen *ebiten.Image) {
+	room := gui.g.World.CurrentRoom()
+	if room == nil || len(room.Items) == 0 {
+		return
+	}
+	opts := &etext.DrawOptions{}
+	opts.GeoM.Translate(280, 44) // below drawGuards's (280, 26)
+	opts.ColorScale.ScaleWithColor(itemsColor)
+	etext.Draw(screen, strings.Join(room.Items, ", "), face, opts)
 }
 
 // statsLine renders the player's real confirmed stats (see
