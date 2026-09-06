@@ -1,13 +1,25 @@
 package world
 
-// Level3Grid is a real, 42-cell room graph for the dungeon's Level 3,
+// Level3Grid is a real, 44-cell room graph for the dungeon's Level 3,
 // extracted from the same clean, computer-rendered grid map as
 // Level1Grid/Level2Grid (heavymap-grid-clean.gif). Cells are addressed
 // the same way: a row letter A-H and a column number 1-8, offset into a
-// distinct RoomID range via level3Room. 41 of the 42 form one fully
-// connected component reachable from the start room; the 42nd (D4,
-// "Sothic Complex") is a real, named, deliberately isolated special
-// room - see the "SOTHIC COMPLEX" section below.
+// distinct RoomID range via level3Room. 41 of the 44 form one fully
+// connected component reachable from the start room; the other 3 (D4
+// "Sothic Complex", F3 "Nani", F5 "Hydra") are real, named, deliberately
+// isolated special rooms - see the "SOTHIC COMPLEX" section below and
+// the round-57 update.
+//
+// ROUND 57: applying the same "check for a named special room explaining
+// a gap" technique that found Sothic Complex, tight-cropped the F2-F6
+// span - entirely absent from the main component, same as D4 was -
+// and found 2 more real special rooms: F3 reads "NANI" (Room of Nani,
+// a zone name already visible elsewhere on this map) and F5 reads
+// "HYDRA" (Rook of Hydra, likewise). F2, F4, and F6 were also checked
+// but show no name (F4 just its own plain "F4" coordinate code; F2 has
+// a special-room-style border but no legible text in this crop; F6 is
+// a plain cell) - left unadded rather than guess at a name or force
+// connectivity for them.
 //
 // CALIBRATION HISTORY - CORRECTED (this matters for anyone diffing old
 // output against this file): an earlier round found only 7 of the
@@ -170,6 +182,8 @@ var level3Cells = []*Room{
 	{ID: level3Room("E7"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("E8"), North: level3Room("D7"), South: level3Room("F7"), West: level3Room("E6")}, Monster: "Troll", MonsterHealth: 3},
 	{ID: level3Room("E8"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("D8"), South: level3Room("F8"), West: level3Room("E7")}},
 	{ID: level3Room("F1"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("E1")}},
+	{ID: level3Room("F3"), Name: "Nani", Level: 3},
+	{ID: level3Room("F5"), Name: "Hydra", Level: 3},
 	{ID: level3Room("F7"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("F8"), North: level3Room("E7")}},
 	{ID: level3Room("F8"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("E8"), West: level3Room("F7")}, Monster: "Troll", MonsterHealth: 3},
 }

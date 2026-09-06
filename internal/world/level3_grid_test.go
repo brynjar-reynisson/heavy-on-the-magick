@@ -2,9 +2,27 @@ package world
 
 import "testing"
 
-func TestLevel3GridHas42Cells(t *testing.T) {
-	if len(level3Cells) != 42 {
-		t.Fatalf("len(level3Cells) = %d, want 42 (the validated 41-cell connected component plus the isolated named Sothic Complex)", len(level3Cells))
+func TestLevel3GridHas44Cells(t *testing.T) {
+	if len(level3Cells) != 44 {
+		t.Fatalf("len(level3Cells) = %d, want 44 (the validated 41-cell connected component plus 3 isolated named cells: Sothic Complex, Nani, Hydra)", len(level3Cells))
+	}
+}
+
+// TestLevel3GridNaniAndHydraAreIsolated pins the 2 real, tight-crop-
+// verified named cells found in round 57 (see Level3Grid's doc
+// comment) - the same "check for a named special room" technique that
+// found Sothic Complex, applied to the rest of the F2-F6 gap.
+func TestLevel3GridNaniAndHydraAreIsolated(t *testing.T) {
+	w := Level3Grid()
+	want := map[string]string{"F3": "Nani", "F5": "Hydra"}
+	for code, name := range want {
+		room := w.Rooms[level3Room(code)]
+		if room == nil || room.Name != name {
+			t.Errorf("room %s Name = %v, want %q", code, room, name)
+		}
+		if len(room.Exits) != 0 {
+			t.Errorf("room %s Exits = %v, want none (connectivity not confirmed)", code, room.Exits)
+		}
 	}
 }
 

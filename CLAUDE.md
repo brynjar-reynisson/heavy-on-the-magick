@@ -2443,6 +2443,31 @@ committed temporary test file, deleted immediately after use) and
 walked it in `go run ./cmd/hotm -level2grid` - `LOOK` now shows "Flox"
 by name for the first time.
 
+### Reapplied the "named special room explains a gap" technique to Level3Grid, found 2 more real rooms
+
+After another Stop-hook rejection, same framing, applied the exact
+technique that found Sothic Complex (round 51) and Flox/Icthys/Horns/
+Purity (round 56) to Level3Grid's own remaining unexplained gap: F2-F6
+are entirely absent from its 41-cell main component, same symptom as
+D4 was before Sothic Complex explained it. Tight-cropped all 5 and
+found 2 more real named special rooms: F3 reads "NANI" (Room of Nani)
+and F5 reads "HYDRA" (Rook of Hydra) - both zone names already visible
+elsewhere on this map, now confirmed to also have their own individual
+special-room cell here, the same pattern as Sothic Complex. F2 has a
+special-room-style border but no legible text in this crop; F4 and F6
+are plain, unnamed cells - all 3 left unadded rather than guess.
+
+Added Nani (F3) and Hydra (F5) as real, named, isolated cells (no
+Exits - same honest convention as every other special room in this
+file). Level3Grid is now honestly 44 cells (was 42): the 41-cell main
+component plus 3 isolated named special rooms (Sothic Complex, Nani,
+Hydra). Updated the stale "42-cell" references in `game.go` and
+`cmd/hotm/main.go` to match.
+
+Added `TestLevel3GridNaniAndHydraAreIsolated`, ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live that normal Level 3 play is unaffected.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

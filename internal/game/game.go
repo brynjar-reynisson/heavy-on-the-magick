@@ -78,11 +78,11 @@ func NewLevel2Exploration() *Game {
 }
 
 // NewLevel3Exploration is Level1/2Exploration's counterpart for
-// world.Level3Grid — a real 42-cell room graph for Level 3: a 41-cell
-// fully-connected component plus one real, named, deliberately isolated
-// special room (Sothic Complex, D4 — see Level3Grid's doc comment for
-// why, and for a real cross-source naming discrepancy with CollodonsPile
-// worth knowing about).
+// world.Level3Grid — a real 44-cell room graph for Level 3: a 41-cell
+// fully-connected component plus 3 real, named, deliberately isolated
+// special rooms (Sothic Complex/D4, Nani/F3, Hydra/F5 — see
+// Level3Grid's doc comment for why, and for a real cross-source naming
+// discrepancy with CollodonsPile worth knowing about).
 func NewLevel3Exploration() *Game {
 	return &Game{
 		Player: character.NewPlayer(),
