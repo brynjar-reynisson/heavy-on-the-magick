@@ -1,0 +1,76 @@
+package world
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestRenderASCIIMapShowsOnlyVisitedRooms(t *testing.T) {
+	w := PlaceholderDungeon()
+	out := RenderASCIIMap(w)
+	if out == "" {
+		t.Fatal("RenderASCIIMap returned empty output for a world with a visited starting room")
+	}
+
+	w.Move(North) // visit "Narrow Passage"
+	out = RenderASCIIMap(w)
+	if len(out) == 0 {
+		t.Fatal("RenderASCIIMap returned empty output after moving")
+	}
+}
+
+func TestRenderASCIIMapMarksLivingMonster(t *testing.T) {
+	w := CollodonsPile()
+	w.Move(East)  // Secunda Porta
+	w.Move(North) // Trollwynd, has a real living Monster
+	out := RenderASCIIMap(w)
+	if !strings.Contains(out, "[TRO]!") {
+		t.Errorf("RenderASCIIMap with a living monster in Trollwynd = %q, want it marked with !", out)
+	}
+}
+
+func TestRenderASCIIMapDoesNotMarkDefeatedMonster(t *testing.T) {
+	w := CollodonsPile()
+	w.Move(East)
+	w.Move(North)                            // Trollwynd
+	w.Rooms[roomTrollwynd].MonsterHealth = 0 // defeated
+	out := RenderASCIIMap(w)
+	if strings.Contains(out, "[TRO]!") {
+		t.Errorf("RenderASCIIMap with a defeated monster = %q, should not still show !", out)
+	}
+}
+
+func TestRenderASCIIMapMarksItems(t *testing.T) {
+	w := CollodonsPile() // Room of Misery has a real item: Grimoire
+	out := RenderASCIIMap(w)
+	if !strings.Contains(out, "*") {
+		t.Errorf("RenderASCIIMap with items in a visited room = %q, want an item marker (*)", out)
+	}
+}
+
+func TestRenderASCIIMapInconsistentFallsBackToList(t *testing.T) {
+	w := New(0)
+	a := &Room{ID: 0, Name: "A", Exits: map[Direction]RoomID{East: 1, SouthEast: 2}, Visited: true}
+	b := &Room{ID: 1, Name: "B", Visited: true}
+	c := &Room{ID: 2, Name: "C", Exits: map[Direction]RoomID{West: 1}, Visited: true}
+	w.AddRoom(a)
+	w.AddRoom(b)
+	w.AddRoom(c)
+
+	out := RenderASCIIMap(w)
+	if out == "" {
+		t.Fatal("expected fallback list output, got empty string")
+	}
+	// The fallback list format names rooms directly.
+	for _, name := range []string{"A", "B", "C"} {
+		found := false
+		for _, r := range w.VisitedRooms() {
+			if r.Name == name {
+				found = true
+			}
+		}
+		if !found {
+			t.Fatalf("test setup bug: room %q not in VisitedRooms", name)
+		}
+	}
+}

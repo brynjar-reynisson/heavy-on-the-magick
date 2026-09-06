@@ -27,6 +27,11 @@ go.work.sum
 # env file
 .env
 
+# Player save files (internal/game/save.go) - per-player local state,
+# not project source
+hotm-save.json
+hotm-axil-save.json
+
 # Editor/IDE
 # .idea/
 # .vscode/
