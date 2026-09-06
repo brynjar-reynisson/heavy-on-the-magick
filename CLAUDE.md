@@ -2611,6 +2611,35 @@ legitimate outcome per this project's own established practice (a
 well-verified negative/confirmatory result is real progress, not a
 stall), not forced into a placement that would have been a guess.
 
+### EXAMINE now actually uses its target, matching the manual's own confirmed grammar example
+
+After another Stop-hook rejection, same framing, went looking for a
+real gap in already-shipped mechanics rather than another map-reading
+pass. Found one: `parser`'s own package doc comment has always used
+`"X BOTTLE"` (eXamine the bottle) as its example of the confirmed
+action-form grammar (`Keyword Object`) - but `game.examine()` completely
+ignored the target the whole time, silently falling back to "list
+everything in the room" regardless of what was actually asked about.
+`EXAMINE GRIMOIRE` and bare `EXAMINE` have produced byte-identical
+output since this verb was first added.
+
+Fixed: with a target, `examine` now confirms just that one thing - the
+room's Monster, a room Item, or a carried Item - or says plainly
+`"You don't see that here."` if none match, rather than always dumping
+the full room contents. Bare `EXAMINE` (no target) keeps its existing
+list-everything behavior unchanged. Caught and fixed a casing bug of
+my own while testing live: an early version echoed the player's
+UPPERCASED typed target back in the "You are carrying a GRIMOIRE"
+response instead of the item's real stored casing - fixed by looking
+up the actual stored name instead of trusting the raw input.
+
+Added 3 regression tests (targeted-item-found, target-not-here,
+targeted-carried-item), ran the full `gofmt`/`build`/`vet`/`test` suite
+clean, and verified live: `X GRIMOIRE` confirms just the Grimoire (not
+the room's other item), `EXAMINE SWORD` (nothing by that name present)
+correctly says so, and after picking it up, `EXAMINE GRIMOIRE` reports
+"You are carrying a Grimoire" with correct casing.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

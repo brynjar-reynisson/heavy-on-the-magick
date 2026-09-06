@@ -134,7 +134,12 @@ func NewLevel4Exploration() *Game {
 // mechanical difference between them, so this distinction is a reasonable
 // but unconfirmed interpretation, not extracted fact.
 //
-// EXAMINE reports a room's Monster and Items if present (real data).
+// EXAMINE reports a room's Monster and Items if present (real data);
+// with a specific target (the manual's confirmed real grammar, e.g.
+// "X BOTTLE" — see parser's doc comment) it instead confirms just that
+// one thing (room Monster, room Item, or carried Item) or says plainly
+// it isn't here, rather than always listing everything regardless of
+// what was actually asked about.
 // PICKUP and DROP move a named item between the current world.Room.Items
 // and character.Player.Items — real functional inventory, backed by real
 // per-room item placements (see world.CollodonsPile's doc comment for
@@ -218,7 +223,7 @@ func (g *Game) Handle(cmd parser.Command) string {
 	case "FREEZE":
 		return g.freeze()
 	case "EXAMINE":
-		return g.examine()
+		return g.examine(cmd.Target)
 	case "HALT":
 		return "Halted."
 	case "PICKUP", "TAKE", "LIFT", "CARRY":
@@ -580,10 +585,33 @@ func (g *Game) drop(target string) string {
 	return fmt.Sprintf("You aren't carrying a %s.", strings.ToLower(target))
 }
 
-func (g *Game) examine() string {
+// examine reports a room's Monster and Items if present. With a
+// specific target (the manual's confirmed real grammar, e.g. "X BOTTLE"
+// - see parser's doc comment), it instead confirms just that one thing
+// if it's actually here (the room's Monster, a room Item, or a carried
+// Item) or says plainly that it isn't - real target-aware behavior
+// matching the confirmed grammar, not just always listing everything
+// regardless of what was asked about.
+func (g *Game) examine(target string) string {
 	room := g.World.CurrentRoom()
 	if room == nil {
 		return "There's nothing to examine."
+	}
+	if target != "" {
+		if room.Monster != "" && room.MonsterHealth > 0 && strings.EqualFold(room.Monster, target) {
+			return fmt.Sprintf("You see a %s.", room.Monster)
+		}
+		for _, item := range room.Items {
+			if strings.EqualFold(item, target) {
+				return fmt.Sprintf("You see a %s.", item)
+			}
+		}
+		for _, item := range g.Player.Items {
+			if strings.EqualFold(item, target) {
+				return fmt.Sprintf("You are carrying a %s.", item)
+			}
+		}
+		return "You don't see that here."
 	}
 	var parts []string
 	if room.Monster != "" && room.MonsterHealth > 0 {

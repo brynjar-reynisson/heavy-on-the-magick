@@ -182,6 +182,38 @@ func TestHandleExamineShowsRoomItems(t *testing.T) {
 	}
 }
 
+// TestHandleExamineWithTargetConfirmsJustThatThing covers the real
+// confirmed grammar "X BOTTLE" (see parser's doc comment): a targeted
+// EXAMINE should confirm just the named thing, not always list
+// everything in the room regardless of what was asked about.
+func TestHandleExamineWithTargetConfirmsJustThatThing(t *testing.T) {
+	g := New() // Room of Misery has real items: Grimoire, Poison-smeared book
+	got := g.Handle(parser.Parse("X GRIMOIRE"))
+	if !strings.Contains(got, "Grimoire") {
+		t.Errorf("Handle(X GRIMOIRE) = %q, want it to mention the Grimoire", got)
+	}
+	if strings.Contains(got, "Poison-smeared book") {
+		t.Errorf("Handle(X GRIMOIRE) = %q, want it to NOT mention the other item", got)
+	}
+}
+
+func TestHandleExamineWithTargetNotHereSaysSo(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("EXAMINE SWORD"))
+	if !strings.Contains(got, "don't see") {
+		t.Errorf("Handle(EXAMINE SWORD) with no sword present = %q, want it to say so", got)
+	}
+}
+
+func TestHandleExamineWithTargetFindsCarriedItem(t *testing.T) {
+	g := New()
+	g.Handle(parser.Parse("PICKUP GRIMOIRE"))
+	got := g.Handle(parser.Parse("EXAMINE GRIMOIRE"))
+	if !strings.Contains(got, "carrying") {
+		t.Errorf("Handle(EXAMINE GRIMOIRE) after picking it up = %q, want it to recognize the carried item", got)
+	}
+}
+
 func TestHandleMapTracksExploration(t *testing.T) {
 	g := New()
 	g.Handle(parser.Parse("EAST")) // visit Secunda Porta
