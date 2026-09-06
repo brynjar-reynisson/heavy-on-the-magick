@@ -30,7 +30,7 @@ func main() {
 	level1Grid := flag.Bool("level1grid", false, "play the extracted Level 1 grid (64 real cells) instead of CollodonsPile")
 	level2Grid := flag.Bool("level2grid", false, "play the extracted Level 2 grid (50 real, fully-connected cells) instead of CollodonsPile")
 	level3Grid := flag.Bool("level3grid", false, "play the extracted Level 3 grid (44 real cells: 41 fully-connected plus 3 isolated named rooms) instead of CollodonsPile")
-	level4Grid := flag.Bool("level4grid", false, "play the extracted Level 4 grid (17 real, fully-connected cells) instead of CollodonsPile")
+	level4Grid := flag.Bool("level4grid", false, "play the extracted Level 4 grid (22 real cells: 17 fully-connected plus 5 isolated named rooms) instead of CollodonsPile")
 	flag.Parse()
 
 	var g *game.Game
@@ -49,7 +49,7 @@ func main() {
 		g = game.NewLevel3Exploration()
 	case *level4Grid:
 		fmt.Println("Heavy on the Magick — Go port (Level 4 grid exploration mode)")
-		fmt.Println("Real, validated, fully-connected 17-cell Level 4 map (world.Level4Grid) — not merged with CollodonsPile yet.")
+		fmt.Println("Real 22-cell Level 4 map (world.Level4Grid): 17 fully-connected plus 5 isolated named rooms — not merged with CollodonsPile yet.")
 		g = game.NewLevel4Exploration()
 	default:
 		fmt.Println("Heavy on the Magick — Go port")

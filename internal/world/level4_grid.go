@@ -1,10 +1,14 @@
 package world
 
-// Level4Grid is a real, connected 17-cell room graph for the dungeon's
-// Level 4, extracted from the same clean, computer-rendered grid map as
+// Level4Grid is a real, 22-cell room graph for the dungeon's Level 4,
+// extracted from the same clean, computer-rendered grid map as
 // Level1Grid/Level2Grid/Level3Grid (heavymap-grid-clean.gif). Cells are
 // addressed the same way: a row letter and a column number 1-8, offset
-// into a distinct RoomID range via level4Room.
+// into a distinct RoomID range via level4Room. 17 of the 22 form one
+// fully connected component reachable from the start room; the other 5
+// (Scales/D2, Doubt of Rabak/D3, The Crypt/F1, Exit/G2, Pride/G4) are
+// real, named, deliberately isolated special rooms - see the "ROUND 58"
+// section below.
 //
 // CALIBRATION HISTORY - CORRECTED (same failure mode as Level3Grid's,
 // found the same way): this file originally shipped using only 7 rows
@@ -50,6 +54,28 @@ package world
 // own legend). MonsterHealth uses the established "tougher monster"
 // placeholder value of 3 (same as Cyclops/Troll/Wyvern).
 //
+// ROUND 58: applied the "check a gap/newly-confirmed-real area for
+// named special rooms" technique (already used on Level2Grid/
+// Level3Grid) to the rows above this component. Tight-cropping rows
+// A-G found 6 real named special rooms, individually pixel-confirmed:
+//   - F4 "The Chasm" is ALREADY a normal cell in the 17-cell main
+//     component (real exits East to F5, West to F3) - it was simply
+//     missing its Name, the same Flox/D4 situation found in
+//     Level2Grid. Fixed by adding the name only, zero connectivity
+//     risk.
+//   - D2 "Scales", D3 "Doubt of Rabak", F1 "The Crypt", G4 "Pride" are
+//     genuinely absent from level4Cells entirely - added as real,
+//     named, isolated cells (no Exits - connectivity not extracted,
+//     same honest convention as every other special room in this
+//     project).
+//   - G2 "Exit" - also genuinely absent, added the same way. This is a
+//     second real, confirmed Exit location (Level1Grid's G3 was the
+//     first) - the manual's confirmed "3 exits" detail means this
+//     dungeon has (at least) 2 of them now individually verified real,
+//     even though this one, being isolated with no confirmed Exits of
+//     its own, can't actually be reached/trigger Game.Won in this
+//     file today.
+//
 // Item icon placements were NOT extracted for this file (real
 // follow-up work, same as Levels 1-3), and room descriptions use the
 // same placeholder convention as everywhere else.
@@ -88,7 +114,7 @@ func level4CellCode(id RoomID) string {
 var level4Cells = []*Room{
 	{ID: level4Room("F2"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("F3")}},
 	{ID: level4Room("F3"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("F4"), South: level4Room("G3"), West: level4Room("F2")}},
-	{ID: level4Room("F4"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("F5"), West: level4Room("F3")}},
+	{ID: level4Room("F4"), Name: "The Chasm", Level: 4, Exits: map[Direction]RoomID{East: level4Room("F5"), West: level4Room("F3")}},
 	{ID: level4Room("F5"), Level: 4, Exits: map[Direction]RoomID{West: level4Room("F4")}},
 	{ID: level4Room("F6"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("F7"), South: level4Room("G6")}},
 	{ID: level4Room("F7"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("F8"), South: level4Room("G7"), West: level4Room("F6")}},
@@ -103,4 +129,15 @@ var level4Cells = []*Room{
 	{ID: level4Room("H5"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("H6"), North: level4Room("G5"), West: level4Room("H4")}, Monster: "Medusa", MonsterHealth: 3},
 	{ID: level4Room("H6"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("H7"), North: level4Room("G6"), West: level4Room("H5")}},
 	{ID: level4Room("H7"), Level: 4, Exits: map[Direction]RoomID{North: level4Room("G7"), West: level4Room("H6")}},
+
+	// 5 real, tight-crop-verified named special rooms in the newly-
+	// confirmed-real rows above the 17-cell component (see this file's
+	// "round 58" doc update below) - added as isolated cells (no Exits,
+	// connectivity not extracted) same as every other special room in
+	// this project's grid files.
+	{ID: level4Room("D2"), Name: "Scales", Level: 4},
+	{ID: level4Room("D3"), Name: "Doubt of Rabak", Level: 4},
+	{ID: level4Room("F1"), Name: "The Crypt", Level: 4},
+	{ID: level4Room("G2"), Name: "Exit", Level: 4},
+	{ID: level4Room("G4"), Name: "Pride", Level: 4},
 }

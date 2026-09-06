@@ -2468,6 +2468,41 @@ Added `TestLevel3GridNaniAndHydraAreIsolated`, ran the full
 `gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
 clean, and verified live that normal Level 3 play is unaffected.
 
+### Applied the named-special-room technique to Level4Grid: 6 rooms found, including a second real Exit
+
+After another Stop-hook rejection, same framing, took the "How to
+apply" suggestion from 2 rounds ago (try this technique on whatever of
+Level4's newly-confirmed-real rows get looked at) and did exactly that.
+Level1Grid was checked first and found to already have every one of
+its 64 cells present in the file (just some isolated) - no gap to
+explain there. Level4Grid was different: its rows A-E were confirmed
+real 2 rounds ago (during the relabeling fix) but never actually added
+as cells. Tight-cropped rows A through G looking for named special
+rooms and found 6, all individually pixel-confirmed:
+
+  - **F4 "The Chasm" is the Flox/D4 case again** - already a normal
+    cell in the 17-cell main component (real exits East to F5, West to
+    F3), just missing its Name. Fixed with a pure, zero-risk name
+    addition.
+  - **D2 "Scales", D3 "Doubt of Rabak", F1 "The Crypt", G4 "Pride"** are
+    genuinely absent from the file - added as real, named, isolated
+    cells (no Exits), same honest convention as every other special
+    room in this project.
+  - **G2 "Exit"** - also genuinely absent, added the same way. This is
+    a second real, individually-verified Exit location (Level1Grid's
+    G3 was the first) - concretely corroborating the manual's "3 exits"
+    detail with a second confirmed instance, though this one can't
+    currently be reached (it's isolated, no confirmed Exits of its own)
+    so `Game.Won` can't fire for it yet.
+
+Level4Grid is now honestly 22 cells (was 17): the 17-cell main
+component plus 5 isolated named special rooms. Updated the stale
+"17-cell fully-connected" framing in `game.go` and `cmd/hotm/main.go`.
+Added `TestLevel4GridTheChasmIsInMainComponent` and
+`TestLevel4GridIsolatedNamedRooms`, ran the full `gofmt`/`build`/`vet`/
+`test` suite (with a repeated `-count=2` run) clean, and verified live:
+`go run ./cmd/hotm -level4grid` now shows "The Chasm" by name.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

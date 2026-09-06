@@ -91,13 +91,14 @@ func NewLevel3Exploration() *Game {
 }
 
 // NewLevel4Exploration is Level1/2/3Exploration's counterpart for
-// world.Level4Grid — a real, validated, fully-connected 17-cell room
-// graph for Level 4, the last of the game's 4 levels to get this
-// treatment. Smaller than the other three: Level 4's calibration had a
-// Level3Grid-style off-by-one-row bug (since corrected by relabeling,
-// not re-extracting — see Level4Grid's doc comment), and its real
-// connectivity for the newly-confirmed rows above this 17-cell component
-// still isn't extracted, so this ships a modest but real and
+// world.Level4Grid — a real 22-cell room graph for Level 4, the last of
+// the game's 4 levels to get this treatment: a 17-cell fully-connected
+// component plus 5 real, named, deliberately isolated special rooms
+// (Scales, Doubt of Rabak, The Crypt, Exit, Pride — see Level4Grid's
+// doc comment). Level 4's calibration had a Level3Grid-style off-by-
+// one-row bug (since corrected by relabeling, not re-extracting), and
+// its real connectivity for the newly-confirmed rows above the 17-cell
+// component still isn't extracted, so this ships a modest but real and
 // honestly-scoped component rather than guess at a larger one.
 func NewLevel4Exploration() *Game {
 	return &Game{
