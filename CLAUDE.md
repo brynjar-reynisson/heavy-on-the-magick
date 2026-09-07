@@ -5753,6 +5753,67 @@ brute-force search (⁠~8x downsample to narrow the region fast, then a
 small-window full-resolution search) is fast enough for practical use
 without either dependency.
 
+### Round 138: three checked leads, three real, honest negatives — no shippable code this round, by design not by stalling
+
+After another Stop-hook rejection, same framing, chased three
+promising-looking leads. All three came back genuine, well-checked
+negatives rather than confident placements — recorded here so a future
+round doesn't re-attempt the identical checks:
+
+1. **A 9th CollodonsPile room screenshot (Sothic Complex)**: tried
+   extending round 137's precise template-matching technique to
+   Level3Grid's D4 ("Sothic Complex"). Located Level3CorridorSample's
+   (A1) exact atlas position via template matching (another pixel-
+   perfect 0.0-score match) and computed D4's estimated position from
+   it. The crop found there shows a real, plausible room (an archway,
+   a chest/cabinet) — but the only nearby labels are "2 D4"/"2 D5"/
+   "2 E4" stairwell-destination arrows, which (unlike round 137's
+   Agile Stair, where "7"/"8" column-position labels were printed
+   directly on the cells) point to a DIFFERENT level's destination
+   cell, not this cell's own position — realized this only after
+   nearly shipping the placement on a flawed assumption that these
+   arrows confirmed the current cell. A weak cross-check (the crop's
+   chest/cabinet furniture vs. Sothic Complex's own `HasTable: true`,
+   not `HasChest`) didn't resolve the ambiguity either. Correctly left
+   unshipped rather than guess.
+
+2. **3 more door passwords (SORONOROS, LONG, LAZA)**, round 135's
+   find: re-fetched BOTH the World of Spectrum instructions file
+   (again) and the CASA walkthrough (a fresh source for this specific
+   question) asking for the room/context each is used in. Both gave a
+   clean, explicit negative — SORONOROS/LONG/LAZA appear only in World
+   of Spectrum's abstract password-list section (no room named), and
+   don't appear in the CASA walkthrough's text at all. These 3 remain
+   real, confirmed vocabulary/passwords with no known room, same
+   honest status as before this round's check.
+
+3. **A 3rd real "protected item" (#12 "Egg - rock, protected")**:
+   re-read the numbered map poster at high resolution and this time
+   clearly, unambiguously confirmed the earlier read was correct ("12"
+   not a misread "13") — a real correction to round 133's own
+   uncertainty about this. Found a zone banner directly touching it,
+   but at the source image's actual resolution (a hand-drawn banner,
+   heavily JPEG-compressed) it could not be read with real confidence
+   even at 12x magnification — genuinely illegible, not just
+   inconvenient. Left unplaced rather than guess at a zone name from a
+   banner that can't actually be read.
+
+No gameplay/graphics code shipped this round — a legitimate outcome
+per this project's own established precedent (rounds 82/91/117's
+sidebar, 134): a real, well-checked negative prevents redoing the same
+investigation later and is honest about what these sources do and
+don't confirm, rather than forcing a guess to have something to ship.
+
+**How to apply**: the SAME label style that worked as strong evidence
+in one context (round 137's Agile Stair "7"/"8" column labels) can be
+a completely different, unrelated kind of label in another context
+(this round's "2 D4" stairwell-destination arrows) — always confirm
+what a label is actually FOR before treating it as position
+confirmation, not just that a label exists near the target. A source
+giving no context for a specific fact (SORONOROS/LONG/LAZA's rooms)
+is a real, checkable negative worth confirming from a SECOND source
+too before accepting it as a genuine limit, not just one fetch's gap.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
