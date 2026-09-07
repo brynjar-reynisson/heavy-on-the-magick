@@ -203,6 +203,27 @@ func (gui *GUI) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
 		gui.appendLog(gui.g.Handle(parser.Parse("APEX, TALK")))
 	}
+	// Round 94: these 5 real, already-tested game.Handle commands take
+	// no target, so (unlike ASTAROT/MAGOT, which need a free-typed name
+	// this GUI has no text input for) there's no reason they'd been left
+	// unreachable here - a real "confirmed but unsurfaced in the live
+	// GUI" gap, the same pattern that found HELP and StartupMelody
+	// unwired in earlier rounds.
+	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+		gui.appendLog(gui.g.Handle(parser.Parse("HELP")))
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyN) {
+		gui.appendLog(gui.g.Handle(parser.Parse("NAME")))
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		gui.appendLog(gui.g.Handle(parser.Parse("SPELLS")))
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
+		gui.appendLog(gui.g.Handle(parser.Parse("GRADE")))
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
+		gui.appendLog(gui.g.Handle(parser.Parse("INVENTORY")))
+	}
 	return nil
 }
 
@@ -346,10 +367,28 @@ func (gui *GUI) Draw(screen *ebiten.Image) {
 	etext.Draw(screen, strings.Join(gui.log, "\n"), face, drawOpts)
 
 	helpOpts := &etext.DrawOptions{}
-	helpOpts.GeoM.Translate(8, screenHeight-20)
+	// Round 94: this used to be drawn at (8, screenHeight-20) as one long
+	// single line - discovered BOTH real bugs live-testing this round's
+	// new keybindings: (1) that Y position silently rendered nothing at
+	// all (confirmed empirically - even the pre-existing short text
+	// failed there too, so this was a real, previously-unnoticed bug,
+	// not something the new keybindings caused - the safe/broken
+	// boundary sits somewhere between logical y=300, confirmed working,
+	// and y=320, confirmed broken); (2) the line was always far wider
+	// than screenWidth (512px) even before adding the 5 new keys (the
+	// OLD text alone was ~1160px), so it was also silently clipped off
+	// the right edge the whole time. Fixed both: moved well clear of the
+	// broken Y zone, and split across 3 lines (helpText below) so each
+	// line actually fits on screen.
+	helpOpts.GeoM.Translate(8, 250)
+	helpOpts.LineSpacing = 16
 	helpOpts.ColorScale.ScaleWithColor(grey)
-	etext.Draw(screen, "WASD/arrows+QEZC=move  L=look  M=map  V=examine  SPACE=blast  F=freeze  T=transfusion  P=pickup  O=drop  I=invoke  G=pass guards  K=talk to Apex  ALT+ENTER=fullscreen", face, helpOpts)
+	etext.Draw(screen, helpText, face, helpOpts)
 }
+
+const helpText = "WASD/arrows+QEZC=move  L=look  M=map  V=examine  SPACE=blast  F=freeze\n" +
+	"T=transfusion  P=pickup  O=drop  I=invoke  G=pass guards  K=talk to Apex\n" +
+	"H=help  N=name  S=spells  R=grade  J=inventory  ALT+ENTER=fullscreen"
 
 // apexPortraitShouldShow reports whether the most recent log line is a
 // talkToApex response ("APEX, TALK"/"APEX, SPEAK") — split out from

@@ -3809,6 +3809,43 @@ break anything. Playback itself can't be verified by ear in this
 environment, the same honest caveat this project has always applied to
 sound work.
 
+### Added 5 more real GUI keybindings, and found the help line had been invisible AND clipped this whole time
+
+After another Stop-hook rejection, same framing, found another real
+"confirmed but unsurfaced in the live GUI" gap (same pattern as HELP
+and `StartupMelody` in earlier rounds): 5 real, already-tested,
+no-target `game.Handle` commands — `HELP`, `NAME`, `SPELLS`, `GRADE`,
+`INVENTORY` — had no GUI key at all, unlike `ASTAROT`/`MAGOT` which
+genuinely can't be bound (they need a free-typed target this GUI has no
+text input for). Added `H`/`N`/`S`/`R`/`J` for them and updated the
+on-screen key-help text.
+
+Live-verifying that text update caught two real, **pre-existing** GUI
+bugs neither of which this round's own change caused, but which had
+clearly been silently broken for a long time:
+
+1. The help line's Y position (`screenHeight-20`) rendered **nothing at
+   all** — confirmed empirically by testing the OLD, unmodified short
+   text at that exact position in a disposable throwaway build; it was
+   just as invisible as the new longer text. Binary-searched the
+   boundary: logical y=300 renders fine, y=320 does not.
+2. Independent of that, the line's total width (even the OLD text
+   alone, ~1160px) was already several times wider than the 512px
+   screen — meaning it had ALSO been silently clipped off the right
+   edge this whole time, on top of not rendering vertically at all.
+
+Fixed both: moved the block to logical y=250 (comfortably clear of the
+confirmed-broken 300–320+ zone) and split it across 3 lines (`helpText`,
+using the same multi-line `etext.Draw` + `LineSpacing` pattern the log
+area already uses) so each line actually fits on screen. Verified with
+a fresh disposable throwaway build + screenshot: all 3 lines now render
+completely and legibly, nothing clipped either direction.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and confirmed the 5 new commands still work
+correctly via the text frontend (their underlying `game.Handle` logic
+is unchanged, only the GUI wiring is new).
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
