@@ -1206,6 +1206,34 @@ func TestLevel1ExplorationReachingExitWins(t *testing.T) {
 // mechanic (CASA walkthrough: Werewolves "killable by walking through
 // after dropping NOUGAT" — see checkNougatWerewolf). Path to C2 (a real
 // Werewolf, per Level1Grid): A1-South-B1-South-C1-East-C2.
+// TestPelletDefeatsSlugOnDrop covers round 135's real, sourced
+// alternate mechanic (World of Spectrum's plain-text instructions
+// file: Slugs need "a Pellet") - see checkPelletSlug. Level2Grid's
+// real Slug (C2) isn't on a simple path from the start room in this
+// file's own connectivity data, so teleports there directly (the same
+// mechanism astarotTeleport uses) rather than walking an unrelated
+// path just to reach it.
+func TestPelletDefeatsSlugOnDrop(t *testing.T) {
+	g := NewLevel2Exploration()
+	id, ok := g.World.FindRoomByName("C2")
+	if !ok {
+		t.Fatal("test setup bug: Level2Grid has no room named C2")
+	}
+	g.World.Teleport(id)
+	room := g.World.CurrentRoom()
+	if room.Monster != "Slug" || room.MonsterHealth <= 0 {
+		t.Fatalf("test setup bug: expected a live Slug at C2, got %+v", room)
+	}
+	g.Player.Items = append(g.Player.Items, "Pellet")
+	got := g.Handle(parser.Parse("DROP PELLET"))
+	if room.MonsterHealth > 0 {
+		t.Errorf("Slug should be defeated after dropping Pellet, MonsterHealth = %d", room.MonsterHealth)
+	}
+	if !strings.Contains(got, "Pellet") {
+		t.Errorf("Handle(DROP PELLET) with a live Slug present = %q, want it to mention the Pellet mechanic", got)
+	}
+}
+
 func TestNougatDefeatsWerewolfOnDrop(t *testing.T) {
 	g := NewLevel1Exploration()
 	for _, dir := range []string{"SOUTH", "SOUTH", "EAST"} {

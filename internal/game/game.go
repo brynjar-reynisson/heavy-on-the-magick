@@ -934,6 +934,9 @@ func (g *Game) drop(target string) string {
 			if msg := g.checkGarlicVampire(); msg != "" {
 				result += "\n" + msg
 			}
+			if msg := g.checkPelletSlug(); msg != "" {
+				result += "\n" + msg
+			}
 			if msg := g.checkSwapItem(item); msg != "" {
 				result += "\n" + msg
 			}
@@ -1004,6 +1007,9 @@ func (g *Game) move(dir world.Direction) string {
 		msgs = append(msgs, msg)
 	}
 	if msg := g.checkGarlicVampire(); msg != "" {
+		msgs = append(msgs, msg)
+	}
+	if msg := g.checkPelletSlug(); msg != "" {
 		msgs = append(msgs, msg)
 	}
 	desc := g.describeCurrentRoom()
@@ -1082,6 +1088,36 @@ func (g *Game) checkGarlicVampire() string {
 		if strings.EqualFold(item, "Garlic") {
 			room.MonsterHealth = 0
 			return "The Vampire recoils from the Garlic and crumbles to dust."
+		}
+	}
+	return ""
+}
+
+// checkPelletSlug implements a third real, sourced instant-kill
+// mechanic (round 135), the same "drop item X near monster Y" pattern
+// as checkNougatWerewolf/checkGarlicVampire: World of Spectrum's
+// separate plain-text instructions file states Slugs need "a Pellet"
+// (found alongside the CAULDRON/ACHAD and NEST/PHOENIX ritual quotes -
+// see game.go's package doc comment). No exact trigger wording is
+// given (unlike Nougat's precise "walking through after dropping"), so
+// this reuses the same drop-triggered convention as Garlic/Vampire, the
+// same honesty tier as every other inferred-not-literally-quoted
+// mechanic in this project. Slug is already a real, placed monster in
+// a reachable Level2Grid room (C2); Pellet is already real, placed,
+// reachable data too (Level3Grid A2's swap mechanic, round 133) -
+// though the two currently sit in different, unmerged level grids, so
+// this isn't a single-session playthrough yet, the same honest
+// cross-level limitation several other mechanics in this project
+// already have.
+func (g *Game) checkPelletSlug() string {
+	room := g.World.CurrentRoom()
+	if room == nil || room.Monster != "Slug" || room.MonsterHealth <= 0 {
+		return ""
+	}
+	for _, item := range room.Items {
+		if strings.EqualFold(item, "Pellet") {
+			room.MonsterHealth = 0
+			return "The Slug shrivels away from the Pellet."
 		}
 	}
 	return ""

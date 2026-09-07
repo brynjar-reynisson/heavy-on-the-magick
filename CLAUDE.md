@@ -5565,6 +5565,83 @@ a simulation well past a target address even when the tool reports
 not just the stop reason, before assuming the run didn't get far
 enough.
 
+### Round 135: a fourth pass on World of Spectrum's instructions file — Pellet defeats Slug, plus 2 real multi-item ritual recipes documented for a future round
+
+After another Stop-hook rejection, same framing, went back to World of
+Spectrum's plain-text instructions file (the same source that resolved
+rounds 131/132's Talisman/swap mechanics) for a 4th targeted pass,
+asking about resurrection/phoenix content, death handling, more door
+passwords, and more monster-defeat items. Several real finds:
+
+- **"Slugs (needing a Pellet)"** — a third real, sourced "drop item X
+  to defeat monster Y" mechanic, the same pattern as Nougat/Werewolf
+  and Garlic/Vampire. Implemented `game.checkPelletSlug`, wired into
+  `drop`/`move` exactly like the other two. Both halves are already
+  real, placed, reachable data (Slug at Level2Grid's C2 since round
+  36; Pellet at Level3Grid's A2 since round 133's swap mechanic) —
+  though, like several other cross-mechanic pairs in this project,
+  they currently sit in different, unmerged level grids, so this isn't
+  a single-session playthrough yet. Added `TestPelletDefeatsSlugOnDrop`
+  and verified live end-to-end via a throwaway debug test (teleported
+  to C2, dropped a Pellet, confirmed "The Slug shrivels away from the
+  Pellet." and `MonsterHealth` reaching 0).
+
+- **Two real, sourced multi-item ritual recipes**, documented here but
+  NOT implemented this round (too complex/uncertain to model safely in
+  one pass — the same discipline that delayed round 132's swap
+  mechanic by one round until its exact trigger was confirmed):
+  - `"NEST, PHOENIX"`: "Get the Shell and swap it for the egg. Go to
+    the nest (while carrying the salamander charm) and drop the egg in
+    it. Stand well back... and say 'NEST, PHOENIX'." This cross-
+    references 3 already-real facts at once: `numbered_room_contents.go`'s
+    #96 "Nest of Phoenix" (already ported, round 91, via the
+    independently-confirmed "PHOENIX" vocabulary word); the numbered
+    map's own #21 "Cabinet (clasp — Salamander charm)" (previously
+    flagged, round 103, as "left unplaced — doesn't match any confirmed
+    demon's Charm") turns out to be describing the SAME Clasp already
+    placed in Trollwynd (round 63) — "Salamander charm" is just this
+    same item's fuller name, not a separate one; and round 132's
+    Shell→Egg swap tip (left unplaced alongside Pellet/Nugget) now has
+    its actual downstream use. What the ritual's EFFECT actually is
+    isn't stated in the quotes fetched so far — worth a follow-up fetch
+    before implementing, rather than guessing at an outcome.
+  - `"CAULDRON, ACHAD"`: "collect the ulna, the thigh and the skull
+    (the skull behind the wraith) and drop them in the cauldron. (You'll
+    have to take out the scroll first.)" References numbered-map #50
+    "Cauldron of cold iron (scroll inside)", #47 "Ulna", #42 "Thigh",
+    #38 "Skull" — and "ACHAD" is a real, already-recognized-but-unused
+    vocabulary word (flagged since round 92's MAGUS investigation),
+    Aleister Crowley associate Charles Stansfeld Jones's own magical
+    name — thematically consistent with this game's already-confirmed
+    Crowley theming (Therion, the Golden Dawn grades). Same "effect not
+    yet known" honesty gap as NEST/PHOENIX.
+
+- **3 more real door passwords found** (SORONOROS, LONG, LAZA — all
+  already-recognized vocabulary words with no assigned room until now)
+  but not yet cross-referenced to specific rooms — real, scoped
+  follow-up work.
+
+- Confirmed "Hydras...requiring a Snake to pass" — the exact fact
+  `numbered_room_contents.go`'s own doc comment has cited as a cross-
+  confirmation since round 91 ("#14's 'Snake' wards Hydras") but which
+  was never actually wired into gameplay. Rook of Hydra (Level3Grid F5)
+  is currently isolated (no Exits), so — same as several other
+  isolated-cell facts in this project — there's no real movement to
+  gate yet; worth revisiting once/if that cell gets real connectivity.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean.
+
+**How to apply**: a source that's already produced 3 real mechanics
+across 3 prior rounds (131/132/133) can still have more in it — this
+4th pass found a THIRD instant-kill pairing plus 2 full ritual recipes
+in one fetch. When a fetch surfaces more than one real, sourced fact,
+it's fine to implement the safe, well-understood one immediately (a
+direct repeat of an already-established pattern) and explicitly defer
+the riskier ones (unknown effect, multi-item setup) to a future round
+with a note of exactly what's still needed — better than rushing a
+guess at what "NEST, PHOENIX" or "CAULDRON, ACHAD" actually DO.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
