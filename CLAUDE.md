@@ -3134,6 +3134,47 @@ without needing a real ebiten image), ran the full `gofmt`/`build`/
 `vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
 live as described above.
 
+### Extracted the remaining 12 real portraits, wired them into monster encounters and demon invocations
+
+After another Stop-hook rejection, same framing, followed up directly
+on last round's own flagged next step: extracted the other 12 real
+portraits from `heavymap-speccy-screenshots.png`'s "Demons & monsters"
+gallery (Asmodee, Astarot, Belezbar, Magot, and all 8 monster types),
+completing the full 13-portrait set alongside Apex's (round 75).
+
+Used the same discipline as every other pixel-extraction in this
+project: found each column's real x-range and each entry's y-band via a
+programmatic dark-pixel-density scan (not eyeballed), computed a precise
+bounding box per entry, then rendered all 12 candidate crops into one
+composite review grid and visually checked every single one before
+trusting any of them - catching would-be mistakes (like accidentally
+including a name label) before they shipped, not after.
+
+Generalized `internal/graphics/portraits.go` from the single hardcoded
+Apex asset to `graphics.Portrait(name)` (a `go:embed` over
+`assets/*.png`) plus `PortraitNames`, keeping `ApexPortrait()` as a thin
+compatibility wrapper. Wired the new portraits into `cmd/hotm-gui` two
+ways: `drawMonster`'s existing letter+color badge is now joined by the
+real monster portrait in the corner whenever a live monster occupies
+the room, and a demon's real portrait now shows after a successful
+INVOKE (`currentPortraitName`'s priority logic: a just-invoked demon
+outranks Apex's portrait, which outranks the room's ambient monster -
+the most immediately relevant feedback wins). None of this required
+new gameplay mechanics, just making already-real, already-modeled state
+(which monster is here, which demon was just invoked) visible with
+authentic art instead of a colored letter alone.
+
+Added `TestPortraitDecodesToRealArt` (all 13, generalized from the
+single-portrait test), `TestApexPortraitMatchesPortrait`,
+`TestPortraitUnknownNamePanics`, `TestInvokedDemonPortraitName`, and
+`TestCurrentPortraitNamePriority` (the priority logic, testable without
+a real ebiten image by injecting fake map entries). Ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live twice with the now-fixed DPI-aware screenshot
+technique: a forced live Vampire showed its real portrait correctly,
+and a forced Belezbar invocation correctly took priority over it in the
+same screenshot.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
@@ -3141,15 +3182,12 @@ live as described above.
   of REAL in-game screenshots for all 4 levels, plus a full demon/
   monster/NPC portrait gallery with real on-screen names — a
   fundamentally different (and more authoritative) kind of source than
-  every hand-drawn/computer-redrawn fan map used so far. So far used for
-  the portrait gallery only (resolved the Wraith/Vampire naming
-  question, and Apex the Ogre's real portrait is now extracted and
-  live in `cmd/hotm-gui` — see "Extracted and wired the first real,
-  authentic game-art asset" above). Real, high-value follow-up work:
-  (0) extract the remaining 11 portraits (3 more demons, 8 monsters) the
-  same way Apex's was, and wire them into monster encounters/INVOKE —
-  the biggest, most direct "faithful graphics" win still sitting
-  unclaimed in this source; (1) each individual room tile is a genuine
+  every hand-drawn/computer-redrawn fan map used so far. The full
+  13-portrait gallery (all 4 demons, Apex, all 8 monsters) is now fully
+  extracted and live in `cmd/hotm-gui` (resolved the Wraith/Vampire
+  naming question along the way — see "Extracted the remaining 12 real
+  portraits" above). Real, high-value follow-up work remaining:
+  (1) each individual room tile is a genuine
   captured screenshot of that exact room's real in-game graphics —
   extracting these directly (wall textures, door icons, item icons, the
   real corridor rendering style) could make `internal/graphics`/

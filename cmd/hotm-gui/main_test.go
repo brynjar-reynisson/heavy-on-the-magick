@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hajimehoshi/ebiten/v2"
+
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/game"
 )
 
@@ -84,6 +86,54 @@ func TestApexPortraitShouldShow(t *testing.T) {
 	}
 	if !apexPortraitShouldShow([]string{"Room of Misery", "Apex the Ogre eyes you warily, then grunts. He might share what he knows, if you treat him with respect."}) {
 		t.Error("apexPortraitShouldShow after a real talkToApex response = false, want true")
+	}
+}
+
+// TestInvokedDemonPortraitName covers the demon-portrait priority logic
+// (see currentPortraitName's doc comment): only a real "You invoke ..."
+// success line should match, and it should correctly pick out which of
+// the 4 confirmed demons was named.
+func TestInvokedDemonPortraitName(t *testing.T) {
+	name, ok := invokedDemonPortraitName([]string{"You invoke ASTAROT, the Spirit of Assemblage! In an instant, you are transported to Wolfdorp."})
+	if !ok || name != "astarot" {
+		t.Errorf("invokedDemonPortraitName(ASTAROT line) = (%q, %v), want (\"astarot\", true)", name, ok)
+	}
+	if _, ok := invokedDemonPortraitName([]string{"Room of Misery"}); ok {
+		t.Error("invokedDemonPortraitName with an unrelated last line = true, want false")
+	}
+	if _, ok := invokedDemonPortraitName(nil); ok {
+		t.Error("invokedDemonPortraitName(nil) = true, want false")
+	}
+}
+
+// TestCurrentPortraitNamePriority covers currentPortraitName's real
+// priority order: a just-happened conversation/invocation outranks the
+// room's ambient monster, which itself only shows if a portrait for it
+// actually exists.
+func TestCurrentPortraitNamePriority(t *testing.T) {
+	gui := &GUI{g: game.New(), portraits: map[string]*ebiten.Image{}}
+
+	if _, ok := gui.currentPortraitName(); ok {
+		t.Error("currentPortraitName with no log yet and no monster = true, want false")
+	}
+
+	gui.g.World.CurrentRoom().Monster = "Vampire"
+	gui.g.World.CurrentRoom().MonsterHealth = 2
+	// No "vampire" key in gui.portraits (map is empty) - should NOT claim
+	// a monster portrait it doesn't actually have loaded.
+	if _, ok := gui.currentPortraitName(); ok {
+		t.Error("currentPortraitName claimed a monster portrait not present in gui.portraits")
+	}
+
+	gui.portraits["vampire"] = &ebiten.Image{}
+	if name, ok := gui.currentPortraitName(); !ok || name != "vampire" {
+		t.Errorf("currentPortraitName with a live Vampire and a loaded portrait = (%q, %v), want (\"vampire\", true)", name, ok)
+	}
+
+	gui.log = []string{"You invoke ASTAROT, the Spirit of Assemblage! In an instant, you are transported to Wolfdorp."}
+	gui.portraits["astarot"] = &ebiten.Image{}
+	if name, ok := gui.currentPortraitName(); !ok || name != "astarot" {
+		t.Errorf("currentPortraitName should prioritize a just-invoked demon over the room's monster, got (%q, %v)", name, ok)
 	}
 }
 

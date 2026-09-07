@@ -66,11 +66,11 @@ var keyDirections = map[ebiten.Key]world.Direction{
 }
 
 type GUI struct {
-	g            *game.Game
-	log          []string
-	audioCtx     *ebitenaudio.Context
-	hud          *ebiten.Image // confirmed rune glyphs, rendered once via graphics.PNGRenderer
-	apexPortrait *ebiten.Image // real extracted Apex the Ogre art, see graphics.ApexPortrait
+	g         *game.Game
+	log       []string
+	audioCtx  *ebitenaudio.Context
+	hud       *ebiten.Image // confirmed rune glyphs, rendered once via graphics.PNGRenderer
+	portraits map[string]*ebiten.Image
 }
 
 func NewGUI() *GUI {
@@ -80,7 +80,10 @@ func NewGUI() *GUI {
 	}
 	gui.appendLog(describeRoom(gui.g))
 	gui.hud = buildHUD()
-	gui.apexPortrait = ebiten.NewImageFromImage(graphics.ApexPortrait())
+	gui.portraits = make(map[string]*ebiten.Image, len(graphics.PortraitNames))
+	for _, name := range graphics.PortraitNames {
+		gui.portraits[name] = ebiten.NewImageFromImage(graphics.Portrait(name))
+	}
 	return gui
 }
 
@@ -301,7 +304,7 @@ func (gui *GUI) Draw(screen *ebiten.Image) {
 	gui.drawMonster(screen)
 	gui.drawGuards(screen)
 	gui.drawItems(screen)
-	gui.drawApexPortrait(screen)
+	gui.drawPortrait(screen)
 
 	statsOpts := &etext.DrawOptions{}
 	statsOpts.GeoM.Translate(8, 76) // just below the 64px-tall HUD row (drawn at y=8)
@@ -322,9 +325,9 @@ func (gui *GUI) Draw(screen *ebiten.Image) {
 
 // apexPortraitShouldShow reports whether the most recent log line is a
 // talkToApex response ("APEX, TALK"/"APEX, SPEAK") — split out from
-// drawApexPortrait so this decision is testable without a real ebiten
-// image. Checks the LAST line specifically (not the whole log) so the
-// portrait only appears right after actually talking to Apex, not
+// currentPortraitName so this decision is testable without a real
+// ebiten image. Checks the LAST line specifically (not the whole log) so
+// the portrait only appears right after actually talking to Apex, not
 // forever once it's scrolled into log history.
 func apexPortraitShouldShow(log []string) bool {
 	if len(log) == 0 {
@@ -333,18 +336,62 @@ func apexPortraitShouldShow(log []string) bool {
 	return strings.Contains(log[len(log)-1], "Apex the Ogre")
 }
 
-// drawApexPortrait shows the real extracted Apex the Ogre portrait (see
-// graphics.ApexPortrait's doc comment for sourcing) right after a
-// successful "APEX, TALK" (the K key) — the first place this port
-// displays actual extracted 1986 game art instead of a custom-drawn
+// invokedDemonPortraitName reports which demon (if any) the most recent
+// log line represents a successful "You invoke <NAME>, ..." response
+// for (see game.invoke's doc comment) — split out for the same
+// testability reason as apexPortraitShouldShow.
+func invokedDemonPortraitName(log []string) (string, bool) {
+	if len(log) == 0 {
+		return "", false
+	}
+	last := log[len(log)-1]
+	if !strings.HasPrefix(last, "You invoke ") {
+		return "", false
+	}
+	for _, d := range magic.Demons {
+		if strings.Contains(last, d.Name) {
+			return strings.ToLower(d.Name), true
+		}
+	}
+	return "", false
+}
+
+// currentPortraitName picks which real extracted portrait (see
+// graphics.Portrait's doc comment for sourcing) belongs in the corner
+// this frame, given the room's live Monster and the most recent log
+// line — a just-happened conversation/invocation takes priority over
+// the room's ambient monster, since it's the more immediately relevant
+// feedback for what the player just did.
+func (gui *GUI) currentPortraitName() (string, bool) {
+	if name, ok := invokedDemonPortraitName(gui.log); ok {
+		return name, true
+	}
+	if apexPortraitShouldShow(gui.log) {
+		return "apex", true
+	}
+	room := gui.g.World.CurrentRoom()
+	if room != nil && room.Monster != "" && room.MonsterHealth > 0 {
+		name := strings.ToLower(room.Monster)
+		if _, ok := gui.portraits[name]; ok {
+			return name, true
+		}
+	}
+	return "", false
+}
+
+// drawPortrait shows whichever real extracted portrait
+// currentPortraitName picks - the first place this port displays actual
+// extracted 1986 game art (demon/NPC/monster) instead of a custom-drawn
 // approximation.
-func (gui *GUI) drawApexPortrait(screen *ebiten.Image) {
-	if gui.apexPortrait == nil || !apexPortraitShouldShow(gui.log) {
+func (gui *GUI) drawPortrait(screen *ebiten.Image) {
+	name, ok := gui.currentPortraitName()
+	if !ok {
 		return
 	}
+	img := gui.portraits[name]
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(screenWidth-gui.apexPortrait.Bounds().Dx()-8), 8)
-	screen.DrawImage(gui.apexPortrait, op)
+	op.GeoM.Translate(float64(screenWidth-img.Bounds().Dx()-8), 8)
+	screen.DrawImage(img, op)
 }
 
 // monsterGlyphColor maps each confirmed monster name to the real
