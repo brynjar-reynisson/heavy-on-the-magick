@@ -94,6 +94,45 @@ func TestHandleInvokeSucceedsWithCharm(t *testing.T) {
 	}
 }
 
+func TestHandleAstarotTeleportRequiresSword(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("ASTAROT, WOLFDORP"))
+	if !strings.Contains(got, "no suitable Talisman") {
+		t.Errorf("Handle(ASTAROT, WOLFDORP) with no Sword carried = %q, want a Talisman rejection", got)
+	}
+}
+
+// TestHandleAstarotTeleportSucceeds pins the real, hint-screen-confirmed
+// example command ("ASTAROT, WOLFDORP" — see parser.Parse's package doc
+// comment) actually teleporting the player, once they carry Astarot's
+// confirmed Charm (Sword).
+func TestHandleAstarotTeleportSucceeds(t *testing.T) {
+	g := New()
+	g.Player.Items = append(g.Player.Items, "Sword")
+	got := g.Handle(parser.Parse("ASTAROT, WOLFDORP"))
+	if strings.Contains(got, "no suitable Talisman") {
+		t.Errorf("Handle(ASTAROT, WOLFDORP) with Sword carried = %q, want the teleport to succeed", got)
+	}
+	if !strings.Contains(got, "Wolfdorp") {
+		t.Errorf("Handle(ASTAROT, WOLFDORP) = %q, want it to name Wolfdorp", got)
+	}
+	if got := g.World.CurrentRoom(); got == nil || got.Name != "Wolfdorp" {
+		t.Errorf("after ASTAROT, WOLFDORP, current room = %+v, want Wolfdorp", got)
+	}
+}
+
+func TestHandleAstarotTeleportUnknownLocation(t *testing.T) {
+	g := New()
+	g.Player.Items = append(g.Player.Items, "Sword")
+	got := g.Handle(parser.Parse("ASTAROT, NARNIA"))
+	if !strings.Contains(got, "doesn't recognize") {
+		t.Errorf("Handle(ASTAROT, NARNIA) = %q, want an honest unknown-location rejection", got)
+	}
+	if got := g.World.CurrentRoom(); got == nil || got.Name != "Room of Misery" {
+		t.Errorf("after an unknown-location ASTAROT command, current room = %+v, want unchanged (Room of Misery)", got)
+	}
+}
+
 func TestHandleMovementValidExit(t *testing.T) {
 	g := New()
 	// Room of Misery --East--> Secunda Porta, per the real (walkthrough-

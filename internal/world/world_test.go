@@ -59,6 +59,27 @@ func TestLayoutConsistent(t *testing.T) {
 	}
 }
 
+func TestFindRoomByNameAndTeleport(t *testing.T) {
+	w := threeRoomLine()
+
+	id, ok := w.FindRoomByName("b")
+	if !ok || id != 1 {
+		t.Fatalf("FindRoomByName(\"b\") = (%v, %v), want (1, true)", id, ok)
+	}
+
+	if _, ok := w.FindRoomByName("Nowhere"); ok {
+		t.Error("FindRoomByName(\"Nowhere\") should fail: no such room")
+	}
+
+	w.Teleport(2)
+	if w.Current != 2 {
+		t.Fatalf("Current = %d, want 2 after Teleport(2)", w.Current)
+	}
+	if !w.Rooms[2].Visited {
+		t.Error("room C should be marked Visited after Teleport, same as Move")
+	}
+}
+
 func TestLayoutInconsistent(t *testing.T) {
 	// A -- East --> B, and also A -- East --> C, but C -- West --> B too:
 	// B and C both claim the same grid cell East of A, so the layout can't

@@ -2992,6 +2992,42 @@ project, they're verified via unit test, not a live walkthrough).
 Wraithvale (a Level 2 zone) still has no known cell mapping — left open
 for a future round, same honest treatment.
 
+### Implemented Astarot's confirmed teleport ability, wiring a fact that had sat quoted-but-unused since the HELP round
+
+After another Stop-hook rejection, same framing, went back to
+`parser.Parse`'s own package doc comment, which has quoted the real
+confirmed conversation-form example `"ASTAROT, WOLFDORP"` since very
+early in this project (and the same example is quoted again in
+`game.help()`'s verbatim hint-screen text) — but nothing had ever
+actually implemented that specific comma-form combination. `magic.Demons`
+already confirms Astarot's ability ("Transports the player to a named
+location, if its name is known") and Charm ("Sword", already a real,
+pickupable item in Wolfdorp) — all 3 pieces (the grammar example, the
+ability, the charm+location) were sitting independently sourced and
+correct, just never connected into one working mechanic.
+
+Added `world.FindRoomByName`/`world.Teleport` (small, generic World
+methods — look up a room by its real Name, then jump to it bypassing
+ordinary Exits, the actual mechanic difference between this and normal
+walking) and `game.astarotTeleport`, wired into `Handle` for the
+`"ASTAROT, <location>"` form specifically. Same Charm-gating convention
+already established for bare INVOKE: no Sword means an honest rejection
+naming the missing Talisman; an unrecognized location name gets an
+honest "doesn't recognize" response rather than silently failing or
+guessing. Deliberately scoped to Astarot only — the hint screen gives no
+comparable DEMON,OBJECT example for Belezbar/Magot/Asmodee, so their
+object-form behavior remains honestly unmodeled rather than
+extrapolated.
+
+Added `TestFindRoomByNameAndTeleport` (world), and
+`TestHandleAstarotTeleportRequiresSword`/`Succeeds`/`UnknownLocation`
+(game), ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified live end-to-end: picked up the real
+Sword in Wolfdorp, walked away to Room of Stings, then
+`ASTAROT, WOLFDORP` genuinely teleported the player straight back to
+Wolfdorp — the first real fast-travel mechanic in this port, built
+entirely from facts that had been on file for many rounds already.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

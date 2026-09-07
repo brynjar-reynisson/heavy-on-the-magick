@@ -299,6 +299,10 @@ func (g *Game) Handle(cmd parser.Command) string {
 		return g.talkToApex()
 	}
 
+	if strings.EqualFold(cmd.Target, "ASTAROT") && cmd.Verb != "" {
+		return g.astarotTeleport(cmd.Verb)
+	}
+
 	if strings.EqualFold(cmd.Target, "GUARDS") && cmd.Verb == "DOOR" {
 		return g.passGuards()
 	}
@@ -442,6 +446,33 @@ func (g *Game) invoke(target string) string {
 // hint text.
 func (g *Game) talkToApex() string {
 	return "Apex the Ogre eyes you warily, then grunts. He might share what he knows, if you treat him with respect."
+}
+
+// astarotTeleport handles the confirmed real conversation-form command
+// "ASTAROT, <location>" - the in-game hint screen's own literal example
+// is "ASTAROT, WOLFDORP" (see game.help's doc comment and
+// parser.Parse's package doc comment, which has carried this exact
+// example since the two-grammar-form writeup). magic.Demons's Astarot
+// entry already confirms the underlying ability ("Transports the player
+// to a named location, if its name is known") and Charm ("Sword") - this
+// is the first place that ability is actually implemented, using the
+// same Charm-gating convention as bare INVOKE. The location name is
+// looked up against the CURRENT world's real Room names (Wolfdorp itself
+// is a real, already-shipped CollodonsPile room), so this only reaches
+// places that genuinely exist in whichever world is active - no
+// fabricated destinations.
+func (g *Game) astarotTeleport(location string) string {
+	const astarotName, astarotTitle, astarotCharm = "Astarot", "the Spirit of Assemblage", "Sword"
+	if !g.hasItem(astarotCharm) {
+		return fmt.Sprintf("You call out to %s, %s... but you have no suitable Talisman (a %s).", astarotName, astarotTitle, astarotCharm)
+	}
+	id, ok := g.World.FindRoomByName(location)
+	if !ok {
+		return fmt.Sprintf("%s doesn't recognize a place called %q.", astarotName, location)
+	}
+	dest := g.World.Rooms[id]
+	g.World.Teleport(id)
+	return fmt.Sprintf("You invoke %s, %s! In an instant, you are transported to %s.", astarotName, astarotTitle, dest.Name)
 }
 
 // passGuards handles the confirmed real command "GUARDS, DOOR" (source:

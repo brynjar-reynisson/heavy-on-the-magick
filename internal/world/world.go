@@ -1,5 +1,7 @@
 package world
 
+import "strings"
+
 // World holds the full room graph and the player's current position.
 type World struct {
 	Rooms   map[RoomID]*Room
@@ -56,6 +58,28 @@ func (w *World) Move(d Direction) bool {
 		next.Visited = true
 	}
 	return true
+}
+
+// FindRoomByName looks up a room by its exact (case-insensitive) Name,
+// for name-based mechanics like Astarot's "transports the player to a
+// named location" ability (see game.astarotTeleport).
+func (w *World) FindRoomByName(name string) (RoomID, bool) {
+	for id, r := range w.Rooms {
+		if strings.EqualFold(r.Name, name) {
+			return id, true
+		}
+	}
+	return 0, false
+}
+
+// Teleport moves the player directly to the given room, bypassing normal
+// Exits - the real mechanic behind Astarot's confirmed location-transport
+// ability, as opposed to Move's ordinary corridor-by-corridor walking.
+func (w *World) Teleport(id RoomID) {
+	w.Current = id
+	if room := w.Rooms[id]; room != nil {
+		room.Visited = true
+	}
 }
 
 // VisitedRooms returns every room the player has discovered so far — the
