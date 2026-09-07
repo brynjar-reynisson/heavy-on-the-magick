@@ -289,3 +289,35 @@ func TrollwyndSample() image.Image {
 	}
 	return img
 }
+
+// assets/pilefoot_sample.png (round 123) is a fourth zone-level-
+// confidence sample, same standard as Wolfdorp/Nidus/Trollwynd above.
+// heavymap-grid-clean.gif's own colored zone boundary shows "Pilefoot"
+// as a small, irregularly-shaped yellow area tightly interwoven with 3
+// separately-bordered special sub-cells (Room of Stings/F3, Room of
+// Arrows/F5, Exit/G3 — all already exact-cell placed elsewhere in this
+// project). Cell G4 was picked specifically because it's one of the
+// few genuinely plain, unlabeled cells in this cramped zone — verified
+// carefully (this zone's small, winding shape made misidentification a
+// real risk, unlike the earlier big rectangular zones): row G's top
+// edge was found by direct pixel-transition scanning (not assumed from
+// row spacing), landing exactly on Exit/G3's real screenshot color
+// (blue) as a cross-check, before locating G4 one column over — which
+// turned out to be magenta in the real screenshot, NOT yellow like the
+// clean map's zone-highlight color (a reminder those two colors are
+// unrelated: one is real in-game art, the other is the reference map's
+// own arbitrary highlighting). Shows a distinctive triple-archway room,
+// visually unique among every sample shipped so far.
+//
+//go:embed assets/pilefoot_sample.png
+var pilefootSamplePNG []byte
+
+// PilefootSample decodes the embedded representative Pilefoot-zone
+// screenshot. Panics on failure, matching CorridorSample() above.
+func PilefootSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(pilefootSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded pilefoot_sample.png: " + err.Error())
+	}
+	return img
+}

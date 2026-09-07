@@ -687,10 +687,11 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 		// Round 108: Room of Stings/Room of Arrows join round 105's Room
 		// of Misery - all 3 are real CollodonsPile rooms with a real
 		// extracted screenshot, shown whenever the player is actually in
-		// that specific room, not just at the start. Rounds 109/113/116
-		// add Wolfdorp/Nidus/Trollwynd too, at an honestly lower (zone-
-		// level, not exact-cell) confidence - see graphics.WolfdorpSample's/
-		// NidusSample's/TrollwyndSample's doc comments.
+		// that specific room, not just at the start. Rounds 109/113/116/
+		// 123 add Wolfdorp/Nidus/Trollwynd/Pilefoot too, at an honestly
+		// lower (zone-level, not exact-cell) confidence - see
+		// graphics.WolfdorpSample's/NidusSample's/TrollwyndSample's/
+		// PilefootSample's doc comments.
 		return game.New(), "", map[string]image.Image{
 			"Room of Misery": graphics.RoomOfMiserySample(),
 			"Room of Stings": graphics.RoomOfStingsSample(),
@@ -698,6 +699,7 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 			"Wolfdorp":       graphics.WolfdorpSample(),
 			"Nidus":          graphics.NidusSample(),
 			"Trollwynd":      graphics.TrollwyndSample(),
+			"Pilefoot":       graphics.PilefootSample(),
 		}
 	}
 }

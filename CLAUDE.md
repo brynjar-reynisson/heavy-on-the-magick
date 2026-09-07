@@ -4900,6 +4900,40 @@ Added `TestCollodonsPileSecundaPortaHasSign`; checked no existing test
 assumed Secunda Porta had no items (none did). Ran the full
 `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 123: a 7th CollodonsPile room gets real art (Pilefoot) — a tighter, riskier zone that needed real double-checking
+
+After another Stop-hook rejection, same framing, tried the manual's
+opening narrative once more for a 3rd concrete fact (rounds 121/122
+already found Pouch and Sign there) — nothing more turned up this
+time, a real, checked negative rather than forcing a third find from
+an already-twice-mined passage.
+
+Pivoted to the zone-level room-art pattern (rounds 109/113/116) for a
+4th zone, Pilefoot — but this one was genuinely harder and worth
+recording precisely why. Unlike Wolfdorp/Nidus/Trollwynd's big,
+simple rectangular zones, `heavymap-grid-clean.gif`'s "Pilefoot" is a
+small, irregular area tightly interwoven with 3 already-exact-cell-
+placed special sub-rooms (Room of Stings/F3, Room of Arrows/F5,
+Exit/G3), leaving few genuinely plain, unlabeled cells to safely pick
+from. Rather than eyeball a candidate the way earlier rounds mostly
+could, verified row G's real top edge by direct pixel-transition
+scanning (not assumed from row spacing) — it landed exactly on Exit/
+G3's own real screenshot color (blue), a good independent cross-check
+— before locating the actual pick, G4, one column over. G4 turned out
+to be MAGENTA in the real screenshot, not yellow like the clean map's
+zone-highlight color — a useful, explicit reminder recorded in the
+doc comment that those two color systems are unrelated (one is real
+in-game art, the other is the reference map's own arbitrary
+highlighting), worth remembering before assuming a "yellow zone"
+means a "yellow room."
+
+Added `graphics.PilefootSample()` (a distinctive triple-archway room,
+visually unique among all samples shipped so far), wired into `cmd/
+hotm-gui`'s default-mode room-art map, verified via `NewGUI` +
+`World.Teleport`. **7 of CollodonsPile's real rooms now show real
+extracted art** (3 exact-cell, 4 zone-level). Ran the full `gofmt`/
+`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

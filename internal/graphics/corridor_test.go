@@ -71,6 +71,13 @@ func TestTrollwyndSampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, TrollwyndSample(), "TrollwyndSample()")
 }
 
+// TestPilefootSampleDecodesToRealArt mirrors
+// TestCorridorSampleDecodesToRealArt for round 123's Pilefoot-zone
+// sample.
+func TestPilefootSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, PilefootSample(), "PilefootSample()")
+}
+
 func assertRealArt(t *testing.T, img image.Image, label string) {
 	t.Helper()
 	bounds := img.Bounds()
