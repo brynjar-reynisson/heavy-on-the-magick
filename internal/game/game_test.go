@@ -353,6 +353,78 @@ func TestHandleFireBlocksMovementWithoutClasp(t *testing.T) {
 	}
 }
 
+// TestHandleLookMentionsGuards covers round 152's real fix: before this,
+// world.Room.Guards (a real, already-functional "GUARDS, DOOR" obstacle
+// since round 19) had no LOOK-time hint at all - a player with no way to
+// already know Guards were present would never think to try that exact
+// command. Uses a synthetic room since Level1Grid/Level2Grid's real
+// Guards placements aren't reachable from a fresh default-mode game.
+func TestHandleLookMentionsGuards(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Gate", Guards: true})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("LOOK"))
+	if !strings.Contains(got, "Guards") {
+		t.Errorf("Handle(LOOK) with real Guards present = %q, want it mentioned", got)
+	}
+}
+
+// TestHandleLookMentionsLockedDoor covers round 152's real fix for the
+// other half of the same "confirmed but unsurfaced at LOOK-time" gap:
+// world.Room.DoorPasswords/TollItem (real since rounds 9/64) never had
+// any LOOK-time hint either - only discoverable by already guessing the
+// right "DOOR, <word>" command. Deliberately checks the hint does NOT
+// leak the actual password/toll item, since no source confirms a real
+// in-game hint text - only the bare fact that a door exists.
+func TestHandleLookMentionsLockedDoor(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Passworded", DoorPasswords: []string{"SILENCE"}})
+	w.AddRoom(&world.Room{ID: 1, Name: "Tolled", TollItem: "Key"})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("LOOK"))
+	if !strings.Contains(got, "locked door") {
+		t.Errorf("Handle(LOOK) with real DoorPasswords present = %q, want a locked-door hint", got)
+	}
+	if strings.Contains(got, "SILENCE") {
+		t.Errorf("Handle(LOOK) = %q, must not leak the real password", got)
+	}
+
+	g.World.Teleport(1)
+	got = g.Handle(parser.Parse("LOOK"))
+	if !strings.Contains(got, "locked door") {
+		t.Errorf("Handle(LOOK) with real TollItem present = %q, want a locked-door hint", got)
+	}
+	if strings.Contains(got, "Key") {
+		t.Errorf("Handle(LOOK) = %q, must not leak the real toll item", got)
+	}
+}
+
+// TestHandleLookHintsAtAdjacentFire covers round 152's third real fix:
+// move()'s own pre-move Fire check (round 80) has always blocked a
+// Fire-hazard exit, but LOOK never hinted at it beforehand - a player
+// only ever discovered it by trying to move there and getting rejected.
+// Checks both the no-Clasp (hinted) and has-Clasp (no longer relevant,
+// silent) cases, mirroring move's own exact behavior.
+func TestHandleLookHintsAtAdjacentFire(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "Blaze", Fire: true})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("LOOK"))
+	if !strings.Contains(got, "Flames block the way North") {
+		t.Errorf("Handle(LOOK) next to a Fire room without Clasp = %q, want a real hint", got)
+	}
+
+	g.Player.Items = append(g.Player.Items, "Clasp")
+	got = g.Handle(parser.Parse("LOOK"))
+	if strings.Contains(got, "Flames block") {
+		t.Errorf("Handle(LOOK) next to a Fire room WITH Clasp = %q, want no hint (matches move's own no-longer-blocked behavior)", got)
+	}
+}
+
 // TestHandleSwapItemRevealsRealItem covers round 132's real, sourced
 // "protected item" mechanic (see world.Room.SwapItem's doc comment):
 // dropping the room's real SwapItem reveals its RevealItem. Uses a

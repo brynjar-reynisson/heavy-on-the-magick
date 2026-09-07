@@ -7,6 +7,7 @@ package game
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/character"
@@ -1393,13 +1394,49 @@ func (g *Game) describeCurrentRoom() string {
 	if room.HasChest {
 		b.WriteString("There is a chest here.\n")
 	}
+	if room.Guards {
+		b.WriteString("Guards bar your way here.\n")
+	}
+	if len(room.DoorPasswords) > 0 || room.TollItem != "" {
+		b.WriteString("There is a locked door here.\n")
+	}
 	if len(room.Items) > 0 {
 		fmt.Fprintf(&b, "You see: %s\n", strings.Join(room.Items, ", "))
 	}
 	if exits := exitList(room); exits != "" {
 		fmt.Fprintf(&b, "Exits: %s\n", exits)
 	}
+	if hint := g.fireHazardHint(room); hint != "" {
+		b.WriteString(hint)
+	}
 	return strings.TrimRight(b.String(), "\n")
+}
+
+// fireHazardHint surfaces a real, previously-LOOK-invisible fact: a
+// neighboring room's world.Room.Fire hazard (see move's pre-move Fire
+// check, which this mirrors). Before this, a player only discovered a
+// Fire-blocked exit reactively, by trying to move into it and getting
+// rejected - LOOK gave no hint at all. Deliberately only names the
+// blocked direction(s), not the required item (Clasp) - naming the
+// exact solution would be inventing a hint no source confirms; move's
+// own rejection message already reveals that once actually tried.
+// Says nothing if the player already carries the Clasp, matching
+// move's own "no longer blocked" behavior exactly.
+func (g *Game) fireHazardHint(room *world.Room) string {
+	if g.hasItem("Clasp") {
+		return ""
+	}
+	var dirs []string
+	for dir, destID := range room.Exits {
+		if dest := g.World.Rooms[destID]; dest != nil && dest.Fire {
+			dirs = append(dirs, dir.String())
+		}
+	}
+	if len(dirs) == 0 {
+		return ""
+	}
+	sort.Strings(dirs)
+	return fmt.Sprintf("Flames block the way %s.\n", strings.Join(dirs, ", "))
 }
 
 func exitList(room *world.Room) string {

@@ -6443,6 +6443,66 @@ default starting point (Room of Misery) has the missing data, live
 verification doesn't need a throwaway patched build at all — check
 first before reaching for that heavier technique.
 
+### Round 152: closed the SAME kind of gap one level deeper — Guards/DoorPasswords/TollItem/Fire were unsurfaced at LOOK-time in BOTH frontends, not just the GUI
+
+After another Stop-hook rejection, same framing, took round 151's own
+"How to apply" note literally and re-ran the audit — but against the
+TEXT frontend's `describeCurrentRoom` (the more fundamental of the two,
+since `cmd/hotm-gui` calls the exact same `Handle`/`LOOK` path) rather
+than the GUI a second time. Grepped every reference to `DoorPasswords`,
+`TollItem`, and `Fire` in `internal/game/game.go` and confirmed none of
+them appear inside `describeCurrentRoom` at all — only in `Handle`'s
+`DOOR`-command dispatch, `payToll`, the drop-time toll check, and
+`move`'s pre-move Fire block. `Guards` had the identical gap (confirmed
+via a separate grep). This means a player using ONLY `LOOK` had zero
+in-game hint that:
+- Guards bar the room (the ONLY way to discover this is already
+  knowing to type the exact real command `"GUARDS, DOOR"` blind — this
+  mechanic doesn't block movement at all, so there's no reactive
+  rejection message to stumble into either, unlike Fire);
+- a door needs a password or toll item (only discoverable by guessing a
+  `"DOOR, X"` command or already knowing to drop a specific item);
+- a neighboring room has a Fire hazard (only discoverable reactively,
+  by trying to move there and getting `move`'s existing rejection).
+
+Added 3 real, honest LOOK-time hints to `describeCurrentRoom`, all
+careful not to fabricate content no source confirms:
+- `"Guards bar your way here."` for a real `Guards` room — mirrors the
+  already-shipped `HasTable`/`HasChest` line pattern exactly.
+- `"There is a locked door here."` for `len(DoorPasswords) > 0` or a
+  real `TollItem` — deliberately generic, does NOT name the actual
+  password or required item (that would be inventing a hint no source
+  gives; the existing `Handle`/`payToll` responses already reveal the
+  real requirement once actually tried).
+- A new `fireHazardHint` helper: checks each real exit's destination
+  room for `Fire` (mirroring `move`'s own pre-move check exactly,
+  including the same Clasp exemption) and, if blocked, reports
+  `"Flames block the way <dir>."` — the same message shape `move`
+  already gives reactively, just surfaced proactively at LOOK-time
+  instead. Silent once the player carries the Clasp, matching `move`'s
+  own no-longer-blocked behavior precisely.
+
+Added `TestHandleLookMentionsGuards`, `TestHandleLookMentionsLockedDoor`
+(explicitly asserts the password/toll item are NOT leaked), and
+`TestHandleLookHintsAtAdjacentFire` (both the blocked and Clasp-cleared
+cases). Ran the full `gofmt`/`build`/`vet`/`test` suite (with a
+repeated `-count=2` run) clean, and verified live via `go run
+./cmd/hotm`: `EAST` then `LOOK` at the real, already-shipped Secunda
+Porta room (the very first move from the start room, carrying a real
+`DoorPasswords: []string{"SILENCE"}`) now shows "There is a locked door
+here." without revealing "SILENCE" anywhere in the output.
+
+**How to apply**: the "confirmed but unsurfaced" audit generalizes past
+"which frontend draws which field" (round 151's framing) to "which
+COMMAND surfaces which field" — a mechanic can be fully real, tested,
+and reachable via its own dedicated command (`DOOR, X`, `GUARDS, DOOR`)
+while still being invisible to a player who doesn't already know to
+try that exact command blind. `LOOK`/`describeCurrentRoom` is the
+right place to close that gap for any room-level obstacle, the same
+way it already does for `HasTable`/`HasChest`/`Items`/`Exits` — worth
+checking again whenever a new room-level field gets added in the
+future, not just once.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
