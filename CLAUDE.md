@@ -4701,6 +4701,45 @@ gui`'s default-mode room-art map, verified via `NewGUI` +
 extracted art** (3 exact-cell, 3 zone-level). Ran the full
 `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 117: re-verified "one melody is likely all the original has" across all 8 disassembly snapshots, fixed a stale doc claim
+
+After another Stop-hook rejection whose sound complaint assumed
+per-room ambient audio exists in the original ("no melody/rhythm/
+timing data extracted for OTHER rooms' ambient sounds") — this exact
+question was investigated back in round 24 (one memory snapshot
+checked) but the finding had never been surfaced anywhere near this
+prominently, and this repo has grown to 8 disassembly snapshots since
+then. Re-ran the check properly: grepped every one of them
+(`hotm.skool`, `hotm-fixed.skool`, `hotm-live{,2,3}.skool`,
+`hotm-unpacked{,2,3}.skool`) for `CALL 64671` (the sound routine's only
+entry point) — **exactly one call site in every single file**, always
+at address 64613, the already-documented boot-sequence "play a tune
+while waiting for a keypress" loop. No call anywhere to any of the
+routine's internal entry points either (64733/64749/64764/64771 are
+only ever reached by falling through/jumping from inside 64671 itself).
+This is now confirmed across 8 independent snapshots, not just the
+original round 24 finding, materially stronger evidence than before.
+
+Real, reproducible evidence (not proof) that the original 1986 game
+has exactly one piece of music, played once at boot — not a coverage
+gap in this port, since there's very likely nothing else to extract.
+This directly answers the hook's specific assumption, the same kind of
+"fact-check the complaint against real evidence" move round 102's
+vocabulary work made.
+
+While there, found and fixed a real STALE claim in `internal/audio`'s
+own package doc comment (`beeper.go`): it still said the T-state
+calibration "wasn't fully cycle-counted" and was "still an
+approximation" needing future work — both true when written, both
+already resolved by rounds 111/112 and never updated. Rewrote the
+whole doc comment to state the current, accurate status and surface
+the "one melody" finding prominently, rather than leaving it buried in
+CLAUDE.md's round-24 history where nobody would find it without
+already knowing to look.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean (doc-only change,
+but verified anyway).
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
