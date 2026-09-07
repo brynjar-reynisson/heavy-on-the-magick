@@ -5890,6 +5890,59 @@ whether that list needs a matching update, or the self-audit quietly
 starts lying in the conservative direction (undercounting real
 coverage), which is just as worth catching as overclaiming.
 
+### Round 141: a 9th real room screenshot for CollodonsPile — Furnace Room, the clearest content-to-name match extracted so far
+
+After another Stop-hook rejection, same framing, first tried
+downloading and inspecting World of Spectrum's RZX walkthrough archive
+link (`rzxarchive.co.uk/h/heavymagick.rzx`, found in round 131's link
+list but never actually fetched) — a real technical check, parsing its
+block structure directly (Creator/Security-Info/Snapshot blocks, RZX
+v0.12 format). Found a real, checked negative: the file contains only
+a Creator block and one large embedded snapshot, no separate Input
+Recording block — meaning this specific archived file is most likely
+a bookmarked save state, not an actual played-back walkthrough
+recording, so pursuing full RZX playback (a much larger undertaking,
+needing a real Z80 emulation step-through) wouldn't likely pay off.
+Documented and moved on rather than sinking further effort into an
+unpromising lead.
+
+Pivoted to graphics instead, extending round 137's newly-precise
+template-matching calibration one more column: Furnace Room is
+`level1_grid.go`'s own A8 cell, directly adjacent to Agile Stair's
+already-confirmed A7 (x=4085-4596) — computing one more column width
+over (≈597.5px) landed the estimate almost exactly on the real cell,
+confirmed doubly: the atlas's own printed "8" column label directly
+above it, AND by unmistakable content — an actual lit fireplace
+flanked by coal piles and two framed wall pictures, not just a
+plausible generic corridor. The clearest content-to-name match of any
+sample extracted in this whole project (compare Room of Arrows' bow-
+and-arrow or Room of Misery's Sator Square — both good but more
+subtle corroborations than "a literal furnace in the Furnace Room").
+Furnace Room is also a real, already-reachable CollodonsPile room
+(round 126's INVOKE-punishment teleport), not just a Level1Grid-only
+cell.
+
+Added `graphics.FurnaceRoomSample()` (own test,
+`TestFurnaceRoomSampleDecodesToRealArt`) and wired it into `cmd/hotm-
+gui`'s default-mode room-art map — **CollodonsPile's 9th room with
+real extracted art**, and its 5th at exact-cell confidence. Ran the
+full `gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2`
+run) clean, and verified live twice: a throwaway debug test
+(`selectGame()`'s map has the key) and a full disposable-throwaway-
+repo-copy screenshot (the real .exe, patched to teleport there at
+startup, showing the fireplace art rendering correctly).
+
+**How to apply**: once a level's real column/row spacing is precisely
+derived (round 137), extending it one more column/row over is cheap
+and can land an even MORE confidently-verifiable match than the
+original — Furnace Room's unmistakable subject-matter content (an
+actual fire, in the Furnace Room) is stronger corroboration than any
+purely positional argument could be on its own. Checking a promising-
+looking but ultimately un-actionable lead (the RZX file) thoroughly
+enough to get a real, structural answer (not just "didn't try") is
+worth the modest time it took, before moving on to something more
+productive the same round.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

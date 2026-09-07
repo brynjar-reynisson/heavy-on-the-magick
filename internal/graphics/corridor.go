@@ -242,6 +242,36 @@ func AgileStairSample() image.Image {
 	return img
 }
 
+// assets/furnace_room_sample.png (round 141) is a real screenshot of
+// CollodonsPile's Furnace Room — level1_grid.go's own A8 cell, already
+// independently confirmed by name (no Exits, matching Level1Grid's
+// own doc comment) and now also confirmed real reachable content:
+// round 126 added a matching Furnace Room to CollodonsPile itself,
+// reached via a failed INVOKE's real punishment teleport (see
+// game.punishFailedInvoke). Same exact-cell confidence tier as Room of
+// Misery/Stings/Arrows/Agile Stair. Located precisely by extending
+// round 137's already-derived Level 1 column spacing one more column
+// past Agile Stair's own confirmed position (A7, x=4085-4596) — A8
+// landed at x=4672-5184, doubly confirmed both by the atlas's own
+// printed "8" column label directly above it AND by unmistakable
+// content: an actual fireplace/furnace scene (a lit hearth flanked by
+// coal piles and two framed wall pictures), not just a plausible-
+// looking generic corridor. The clearest content-to-name match of any
+// sample extracted so far in this project.
+//
+//go:embed assets/furnace_room_sample.png
+var furnaceRoomSamplePNG []byte
+
+// FurnaceRoomSample decodes the embedded real Furnace-Room screenshot.
+// Panics on failure, matching CorridorSample() above.
+func FurnaceRoomSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(furnaceRoomSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded furnace_room_sample.png: " + err.Error())
+	}
+	return img
+}
+
 // assets/wolfdorp_sample.png (round 109) is a real screenshot from
 // within CollodonsPile's Wolfdorp room, but with an honestly LOWER
 // confidence level than the samples above: Room of Misery/Room of

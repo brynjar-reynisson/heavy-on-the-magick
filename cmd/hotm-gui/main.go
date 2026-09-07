@@ -736,11 +736,15 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 		// graphics.WolfdorpSample's/NidusSample's/TrollwyndSample's/
 		// PilefootSample's doc comments. Round 137 adds Agile Stair, back
 		// at exact-cell confidence (level1_grid.go's own confirmed A7).
+		// Round 141 adds Furnace Room (A8, the cell right next to Agile
+		// Stair) - also exact-cell, and the clearest content-to-name
+		// match of any sample here (an actual fireplace scene).
 		return game.New(), "", map[string]image.Image{
 			"Room of Misery": graphics.RoomOfMiserySample(),
 			"Room of Stings": graphics.RoomOfStingsSample(),
 			"Room of Arrows": graphics.RoomOfArrowsSample(),
 			"Agile Stair":    graphics.AgileStairSample(),
+			"Furnace Room":   graphics.FurnaceRoomSample(),
 			"Wolfdorp":       graphics.WolfdorpSample(),
 			"Nidus":          graphics.NidusSample(),
 			"Trollwynd":      graphics.TrollwyndSample(),
