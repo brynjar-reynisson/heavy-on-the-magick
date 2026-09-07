@@ -141,6 +141,10 @@ func NewLevel4Exploration() *Game {
 // walkthrough: Werewolves are "killable by walking through after
 // dropping NOUGAT" — see checkNougatWerewolf).
 //
+// LOOK/movement also mentions a real world.Room.HasTable fixture
+// ("There is a table here.") when present, so a player has a real
+// reason to try EXAMINE TABLE rather than needing to guess it exists.
+//
 // EXAMINE reports a room's Monster and Items if present (real data);
 // with a specific target (the manual's confirmed real grammar, e.g.
 // "X BOTTLE" — see parser's doc comment) it instead confirms just that
@@ -704,6 +708,9 @@ func (g *Game) describeCurrentRoom() string {
 		b.WriteString("You have found one of Collodon's Pile's 3 exits and escaped! YOU HAVE WON.\n")
 	}
 	fmt.Fprintf(&b, "%s\n%s\n", room.Name, room.Description)
+	if room.HasTable {
+		b.WriteString("There is a table here.\n")
+	}
 	if len(room.Items) > 0 {
 		fmt.Fprintf(&b, "You see: %s\n", strings.Join(room.Items, ", "))
 	}

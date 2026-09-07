@@ -197,6 +197,17 @@ func TestHandleExamineWithTargetConfirmsJustThatThing(t *testing.T) {
 	}
 }
 
+// TestHandleLookMentionsTable covers the real HasTable fixture being
+// surfaced in LOOK itself, not just discoverable by blindly guessing
+// "EXAMINE TABLE".
+func TestHandleLookMentionsTable(t *testing.T) {
+	g := New() // Room of Misery has a real confirmed table
+	got := g.Handle(parser.Parse("LOOK"))
+	if !strings.Contains(got, "table") {
+		t.Errorf("Handle(LOOK) in Room of Misery = %q, want it to mention the real table", got)
+	}
+}
+
 // TestHandleExamineTable covers the real, sourced HasTable fixture (see
 // world.Room.HasTable's doc comment) - the CASA walkthrough repeatedly
 // uses "EXAMINE TABLE" in specific real rooms.

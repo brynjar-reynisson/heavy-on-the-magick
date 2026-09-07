@@ -2773,6 +2773,27 @@ Added `TestLevel3GridKitchenOfAiFinds`, ran the full `gofmt`/`build`/
 `vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
 live that normal Level 3 play is unaffected.
 
+### A quick clean negative, then LOOK finally surfaces the real Table fixture instead of requiring a blind guess
+
+After another Stop-hook rejection, same framing, first checked
+Level2Grid's other 2 remaining unverified isolated pockets (C4, C6,
+D6 - the "2 more small isolated pockets" flagged back in round 56 as
+found-but-not-individually-verified). Tight-cropped all 3: C4 and C6
+are plain, unlabeled cells; D6 has the still-unresolved yellow double-
+dot mystery icon documented several rounds ago (re-confirming, not
+newly finding, one of its known locations) but no name. A real, clean
+negative - this specific pocket has nothing more to give.
+
+Pivoted to a real, small usability gap in a mechanic added last round:
+`world.Room.HasTable` was only ever discoverable by a player blindly
+guessing to type `EXAMINE TABLE` - `LOOK` itself never hinted a table
+was there. Fixed: `describeCurrentRoom` now mentions "There is a table
+here." for a real `HasTable` room, the same way it already surfaces
+real Items. Added `TestHandleLookMentionsTable`, ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live: `LOOK` in Room of Misery now shows the table
+line without needing to already know to ask for it.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**
