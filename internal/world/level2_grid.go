@@ -113,6 +113,29 @@ package world
 // (E5, E6) tight-crop-verified as a stairwell arrow and "FIRE!" warning
 // text respectively, and were correctly excluded, same discipline as
 // the monster scan above.
+//
+// A1 named "Exit" (round 130): that earlier Guards-icon scan had
+// ALREADY seen A1's own real "EXIT!" label - the paragraph above
+// explicitly lists it as a correctly-excluded false positive for the
+// MONSTER-icon check ("a 'FIRE!'/'EXIT!' warning label's text color")
+// - but nobody had circled back to it with the different lens this
+// project's named-special-room technique (Sothic Complex, Nani, Hydra)
+// already uses elsewhere: "EXIT!" isn't just noise to exclude from a
+// monster scan, it's a real room NAME. Re-cropped A1 directly and
+// confirmed pixel-for-pixel: the top-left cell of Level 2's grid - the
+// very cell this file already uses as its arbitrary starting anchor -
+// reads "EXIT!", with corridor openings matching its own already-
+// shipped Exits (East, South) exactly. This is the SAME real "3 exits"
+// goal Level1Grid's G3 and Level4Grid's G2 already implement (see
+// game.Game.Won's doc comment) - a third, independently-confirmed
+// instance, and it directly corroborates a genuinely new source found
+// the same round (Wikipedia's "the game could be finished in three
+// different ways, each way being of varying difficulty"). Unlike G3/G2,
+// this one happens to BE game.NewLevel2Exploration's own starting room -
+// an honest, harmless quirk of A1 having been picked as an arbitrary
+// anchor before its real name was known, not a design choice; reaching
+// it announces Game.Won the same way any other Exit does, on the first
+// real LOOK/move, not automatically at construction time.
 func Level2Grid() *World {
 	w := New(level2Room("A1"))
 	for _, r := range level2Cells {
@@ -147,7 +170,7 @@ func level2CellCode(id RoomID) string {
 }
 
 var level2Cells = []*Room{
-	{ID: level2Room("A1"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A2"), South: level2Room("B1")}},
+	{ID: level2Room("A1"), Name: "Exit", Level: 2, Exits: map[Direction]RoomID{East: level2Room("A2"), South: level2Room("B1")}},
 	{ID: level2Room("A2"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A3"), South: level2Room("B2"), West: level2Room("A1")}},
 	{ID: level2Room("A3"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A4"), South: level2Room("B3"), West: level2Room("A2")}},
 	{ID: level2Room("A4"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A5"), South: level2Room("B4"), West: level2Room("A3")}},

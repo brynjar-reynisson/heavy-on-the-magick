@@ -22,6 +22,22 @@ func TestLevel2GridFloxIsInMainComponent(t *testing.T) {
 	}
 }
 
+// TestLevel2GridA1IsExit pins round 130's find: A1 - this file's own
+// arbitrary starting anchor - is a real, tight-crop-verified "Exit"
+// (see this file's doc comment), the 3rd of the dungeon's confirmed
+// 3 real Exit rooms this project now ships (alongside Level1Grid's G3
+// and Level4Grid's G2).
+func TestLevel2GridA1IsExit(t *testing.T) {
+	w := Level2Grid()
+	room := w.Rooms[level2Room("A1")]
+	if room == nil || room.Name != "Exit" {
+		t.Fatalf("room A1 = %+v, want Name \"Exit\"", room)
+	}
+	if len(room.Exits) != 2 {
+		t.Errorf("Exit (A1) Exits = %v, want its real East/South connectivity unchanged", room.Exits)
+	}
+}
+
 // TestLevel2GridD6HasFire pins the round-80 find: a real, previously
 // entirely-missing cell (D6) confirmed via a tight-crop-verified
 // "FIRE!" warning label (see world.Room.Fire's doc comment).

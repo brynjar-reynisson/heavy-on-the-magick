@@ -5261,6 +5261,61 @@ worth updating that code's OWN doc comment to say so explicitly, since
 "it happens to look right" and "it's confirmed faithful" are different
 claims worth distinguishing honestly.
 
+### Round 130: Wikipedia (a 4th new source type) plus a look back at already-seen map data finds the dungeon's 3rd real Exit
+
+After another Stop-hook rejection, same framing, fetched
+`en.wikipedia.org/wiki/Heavy_on_the_Magick` — a source type never
+tried before. Most of it re-confirmed already-known facts (free travel
+between levels, Apex the Ogre, Merphish command basics), but two real
+findings stood out: "The game could be finished in three different
+ways, each way being of varying difficulty" (independent corroboration
+of the map poster's "3 EXITS" footer this project already relies on
+for `Game.Won`), and that hostile creatures include "wyverns, goblins
+and vampires" — Goblin is a real, confirmed vocabulary word
+(`parser.Vocabulary`) with no existing placement anywhere in this
+project. Checked thoroughly for a sourced room to attach it to (none
+found) — left honestly unplaced rather than guessed, the same
+discipline as every other "real but unlocatable" fact in this project.
+
+The "3 exits" corroboration prompted a direct check: this port ships 2
+of the 3 confirmed Exit cells (Level1Grid's G3, Level4Grid's G2) — is
+the 3rd one somewhere in Level2Grid or Level3Grid, never found? Went
+back to `heavymap-grid-clean.gif` (the clean grid map, this project's
+most-mined image source) and found it immediately, in data that had
+technically already been LOOKED at: Level2Grid's own doc comment
+already records that an earlier Guards-icon color scan correctly
+excluded a false positive at "a 'FIRE!'/'EXIT!' warning label's text
+color" — that EXIT! label was seen and dismissed as scan noise, never
+revisited with the different lens this project's own named-special-
+room technique (Sothic Complex, Nani, Hydra) already uses elsewhere.
+Re-cropped it directly: it's the top-left cell of Level 2's grid —
+`Level2Grid`'s own arbitrary starting anchor, A1 — reading "EXIT!"
+pixel-for-pixel, with corridor openings matching its already-shipped
+Exits (East, South) exactly.
+
+Added `Name: "Exit"` to Level2Grid's A1 entry — completing the real
+set of all 3 confirmed Exit cells across this project's 4 level grids.
+An honest, harmless quirk: since A1 was already `NewLevel2Exploration`'s
+starting room (picked as an arbitrary anchor long before its real name
+was known, not a design choice), a fresh `-level2grid` session now
+genuinely wins on its very first `LOOK` — verified live. Updated
+`Game.Won`'s and `Handle`'s doc comments (previously said Level1Grid's
+G3 was the only reachable Exit — no longer true). Added
+`TestLevel2GridA1IsExit` and `TestLevel2ExplorationStartRoomIsExit`,
+ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified live via `go run ./cmd/hotm
+-level2grid`.
+
+**How to apply**: a "correctly excluded as noise" finding from an
+earlier round's scan isn't necessarily dead information — it was
+excluded for a SPECIFIC purpose (not a monster icon) that says nothing
+about whether it's useful for a DIFFERENT purpose (a room name). When
+revisiting an old file's doc comment for a new task, read what it says
+was found-and-rejected, not just what was found-and-kept — this
+project's own EXIT! label had been sitting in that "rejected" list for
+many rounds before anyone thought to ask why the label said "EXIT!" in
+the first place.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

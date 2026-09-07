@@ -1089,6 +1089,26 @@ func TestLevel2ExplorationMovement(t *testing.T) {
 	}
 }
 
+// TestLevel2ExplorationStartRoomIsExit pins round 130's find:
+// Level2Grid's own arbitrary starting anchor (A1) turned out to be a
+// real, confirmed "Exit" cell (see level2_grid.go's doc comment) - so
+// a real LOOK right at the start of a fresh -level2grid session
+// genuinely announces a win, an honest quirk of A1 having been picked
+// before its real name was known, not a bug.
+func TestLevel2ExplorationStartRoomIsExit(t *testing.T) {
+	g := NewLevel2Exploration()
+	if g.Won {
+		t.Fatal("Game.Won should be false immediately after construction, before any LOOK/move")
+	}
+	got := g.Handle(parser.Parse("LOOK"))
+	if !g.Won {
+		t.Fatalf("Game.Won = false after LOOK at the real Exit start room; output: %q", got)
+	}
+	if !strings.Contains(got, "YOU HAVE WON") {
+		t.Errorf("Handle(LOOK) at Level2Exploration's start = %q, want the real win announcement", got)
+	}
+}
+
 func TestLevel1ExplorationReachingExitWins(t *testing.T) {
 	// Real, validated path from the start room (A1) to the Exit cell
 	// (G3), found via BFS over Level1Grid's confirmed connectivity:

@@ -22,9 +22,13 @@ type Game struct {
 
 	// Won is true once the player has reached one of the dungeon's real
 	// confirmed Exit rooms (see the official map poster's "3 EXITS"
-	// footer text and its "E = one of three exits" legend entry — see
-	// ../../CLAUDE.md). Detected by Room.Name == "Exit" (currently only
-	// world.Level1Grid's G3 cell carries that name).
+	// footer text and its "E = one of three exits" legend entry, and
+	// round 130's independent corroboration from Wikipedia: "The game
+	// could be finished in three different ways, each way being of
+	// varying difficulty" — see ../../CLAUDE.md). Detected by
+	// Room.Name == "Exit" — all 3 confirmed real Exit cells are now
+	// shipped: world.Level1Grid's G3, world.Level4Grid's G2, and
+	// world.Level2Grid's A1 (round 130).
 	Won bool
 }
 
@@ -125,7 +129,8 @@ func NewLevel4Exploration() *Game {
 // LOOK (and moving into a room) also lists any real per-room world.Room.Items
 // present, not just its name/description/exits. Reaching a room named
 // "Exit" announces a real win (see Game.Won's doc comment for the "3
-// exits" sourcing) - currently only reachable via world.Level1Grid.
+// exits" sourcing) - reachable via world.Level1Grid, world.Level2Grid,
+// or world.Level4Grid (round 130 completed the set).
 //
 // BLAST and FREEZE fight a room's Monster if one is present (real per-room
 // monster placement sourced the same way as DoorPasswords — see
