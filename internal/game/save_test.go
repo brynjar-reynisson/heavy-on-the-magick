@@ -61,8 +61,17 @@ func TestSaveAxilRoundTrip(t *testing.T) {
 	if g2.Player.Stamina != 7 {
 		t.Errorf("Stamina after RestoreAxil = %d, want 7", g2.Player.Stamina)
 	}
-	if len(g2.Player.Items) != 1 || g2.Player.Items[0] != "Grimoire" {
-		t.Errorf("Items after RestoreAxil = %v, want [Grimoire]", g2.Player.Items)
+	// Round 121: Axil's real starting Pouch (character.NewPlayer) is
+	// already in Items before this test appends Grimoire, so the saved/
+	// restored set is [Pouch, Grimoire], not just [Grimoire].
+	want := []string{"Pouch", "Grimoire"}
+	if len(g2.Player.Items) != len(want) {
+		t.Fatalf("Items after RestoreAxil = %v, want %v", g2.Player.Items, want)
+	}
+	for i, w := range want {
+		if g2.Player.Items[i] != w {
+			t.Errorf("Items after RestoreAxil = %v, want %v", g2.Player.Items, want)
+		}
 	}
 	// RestoreAxil should not touch World.
 	if g2.World.CurrentRoom().Name != "Room of Misery" {

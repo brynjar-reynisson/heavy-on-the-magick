@@ -151,9 +151,19 @@ const (
 
 // NewPlayer creates Axil at the start of a game, at the lowest grade, with
 // randomly rolled Stamina/Skill/Luck (see the roll-range constants above
-// for the honesty caveat on the exact bounds).
+// for the honesty caveat on the exact bounds), and carrying a real
+// confirmed starting item: a Pouch. The manual's own opening narrative
+// states this explicitly, before Axil ever finds the Grimoire —
+// "In the dank twilight, Axil tufted – and then took stock. He was,
+// at least, clothed: he carried a large leather pouch." — and "POUCH"
+// is independently a real, confirmed word in the game's own extracted
+// 316-word parser vocabulary (parser.Vocabulary), the same two-source
+// cross-confirmation pattern already used elsewhere in this project
+// (round 121). No source states the Pouch has any further mechanical
+// effect (contents, capacity), so it's modeled as a plain starting
+// Item like any other, not fabricated beyond what's confirmed.
 func NewPlayer() *Player {
-	p := &Player{Name: "Axil", Grade: Neophyte}
+	p := &Player{Name: "Axil", Grade: Neophyte, Items: []string{"Pouch"}}
 	p.Realign()
 	return p
 }

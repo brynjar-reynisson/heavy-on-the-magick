@@ -39,6 +39,24 @@ func TestNewPlayerStartsAtNeophyte(t *testing.T) {
 	}
 }
 
+// TestNewPlayerStartsWithPouch pins round 121's addition: the manual's
+// own opening narrative confirms Axil starts carrying a Pouch (before
+// he ever finds the Grimoire), and "POUCH" is independently a real
+// word in the game's own extracted vocabulary - see NewPlayer's doc
+// comment for the two-source sourcing.
+func TestNewPlayerStartsWithPouch(t *testing.T) {
+	p := NewPlayer()
+	found := false
+	for _, item := range p.Items {
+		if item == "Pouch" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("NewPlayer().Items = %v, want it to include the real starting Pouch", p.Items)
+	}
+}
+
 func TestRealignStaysWithinBounds(t *testing.T) {
 	p := NewPlayer()
 	for range 50 {

@@ -4837,6 +4837,36 @@ Ran the full `gofmt`/`build`/`vet`/`test` suite clean — every existing
 Wolfdorp-related test (Sword, chest, door passwords, ASTAROT teleport)
 still passes unchanged.
 
+### Round 121: gave Axil his real starting item — a Pouch, confirmed by the manual's own opening narrative plus the game's own vocabulary
+
+After another Stop-hook rejection, same framing, re-read the manual's
+opening story text once more (round 110's PDF extraction) — not the
+mechanics sections rounds 118/119 focused on, but the narrative
+framing before them. It states plainly, before Axil ever finds the
+Grimoire: "In the dank twilight, Axil tufted – and then took stock. He
+was, at least, clothed: he carried a large leather pouch." This is a
+real, explicit statement of Axil's starting inventory. Independently,
+"POUCH" is a real, confirmed word in the game's own extracted 316-word
+vocabulary — the same two-independent-source cross-confirmation
+pattern this project has used for other real facts (Sunflower/Sun-
+Flower, Erlstone/Pebble). `character.NewPlayer` had always started
+Axil with an empty inventory; added `Items: []string{"Pouch"}`.
+
+This genuinely rippled: several existing tests had silently assumed
+Axil starts with zero items (`TestHandleInventory`'s "nothing carried"
+check, `TestHandlePickupMovesItemToInventory`'s exact `len==1`
+check, `TestHandleDropReturnsItemToRoom`'s "Items now empty" check,
+`TestSaveAxilRoundTrip`'s exact `[Grimoire]` check) — all fixed to
+check for the SPECIFIC item they actually care about (contains/doesn't-
+contain) rather than the whole list's exact contents, which is more
+robust or the real fact anyway (`TestHandleInventoryEmptyWhenNothingCarried`
+now covers the genuinely-empty case directly, since `New()` itself
+never starts empty anymore). Added `TestNewPlayerStartsWithPouch`.
+Verified via a real `Handle("INVENTORY")` call at a fresh game start:
+`You are carrying: Pouch`.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

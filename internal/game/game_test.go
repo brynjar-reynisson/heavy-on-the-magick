@@ -308,13 +308,28 @@ func TestHandleHelpShowsRealHintScreen(t *testing.T) {
 
 func TestHandleInventory(t *testing.T) {
 	g := New()
-	if got := g.Handle(parser.Parse("INVENTORY")); !strings.Contains(got, "anything") {
-		t.Errorf("Handle(INVENTORY) with nothing carried = %q, want it to say so", got)
+	// Round 121: Axil starts with a real, confirmed Pouch (see
+	// character.NewPlayer's doc comment) - INVENTORY should list it
+	// from the very start, not claim nothing is carried.
+	if got := g.Handle(parser.Parse("INVENTORY")); !strings.Contains(got, "Pouch") {
+		t.Errorf("Handle(INVENTORY) at game start = %q, want it to list the real starting Pouch", got)
 	}
 	g.Handle(parser.Parse("PICKUP GRIMOIRE"))
 	got := g.Handle(parser.Parse("INVENTORY"))
 	if !strings.Contains(got, "Grimoire") {
 		t.Errorf("Handle(INVENTORY) after picking up the Grimoire = %q, want it listed", got)
+	}
+}
+
+// TestHandleInventoryEmptyWhenNothingCarried covers the actually-empty
+// case (INVENTORY's other real branch) directly on a Player with no
+// Items, since NewPlayer's real Pouch means New() itself never starts
+// empty anymore.
+func TestHandleInventoryEmptyWhenNothingCarried(t *testing.T) {
+	g := New()
+	g.Player.Items = nil
+	if got := g.Handle(parser.Parse("INVENTORY")); !strings.Contains(got, "anything") {
+		t.Errorf("Handle(INVENTORY) with nothing carried = %q, want it to say so", got)
 	}
 }
 
@@ -813,8 +828,17 @@ func TestHandlePickupMovesItemToInventory(t *testing.T) {
 	if !strings.Contains(got, "Grimoire") {
 		t.Errorf("Handle(PICKUP GRIMOIRE) = %q, want it to mention the Grimoire", got)
 	}
-	if len(g.Player.Items) != 1 || g.Player.Items[0] != "Grimoire" {
-		t.Errorf("Player.Items after pickup = %v, want [Grimoire]", g.Player.Items)
+	// Round 121: Axil's real starting Pouch (character.NewPlayer) means
+	// Items is never empty before this pickup - check Grimoire was
+	// added, not that it's the only item.
+	found := false
+	for _, item := range g.Player.Items {
+		if item == "Grimoire" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Player.Items after pickup = %v, want it to include Grimoire", g.Player.Items)
 	}
 	room := g.World.CurrentRoom()
 	for _, item := range room.Items {
@@ -839,8 +863,13 @@ func TestHandleDropReturnsItemToRoom(t *testing.T) {
 	if !strings.Contains(got, "drop the Grimoire") {
 		t.Errorf("Handle(DROP GRIMOIRE) = %q, want it to confirm the drop", got)
 	}
-	if len(g.Player.Items) != 0 {
-		t.Errorf("Player.Items after drop = %v, want empty", g.Player.Items)
+	// Round 121: Axil's real starting Pouch (see character.NewPlayer)
+	// is still carried after dropping the Grimoire - only the Grimoire
+	// itself should be gone, not the whole inventory.
+	for _, item := range g.Player.Items {
+		if item == "Grimoire" {
+			t.Errorf("Player.Items after drop = %v, want it to NOT include Grimoire", g.Player.Items)
+		}
 	}
 	room := g.World.CurrentRoom()
 	found := false
