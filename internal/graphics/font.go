@@ -1,6 +1,20 @@
-// Package graphics holds the game's visual assets as they get extracted
-// from the disassembly, plus the future rendering layer (a real renderer —
-// likely ebiten — hasn't been wired up yet; see screen.go).
+// Package graphics holds the game's real visual assets and the renderer
+// that draws them — PNGRenderer (screen.go/pngrenderer.go) has been the
+// one real, working Renderer implementation for a long time; both the
+// offline exporter (cmd/render-glyphs) and the live GUI (cmd/hotm-gui,
+// via ebiten.NewImageFromImage) share the exact same drawing code rather
+// than each having their own. This package's assets have grown well past
+// the original confirmed rune-glyph font: 13 real extracted portraits
+// (Portrait/PortraitNames — Apex, all 4 demons, all 8 monster types, from
+// the real in-game screenshot atlas heavymap-speccy-screenshots.png) and
+// a growing set of real per-room corridor screenshots (the *Sample
+// functions — CorridorSample, Level1CorridorSample, RoomOfMiserySample,
+// etc.), all live in cmd/hotm-gui's default and level-grid exploration
+// modes. See ../../CLAUDE.md's round 99/108 notes for this package's own
+// history of stale-doc-comment corrections — worth checking again
+// whenever a doc comment here starts sounding out of date, since this
+// package has grown substantially since most of its own comments were
+// first written.
 package graphics
 
 // Glyph is one 8x8, 1-bit-per-pixel character cell — the ZX Spectrum's

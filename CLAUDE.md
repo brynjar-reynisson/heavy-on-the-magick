@@ -6553,6 +6553,64 @@ after any round that adds a new per-room hazard/fact, the same
 "did the map keep up" discipline already applied to the GUI/text-
 frontend "confirmed but unsurfaced" audits in rounds 151/152.
 
+### Round 154: found and fixed a real, significantly stale package doc comment — internal/graphics's own top-level description still described itself as having no working renderer
+
+After another Stop-hook rejection whose complaint specifically named
+"no systemic review of code organization/documentation... for the
+OTHER packages" and "graphics... no evidence faithfully ported" as
+unaddressed, ran `go doc` against every package under `internal/` to
+check each one's own top-level description for accuracy — the same
+kind of audit round 99 already applied once to `internal/graphics/
+screen.go`'s `Renderer` interface comment and `internal/audio/
+beeper.go`'s package comment, both found stale at the time and fixed.
+
+Found a real, previously-missed instance of the exact same problem,
+in a DIFFERENT file of the SAME package round 99 already partially
+fixed: `internal/graphics/font.go`'s own package-level doc comment
+(the one `go doc ./internal/graphics` actually surfaces first) still
+read "the future rendering layer (a real renderer — likely ebiten —
+hasn't been wired up yet; see screen.go)" — describing exactly the
+state `screen.go`'s OWN comment already correctly moved past back in
+round 99 (`PNGRenderer` has been the one real, long-working
+implementation, shared by both frontends). Round 99's fix apparently
+only touched `screen.go` itself, not this package-level comment a
+few files over describing the very same fact incorrectly - a real,
+concrete example of exactly the kind of readability gap the hook's
+complaint named, not a hypothetical one.
+
+Beyond just the renderer-status claim, the old comment also predated
+essentially all of this package's real content growth since it was
+written: 13 real extracted portraits (`Portrait`/`PortraitNames`,
+rounds 75/76) and a dozen real per-room corridor screenshots (the
+`*Sample` functions, rounds 96-144), both live in `cmd/hotm-gui`
+today. Rewrote the comment to describe the package's actual current
+state accurately — the shared `PNGRenderer` implementation, the real
+portrait/corridor-sample assets and where they're used, and an
+explicit pointer to keep checking this discipline going forward
+(worth re-running whenever a doc comment here starts sounding dated,
+since this package specifically has grown substantially past most of
+its own original comments).
+
+Checked every other `internal/*` package's own top-level `go doc`
+output the same way (`character`, `parser`, `magic`, `audio`, `game`,
+`world`) — all read accurate and current, no other stale claims
+found; a real, checked negative for those 6, not skipped.
+
+Doc-only change; ran the full `gofmt`/`build`/`vet`/`test` suite (with
+a repeated `-count=2` run) clean anyway, per this project's standing
+discipline of verifying even non-functional changes.
+
+**How to apply**: a stale-doc-comment fix in one file of a package
+doesn't guarantee every OTHER doc comment in that same package
+describing the same fact got updated too — round 99's `screen.go` fix
+and this round's `font.go` fix describe the exact same underlying
+reality (a real, working `PNGRenderer`), but only one of the two
+comments got corrected at the time. When auditing for staleness,
+check `go doc <package>` itself (which surfaces the package-level
+comment specifically, not just whichever file gets read first) rather
+than assuming a single file's comment represents the whole package's
+documentation.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
