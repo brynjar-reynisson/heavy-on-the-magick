@@ -87,3 +87,38 @@ func Level3CorridorSample() image.Image {
 	}
 	return img
 }
+
+// assets/level4_corridor_sample.png is Level 4's own real room
+// screenshot (round 104), extracted the same way as the other 3
+// levels' — this atlas's Level 4 quadrant sits bottom-right (confirmed
+// via its own printed "Level 4" heading), with column 1 starting at
+// x≈5360 and row A at y≈3025 (both match Level 2's calibration almost
+// exactly, as expected for the two right-column quadrants).
+//
+// UNLIKE the other 3 levels, this is NOT cell A1: world.Level4Grid's
+// own real starting room is F2 (`w := New(level4Room("F2"))`), not A1
+// — see Level4Grid's doc comment: its extraction never confirmed A1 as
+// part of the real, playable 17-cell component the way Levels 1-3's A1
+// starting rooms were confirmed reachable, so `game.NewLevel4Exploration`
+// starts the player at F2 instead. Extracting A1 here would have been
+// visually consistent with the other 3 but semantically wrong — it
+// would show art for a room the player never actually starts in. F2's
+// position was computed from row A/column 1's calibration (row F = +5
+// row-heights, column 2 = +1 column-width) then pixel-verified directly
+// (not trusted from arithmetic alone) — the initial calculated crop
+// included a real black gap between F1 and F2 that isn't part of
+// either room, caught and fixed by scanning for where the floor color
+// is actually contiguous before finalizing the crop.
+//
+//go:embed assets/level4_corridor_sample.png
+var level4CorridorSamplePNG []byte
+
+// Level4CorridorSample decodes the embedded real Level4Grid-F2 room
+// screenshot. Panics on failure, matching CorridorSample() above.
+func Level4CorridorSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(level4CorridorSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded level4_corridor_sample.png: " + err.Error())
+	}
+	return img
+}

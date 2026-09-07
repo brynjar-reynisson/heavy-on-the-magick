@@ -4229,6 +4229,47 @@ Level 4 doesn't yet (a real, scoped, obvious next step were this
 pattern to continue). Ran the full `gofmt`/`build`/`vet`/`test` suite
 clean.
 
+### Round 104: extracted Level 4's corridor screenshot — all 4 levels now show real room art live
+
+After another Stop-hook rejection that explicitly named "Level 4's
+still missing" as the one remaining gap in this specific area,
+completed the set. Level 4's quadrant sits bottom-right in
+`heavymap-speccy-screenshots.png` (confirmed via its own printed
+"Level 4" heading), with column 1/row A calibration (x≈5360, y≈3025)
+matching Level 2's almost exactly, as expected for the atlas's two
+right-column quadrants.
+
+**Unlike the other 3 levels, this one is NOT cell A1.** Checked first
+and found `world.Level4Grid`'s own real starting room is F2 (`w :=
+New(level4Room("F2"))`), not A1 — Level4Grid's own doc comment explains
+why: its extraction never confirmed A1 as part of the real, reachable
+17-cell component the way Levels 1-3's A1 rooms were, so
+`game.NewLevel4Exploration` starts the player at F2 instead. Extracting
+A1 would have LOOKED consistent with the other 3 levels but been
+semantically wrong — real art for a room the player never actually
+starts in. Computed F2's atlas position from row A/column 1's
+calibration (row F = +5 row-heights, column 2 = +1 column-width), then
+pixel-verified directly rather than trusting the arithmetic alone —
+good thing, too: the initial calculated crop included a real black gap
+between F1 and F2 (not part of either room), caught by scanning for
+where the floor color is actually contiguous before finalizing the
+crop. Final result: a genuine, tight extract of F2's distinctive blue-
+toned corridor with a dark archway.
+
+Added `graphics.Level4CorridorSample()`, its test, and one line in
+`selectGame()` — same easy extension pattern rounds 98/103 established.
+Verified live via a throwaway `-level4grid` build: title correctly
+"... (Level 4 grid)", room correctly "F2" (not A1), and the real
+extracted art rendering cleanly in the corner.
+
+**All 4 of the game's dungeon levels now show real, extracted room art
+during actual live gameplay** — a genuine milestone for the graphics
+side specifically, even though the harder, still-open graphics gap
+(the original's actual 120-byte in-game picture-rendering FORMAT,
+as opposed to reference screenshots of what it looked like) remains
+unresolved, and CollodonsPile's default mode still has none. Ran the
+full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

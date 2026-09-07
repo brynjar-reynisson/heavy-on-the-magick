@@ -84,10 +84,10 @@ type GUI struct {
 // frontends. Passing the constructed *game.Game in (rather than
 // building it internally) lets main's -levelNgrid flags select which
 // world to play, the same way cmd/hotm's flags already do.
-// corridorArt is the real extracted room screenshot for whichever level
-// is active, or nil for levels with no extraction yet (round 96/98/103's
-// CorridorSample/Level1CorridorSample/Level3CorridorSample — Level 4's
-// is the only one still missing) — see selectGame.
+// corridorArt is the real extracted room screenshot for whichever
+// level's real starting cell is active (round 96/98/103/104's
+// CorridorSample/Level1CorridorSample/Level3CorridorSample/
+// Level4CorridorSample — all 4 levels now have one) — see selectGame.
 func NewGUI(g *game.Game, corridorArt image.Image) *GUI {
 	gui := &GUI{
 		g:           g,
@@ -511,16 +511,17 @@ func (gui *GUI) drawPortrait(screen *ebiten.Image) {
 }
 
 // drawCorridorSample shows the real extracted room screenshot for the
-// active level's A1 cell (round 96/98/103's CorridorSample/
-// Level1CorridorSample/Level3CorridorSample, round 97 GUI wiring) while
-// the player is still AT that real starting room — the first time this
-// port shows actual extracted room-scene art (as opposed to a demon/
-// monster/NPC portrait) during live gameplay. Scaled down to fit the
-// corner (the source screenshots are wider than this GUI's whole 512px
-// screen at native size) and skipped whenever a portrait is already
-// showing there, to avoid the two overlapping. gui.corridorSample is
-// nil for levels with no extraction yet (only Level 4, as of round
-// 103), in which case this is a no-op.
+// active level's real starting cell (round 96/98/103/104's
+// CorridorSample/Level1CorridorSample/Level3CorridorSample/
+// Level4CorridorSample, round 97 GUI wiring) while the player is still
+// AT that real starting room — the first time this port shows actual
+// extracted room-scene art (as opposed to a demon/monster/NPC portrait)
+// during live gameplay. Scaled down to fit the corner (the source
+// screenshots are wider than this GUI's whole 512px screen at native
+// size) and skipped whenever a portrait is already showing there, to
+// avoid the two overlapping. All 4 levels have art as of round 104, so
+// gui.corridorSample is only nil in default (CollodonsPile) mode, in
+// which case this is a no-op.
 func (gui *GUI) drawCorridorSample(screen *ebiten.Image) {
 	if gui.corridorSample == nil || gui.g.World.Current != gui.startRoomID {
 		return
@@ -646,9 +647,9 @@ func (gui *GUI) Layout(outsideWidth, outsideHeight int) (int, int) {
 // selection, previously CollodonsPile-only) - returns the constructed
 // *game.Game plus a title suffix describing the mode, for the window
 // title/log so it's clear which world is active, plus the real
-// extracted A1-cell room screenshot for that level if one exists yet
-// (round 98: Level 1 and 2; round 103: Level 3 too - Level 4's is the
-// only one still nil).
+// extracted room screenshot for that level's real starting cell, if one
+// exists yet (round 98: Level 1 and 2; round 103: Level 3; round 104:
+// Level 4 - all 4 levels now have one).
 func selectGame() (g *game.Game, modeTitle string, corridorArt image.Image) {
 	level1Grid := flag.Bool("level1grid", false, "play the extracted Level 1 grid (64 real cells) instead of CollodonsPile")
 	level2Grid := flag.Bool("level2grid", false, "play the extracted Level 2 grid (50 real, fully-connected cells) instead of CollodonsPile")
@@ -664,7 +665,7 @@ func selectGame() (g *game.Game, modeTitle string, corridorArt image.Image) {
 	case *level3Grid:
 		return game.NewLevel3Exploration(), " (Level 3 grid)", graphics.Level3CorridorSample()
 	case *level4Grid:
-		return game.NewLevel4Exploration(), " (Level 4 grid)", nil
+		return game.NewLevel4Exploration(), " (Level 4 grid)", graphics.Level4CorridorSample()
 	default:
 		return game.New(), "", nil
 	}
