@@ -262,3 +262,30 @@ func NidusSample() image.Image {
 	}
 	return img
 }
+
+// assets/trollwynd_sample.png (round 116) is a third zone-level-
+// confidence sample, same standard as Wolfdorp/Nidus above — this time
+// from LEVEL 3, not Level 1. heavymap-grid-clean.gif's own colored zone
+// boundary shows "Trollwynd" as a green area spanning roughly rows B-D,
+// columns 4-8 (matching zone_monsters.go's "Trollwynd: Troll x4"
+// sighting, already cross-confirmed in round 71 against this same
+// zone's 4 tight-crop-verified Troll icons). Cell B5 was picked as a
+// representative, unmarked cell within that zone, located in the atlas
+// via the same row/column arithmetic as every other Level 3 sample
+// (row B, column 5, reusing Level3CorridorSample's row-A/column-1
+// origin) — pixel-verified (left/top edges matched the calibration's
+// prediction closely, a good consistency check), showing a doorway and
+// a distinctive round shield/disc object on the floor.
+//
+//go:embed assets/trollwynd_sample.png
+var trollwyndSamplePNG []byte
+
+// TrollwyndSample decodes the embedded representative Trollwynd-zone
+// screenshot. Panics on failure, matching CorridorSample() above.
+func TrollwyndSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(trollwyndSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded trollwynd_sample.png: " + err.Error())
+	}
+	return img
+}

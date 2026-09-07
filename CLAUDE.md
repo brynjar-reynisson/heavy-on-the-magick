@@ -4666,6 +4666,41 @@ Added `TestHandleInvokeWithNoTargetShowsNumberSignAspect` and
 `TestHandleLookShowsLevel`. Ran the full `gofmt`/`build`/`vet`/`test`
 suite clean.
 
+### Round 116: tried to finally wire ZodiacKeys to real content (2 honest negatives), shipped Trollwynd's zone art instead
+
+After another Stop-hook rejection, same framing, first tried to close
+the oldest still-open "extracted but unwired" gap: `magic.ZodiacKeys`
+(12 sign-to-metal-key pairings, real since early in the project, but
+explicitly "not yet wired to any gameplay" per its own doc comment).
+Applied the exact method that placed Sword/Sunflower/Erlstone/Mantis —
+find which zone banner a numbered map cell sits inside — to 2 of the
+12 Sign entries (#19 "Capricornus", #6 "Leo"). Both turned out to sit
+in large, genuinely unbannered connector areas between named zones
+(checked carefully via tight crops showing every nearby banner, not
+just the closest-looking one), unlike Erlstone's #59 which had exactly
+one clear neighbor. Left unplaced — a real, checked negative, not an
+oversight — documented in `zodiac_keys.go` so a future round doesn't
+re-attempt the identical check on these same two entries, and flagged
+that the other 10 Signs may hit the same wall.
+
+With that avenue genuinely exhausted for this round, shipped a
+different, certain deliverable instead: extended the zone-level-
+confidence room-art pattern (rounds 109/113) to a THIRD zone,
+Trollwynd — this time on Level 3, not Level 1. The clean grid map's
+green "Trollwynd" zone (rows B-D, columns 4-8) already matches
+`zone_monsters.go`'s "Troll x4" sighting, cross-confirmed since round
+71. Picked cell B5 (unmarked, within the zone), located via the same
+row/column arithmetic as `Level3CorridorSample`, pixel-verified (the
+calibration's prediction matched the real edges closely — a good
+consistency check) — shows a doorway and a distinctive round shield/
+disc object.
+
+Added `graphics.TrollwyndSample()` (own test), wired into `cmd/hotm-
+gui`'s default-mode room-art map, verified via `NewGUI` +
+`World.Teleport`. **6 of CollodonsPile's real rooms now show real
+extracted art** (3 exact-cell, 3 zone-level). Ran the full
+`gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
