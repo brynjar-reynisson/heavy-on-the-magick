@@ -389,3 +389,32 @@ func PilefootSample() image.Image {
 	}
 	return img
 }
+
+// assets/methos_sample.png (round 142) is a fifth zone-level-confidence
+// sample, same standard as Wolfdorp/Nidus/Trollwynd/Pilefoot above.
+// level4_grid.go's own doc comment already establishes "Methos" as a
+// zone spanning columns 6-8 of row A in Level 4's grid (independently
+// cross-confirmed there against Level1Grid's own Methos-zone Vampire
+// sighting). Located precisely: template-matched the already-extracted
+// Level4CorridorSample (F2) against the atlas (another pixel-exact 0.0-
+// score match) to derive Level 4's real row-A/column-1 origin, then
+// picked the zone's middle cell (column 7) — confirmed both by the
+// atlas's own printed "6"/"7" column-position labels (the SAME reliable
+// kind that confirmed Agile Stair/Furnace Room, not the misleading
+// stairwell-destination-arrow kind round 138 learned to distinguish)
+// and by content: a bone item plus a monster, consistent with Methos's
+// own already-confirmed Vampire occupant (CollodonsPile) even though
+// this is zone-level, not exact-cell, confidence for the room itself.
+//
+//go:embed assets/methos_sample.png
+var methosSamplePNG []byte
+
+// MethosSample decodes the embedded representative Methos-zone
+// screenshot. Panics on failure, matching CorridorSample() above.
+func MethosSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(methosSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded methos_sample.png: " + err.Error())
+	}
+	return img
+}

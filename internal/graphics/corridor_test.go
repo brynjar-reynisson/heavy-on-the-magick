@@ -59,6 +59,13 @@ func TestAgileStairSampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, AgileStairSample(), "AgileStairSample()")
 }
 
+// TestMethosSampleDecodesToRealArt mirrors
+// TestCorridorSampleDecodesToRealArt for round 142's Methos addition -
+// zone-level confidence, same tier as WolfdorpSample above.
+func TestMethosSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, MethosSample(), "MethosSample()")
+}
+
 // TestFurnaceRoomSampleDecodesToRealArt mirrors
 // TestCorridorSampleDecodesToRealArt for round 141's Furnace Room
 // addition - exact-cell confidence (level1_grid.go's own A8).

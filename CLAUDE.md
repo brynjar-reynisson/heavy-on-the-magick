@@ -5943,6 +5943,46 @@ enough to get a real, structural answer (not just "didn't try") is
 worth the modest time it took, before moving on to something more
 productive the same round.
 
+### Round 142: a 10th real room screenshot for CollodonsPile — Methos, extending the precise-calibration technique to Level 4's own atlas quadrant
+
+After another Stop-hook rejection, same framing, extended round 137's
+precise template-matching technique to a 4th atlas quadrant. Methos is
+a real, connected, reachable CollodonsPile room (already carrying a
+Vampire and Erlstone/Nugget); `level4_grid.go`'s own doc comment
+already establishes "Methos" as a zone spanning columns 6-8 of row A
+in Level 4's grid, cross-confirmed there against Level1Grid's own
+Methos-zone Vampire sighting. Template-matched the already-extracted
+`Level4CorridorSample` (F2) against the full atlas — another pixel-
+exact 0.0-score match — to derive Level 4's real row-A/column-1
+origin precisely, then picked the zone's middle cell (column 7).
+
+Doubly confirmed the same reliable way as Agile Stair/Furnace Room:
+the atlas's own printed "6"/"7" column-position labels (explicitly
+NOT the misleading stairwell-destination-arrow kind round 138 learned
+to distinguish from genuine position labels) directly above the
+cells, and real content — a bone item plus a monster silhouette,
+thematically consistent with Methos's own already-confirmed Vampire
+occupant even at this zone-level (not exact-cell) confidence tier.
+
+Added `graphics.MethosSample()` (own test,
+`TestMethosSampleDecodesToRealArt`) and wired it into `cmd/hotm-gui`'s
+default-mode room-art map — **CollodonsPile's 10th room with real
+extracted art**. Ran the full `gofmt`/`build`/`vet`/`test` suite (with
+a repeated `-count=2` run) clean, and verified live via two disposable-
+throwaway-repo-copy screenshots: the first (teleported to Methos)
+correctly showed the real Vampire portrait taking priority per the
+existing rule (a live monster's portrait outranks corridor art); a
+second pass (also clearing the Vampire's health) confirmed the actual
+corridor art itself renders correctly once nothing outranks it.
+
+**How to apply**: a monster occupying the target room can mask
+whether new corridor art is wired correctly at all, if the existing
+portrait-priority rule (round 76) simply hides it every screenshot —
+when verifying a new room-art addition for a monster-occupied room,
+check both states (as-is, and with the monster cleared) rather than
+concluding "must be broken" (or, worse, "must be fine") from a single
+screenshot that happens to show something else on top.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

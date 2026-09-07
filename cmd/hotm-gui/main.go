@@ -738,7 +738,10 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 		// at exact-cell confidence (level1_grid.go's own confirmed A7).
 		// Round 141 adds Furnace Room (A8, the cell right next to Agile
 		// Stair) - also exact-cell, and the clearest content-to-name
-		// match of any sample here (an actual fireplace scene).
+		// match of any sample here (an actual fireplace scene). Round
+		// 142 adds Methos at zone-level confidence (Level 4's own
+		// A6-A8 Methos zone), same tier as Wolfdorp/Nidus/Trollwynd/
+		// Pilefoot.
 		return game.New(), "", map[string]image.Image{
 			"Room of Misery": graphics.RoomOfMiserySample(),
 			"Room of Stings": graphics.RoomOfStingsSample(),
@@ -749,6 +752,7 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 			"Nidus":          graphics.NidusSample(),
 			"Trollwynd":      graphics.TrollwyndSample(),
 			"Pilefoot":       graphics.PilefootSample(),
+			"Methos":         graphics.MethosSample(),
 		}
 	}
 }
