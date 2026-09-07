@@ -7659,6 +7659,90 @@ elsewhere in this project's existing data (H4 is already real, named
 "Water"), that's a strong, low-risk placement — check for an exact
 name match before assuming a new fact has nowhere to attach to.
 
+### Round 170: applying round 153's own advice to round 169's new Water field surfaced a real, 44-round-old bug in the exploration map itself — a visited room could silently vanish from MAP
+
+After another Stop-hook rejection, same framing, started with the
+small, expected task round 153's own "How to apply" note calls for
+directly: whenever a new room-level hazard field is added (round 169's
+`world.Room.Water`), check whether the exploration map's own
+`roomMarker` picked it up. It hadn't — added a `"W"` marker, the same
+tier as `Guards` (a real obstacle in the CURRENT room, doesn't block
+movement mechanically, unlike `Fire`).
+
+Writing the real-data test for it (mirroring `TestRenderASCIIMapMarksGuards`'s
+own pattern: reach the real placement, check the marker) is what
+surfaced something much bigger. `Level3Grid`'s H4 (Water) is isolated
+— no `Exits` — so the test used `World.Teleport`, the same technique
+every other isolated-cell test in this project already uses. The test
+failed in a way that had nothing to do with the marker itself: `MAP`
+rendered `Room of Misery`... sorry, `A1`, alone — the Water room had
+vanished entirely, not shown via the grid, not shown via the honest
+"not spatially consistent" list fallback either. **Root cause,
+confirmed by reading `Layout` in `map.go`**: its BFS only reaches rooms
+connected via real `Exits` from the anchor room. A room visited ONLY
+via `World.Teleport` (no `Exits` in or out at all) is never added to
+`Layout`'s `positions` map — and critically, `consistent` stays `true`
+the whole time, because `Layout` never actually visits that room to
+find a CONTRADICTION; it just never gets there. `RenderASCIIMap` only
+falls back to the honest list view when `consistent` is `false`, so
+this specific failure mode — "a visited room Layout's BFS simply can't
+reach" — was invisible to the existing fallback logic entirely. The
+room wasn't marked as unreachable or flagged in any way; it just
+silently wasn't there.
+
+**This is not a hypothetical edge case — verified it's been a real,
+live, DEFAULT-MODE bug since round 126.** `game.punishFailedInvoke`
+(a real, sourced mechanic, shipped 44 rounds ago, exercised in this
+project's own tests ever since) teleports a failed `INVOKE` to
+`CollodonsPile`'s own Furnace Room — which, per round 126's own doc
+comment, was deliberately given "no `Exits` of its own, reached only
+via the real punishment teleport." Confirmed with a real
+`git stash`/re-run/`stash pop` before-and-after comparison, not just
+code reading: **before the fix**, `go run ./cmd/hotm` → `INVOKE
+ASTAROT` (fails, teleports to Furnace Room) → `MAP` showed ONLY `Room
+of Misery` — the room the player was actually standing in was silently
+missing from their own explored map. **After the fix**, the same
+sequence correctly shows both rooms via the list fallback.
+
+Fixed by extending `RenderASCIIMap`'s existing fallback condition:
+alongside "`Layout` found a contradiction" and "`positions` is empty,"
+now also falls back to the list view when `len(positions) <
+len(w.VisitedRooms())` — i.e., whenever ANY visited room didn't make
+it into the grid layout, for whatever reason, not just a detected
+spatial conflict. The list view already shows every visited room
+unconditionally regardless of `Exits`-reachability, so this is a
+correct, minimal fix reusing an already-correct code path rather than
+inventing new logic.
+
+Also caught and fixed a real precision mistake in my OWN new tests
+before it shipped: my first `TestRenderASCIIMapMarksWater` checked for
+a bare `"W"` substring — which trivially matched the room's own full
+name, "**W**ater," regardless of whether the real marker was even
+present. Fixed to check the exact `"> W Water"` list-view pattern
+instead (the marker position specifically), and added a dedicated
+`TestRenderASCIIMapShowsTeleportOnlyVisitedRoom` pinning the bug fix
+itself as a named, permanent regression test — not just something the
+Water tests happened to exercise as a side effect.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified live via `go run ./cmd/hotm` both
+before (via a real `git stash`) and after the fix.
+
+**How to apply**: round 153's own advice ("check the exploration map
+whenever a new hazard field is added") paid off in a way stronger than
+originally intended — the SMALL task (add a marker) is what led to
+writing a real test against an isolated cell, which is what surfaced a
+completely unrelated, much more serious, already-shipped bug. This is
+a good argument for writing the REAL-DATA test (reaching an actual
+isolated placement via `Teleport`, not just a synthetic 2-room world)
+even for a small marker addition — a synthetic single-connected-room
+test would never have exercised the `Layout`-can't-reach-this-room
+path at all, and the bug would have stayed invisible. When a fallback
+condition checks for one specific failure signal (`consistent ==
+false`), consider whether there's a DIFFERENT failure shape (silently
+incomplete reachable set, no contradiction ever detected) that the
+same signal doesn't cover.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the

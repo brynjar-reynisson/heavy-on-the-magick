@@ -102,6 +102,74 @@ func TestRenderASCIIMapMarksFire(t *testing.T) {
 	}
 }
 
+// TestRenderASCIIMapMarksWater covers round 170's real Water marker
+// (see roomMarker's doc comment) using Level3Grid's confirmed H4 Water
+// placement (round 169) - reached via a direct Teleport since H4 is
+// currently isolated (no Exits), the same honest scope every other
+// isolated named cell in this project has had before its own
+// connectivity is found. Deliberately checks for the exact "> W Water"
+// marker position (the real list-view format, since round 170's own
+// fix routes a Teleport-only-reached isolated room through the list
+// fallback - see RenderASCIIMap's doc comment), not just a bare "W" -
+// the room's own full name ("Water") would make a bare "W" check pass
+// even with no real marker at all, a false-positive risk caught while
+// writing this exact test.
+func TestRenderASCIIMapMarksWater(t *testing.T) {
+	w := Level3Grid()
+	id, ok := w.FindRoomByName("Water")
+	if !ok {
+		t.Fatal("test setup bug: Level3Grid has no room named Water")
+	}
+	w.Teleport(id)
+	if !w.Rooms[w.Current].Water {
+		t.Fatalf("test setup bug: expected to be in a room with Water, got %+v", w.Rooms[w.Current])
+	}
+	out := RenderASCIIMap(w)
+	if !strings.Contains(out, "> W Water") {
+		t.Errorf("RenderASCIIMap with a real Water hazard = %q, want it marked with W", out)
+	}
+}
+
+// TestRenderASCIIMapDoesNotMarkClearedWater mirrors the cleared-Guards
+// test above for Water: once cleared (game.passWater sets Water=false),
+// the map should stop marking the room. Checks for the ABSENCE of the
+// exact marked pattern, not a bare "W" (see TestRenderASCIIMapMarksWater's
+// doc comment for why a bare check would be a false-positive risk here).
+func TestRenderASCIIMapDoesNotMarkClearedWater(t *testing.T) {
+	w := Level3Grid()
+	id, ok := w.FindRoomByName("Water")
+	if !ok {
+		t.Fatal("test setup bug: Level3Grid has no room named Water")
+	}
+	w.Teleport(id)
+	w.Rooms[w.Current].Water = false
+	out := RenderASCIIMap(w)
+	if strings.Contains(out, "> W Water") {
+		t.Errorf("RenderASCIIMap with cleared Water = %q, should not still show the W marker", out)
+	}
+}
+
+// TestRenderASCIIMapShowsTeleportOnlyVisitedRoom covers round 170's
+// real bug fix: Layout's BFS only reaches rooms connected via real
+// Exits from the anchor - a genuinely visited room reached ONLY via
+// World.Teleport (no Exits in or out) used to be silently omitted from
+// the map entirely, with `consistent` staying true the whole time (no
+// contradiction was ever detected, since Layout's BFS simply never
+// visited that room to find one). Confirms the real fix: the room now
+// shows up (via the list-view fallback), not silently vanishes.
+func TestRenderASCIIMapShowsTeleportOnlyVisitedRoom(t *testing.T) {
+	w := Level3Grid()
+	id, ok := w.FindRoomByName("Water")
+	if !ok {
+		t.Fatal("test setup bug: Level3Grid has no room named Water")
+	}
+	w.Teleport(id)
+	out := RenderASCIIMap(w)
+	if !strings.Contains(out, "Water") {
+		t.Errorf("RenderASCIIMap after teleporting to an Exit-less room = %q, want the room to still appear, not silently vanish", out)
+	}
+}
+
 // TestRenderASCIIMapMarksLockedDoor covers round 153's real locked-door
 // marker (see roomMarker's doc comment), for both real gating fields
 // (DoorPasswords and TollItem).

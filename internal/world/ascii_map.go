@@ -16,9 +16,28 @@ import (
 // map.go's doc comment — a non-Euclidean shortcut in the room design),
 // RenderASCIIMap falls back to a simple list instead of attempting a grid
 // that would overlap or contradict itself.
+//
+// ROUND 170 FIX (a real bug, not just a hypothetical): Layout's own BFS
+// only reaches rooms connected via real Exits from the anchor room — a
+// genuinely visited room reached ONLY via World.Teleport (Astarot's
+// real ability, or any isolated named cell with no Exits, like
+// Level3Grid's own Water/H4) was never added to Layout's positions map
+// at all, and `consistent` stayed true the whole time since Layout
+// never actually detects a CONTRADICTION for a room it never visits in
+// its own BFS - so the old code silently rendered a grid that just
+// omitted that room entirely, with no fallback and no indication
+// anything was missing. Caught while adding round 169's real Water
+// hazard to roomMarker (see its own doc comment) and testing it via
+// the same Teleport pattern several other isolated-cell tests already
+// use - the very first real test of "a visited room Layout's BFS can't
+// reach" this function had ever been exercised against. Fixed by
+// checking whether every VISITED room actually made it into positions;
+// if not, falling back to the same list view already used for a real
+// spatial contradiction - the list shows every visited room
+// unconditionally, regardless of Exit-reachability from the anchor.
 func RenderASCIIMap(w *World) string {
 	positions, consistent := Layout(w, w.startRoomForLayout())
-	if !consistent || len(positions) == 0 {
+	if !consistent || len(positions) == 0 || len(positions) < len(w.VisitedRooms()) {
 		return renderRoomList(w)
 	}
 
@@ -52,29 +71,38 @@ func RenderASCIIMap(w *World) string {
 // roomMarker is a real, at-a-glance indicator of what's actually in a
 // room right now — "!" for a living Monster (real per-room data, see
 // CollodonsPile/Level1Grid's doc comments for sourcing), "F" for a real,
-// un-cleared Fire hazard (world.Room.Fire — see its doc comment), "#"
-// for a real, un-cleared Guards obstacle (world.Room.Guards), "D" for a
-// real locked door (DoorPasswords/TollItem — see game.describeCurrentRoom's
-// round 152 LOOK-time hint, which this mirrors), "*" for one or more
-// Items, or a blank if none of those. A defeated Monster
-// (MonsterHealth <= 0), a Clasp-cleared Fire, or a passed Guards
-// obstacle no longer marks the room, so the map reflects real, changing
-// state as the player clears it, not just static room contents. Fire
-// isn't cleared by the Clasp here the way it is in describeCurrentRoom's
-// hint - the map has no player-state parameter to check against, so it
-// shows the room's own real Fire flag unconditionally, an honest,
-// simpler reading for a static map view. Only one character is shown
-// even if a room has more than one of these (the fixed-width grid
-// layout has no room for more) — Monster takes priority as the most
-// immediately dangerous, then Fire (the only one of the remaining three
-// that actually blocks movement), then Guards, then a locked door, then
-// Items.
+// un-cleared Fire hazard (world.Room.Fire — see its doc comment), "W"
+// for a real, un-cleared Water hazard (world.Room.Water — round 169),
+// "#" for a real, un-cleared Guards obstacle (world.Room.Guards), "D"
+// for a real locked door (DoorPasswords/TollItem — see
+// game.describeCurrentRoom's round 152 LOOK-time hint, which this
+// mirrors), "*" for one or more Items, or a blank if none of those. A
+// defeated Monster (MonsterHealth <= 0), a Clasp-cleared Fire, a
+// spoken-cleared Water, or a passed Guards obstacle no longer marks
+// the room, so the map reflects real, changing state as the player
+// clears it, not just static room contents. Fire isn't cleared by the
+// Clasp here the way it is in describeCurrentRoom's hint - the map has
+// no player-state parameter to check against, so it shows the room's
+// own real Fire flag unconditionally, an honest, simpler reading for a
+// static map view (Water has no equivalent item-based clearing
+// condition to begin with - it's always a spoken command, so this
+// isn't a discrepancy for it the way it is for Fire). Only one
+// character is shown even if a room has more than one of these (the
+// fixed-width grid layout has no room for more) — Monster takes
+// priority as the most immediately dangerous, then Fire (the only one
+// of the remaining ones that actually blocks movement into a
+// neighboring room), then Water (a real obstacle in the CURRENT room,
+// same tier as Guards - see game.passWater/passGuards, neither blocks
+// movement mechanically), then Guards, then a locked door, then Items.
 func roomMarker(r *Room) string {
 	if r.Monster != "" && r.MonsterHealth > 0 {
 		return "!"
 	}
 	if r.Fire {
 		return "F"
+	}
+	if r.Water {
+		return "W"
 	}
 	if r.Guards {
 		return "#"
