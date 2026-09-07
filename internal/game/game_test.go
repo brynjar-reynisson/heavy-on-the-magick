@@ -234,6 +234,47 @@ func TestHandleMagotLocateUnknownObject(t *testing.T) {
 	}
 }
 
+// TestHandleNestPhoenixRequiresRealNest covers round 136's real,
+// sourced ritual command (see game.nestPhoenix's doc comment): saying
+// "NEST, PHOENIX" anywhere that isn't really named "Nest of Phoenix"
+// is an honest rejection, not a fabricated success.
+func TestHandleNestPhoenixRequiresRealNest(t *testing.T) {
+	g := New() // starts in Room of Misery, not the Nest of Phoenix
+	got := g.Handle(parser.Parse("NEST, PHOENIX"))
+	if !strings.Contains(got, "no phoenix nest here") {
+		t.Errorf("Handle(NEST, PHOENIX) outside the real nest = %q, want an honest rejection", got)
+	}
+}
+
+// TestHandleNestPhoenixFullRitual covers the real ritual succeeding
+// once every confirmed requirement is met (real room name, carrying
+// the Clasp/"Salamander charm", and an Egg already dropped there).
+// Uses a synthetic room (no shipped World.Room is named "Nest of
+// Phoenix" yet - real, scoped follow-up work) - same pattern as
+// TestHandleFireBlocksMovementWithoutClasp/TestHandleSwapItemRevealsRealItem.
+func TestHandleNestPhoenixFullRitual(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Nest of Phoenix"})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("NEST, PHOENIX"))
+	if !strings.Contains(got, "Salamander charm") {
+		t.Errorf("Handle(NEST, PHOENIX) with no Clasp carried = %q, want the Salamander-charm hint", got)
+	}
+
+	g.Player.Items = append(g.Player.Items, "Clasp")
+	got = g.Handle(parser.Parse("NEST, PHOENIX"))
+	if !strings.Contains(got, "drop an Egg") {
+		t.Errorf("Handle(NEST, PHOENIX) with the Clasp but no Egg dropped = %q, want the drop-an-Egg hint", got)
+	}
+
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Egg")
+	got = g.Handle(parser.Parse("NEST, PHOENIX"))
+	if !strings.Contains(got, "ritual succeeds") {
+		t.Errorf("Handle(NEST, PHOENIX) with every requirement met = %q, want the ritual to succeed", got)
+	}
+}
+
 // TestHandleFireBlocksMovementWithoutClasp covers the real, sourced
 // Fire mechanic (see world.Room.Fire's doc comment): the CASA
 // walkthrough states the Clasp "enables you to walk through fire" -

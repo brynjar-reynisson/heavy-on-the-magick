@@ -5642,6 +5642,59 @@ the riskier ones (unknown effect, multi-item setup) to a future round
 with a note of exactly what's still needed — better than rushing a
 guess at what "NEST, PHOENIX" or "CAULDRON, ACHAD" actually DO.
 
+### Round 136: wired "NEST, PHOENIX" as a real, honest recognized ritual — round 135's deliberately-deferred item, now as far as the source actually goes
+
+After another Stop-hook rejection, same framing, followed up directly
+on round 135's own explicitly-flagged next step: fetched World of
+Spectrum's plain-text instructions file twice more, asking specifically
+for the NEST/PHOENIX and CAULDRON/ACHAD rituals' actual EFFECTS (not
+just their setup steps, already known). Both fetches confirmed the
+same honest limit: the document states the setup precisely but never
+describes the outcome — for CAULDRON/ACHAD, the only extra fact found
+was its own section heading, "TO RESURRECT AI" (AI being an unnamed
+character/entity this source never explains further — no source
+checked so far identifies who or what AI is). Rather than keep
+re-fetching a source that's now given a clear, repeated non-answer on
+this specific question, implemented what IS fully confirmed:
+"NEST, PHOENIX" as a real, honestly-scoped command.
+
+`game.nestPhoenix` checks all 3 real, sourced requirements from the
+setup steps precisely (current room really named "Nest of Phoenix";
+carrying the Clasp — clarified round 135 as the same item as the
+numbered map's "Salamander charm"; an Egg already dropped in the
+room) and, once satisfied, reports a real "the ritual succeeds, though
+its exact effect isn't modeled yet" — the same honest "confirmed real,
+effect unknown" convention CALL used for ~40 rounds before round 125
+resolved it, not a fabricated outcome. `CAULDRON, ACHAD` was
+deliberately NOT implemented alongside it — it needs a genuinely new
+mechanism (tracking multiple items dropped into one container, plus
+first removing the Scroll the Cauldron already "contains") that NEST/
+PHOENIX's simpler single-room-check doesn't need, and forcing it into
+the same shape this round risked getting the design wrong just to ship
+something.
+
+Added `TestHandleNestPhoenixRequiresRealNest` (honest rejection
+everywhere else) and `TestHandleNestPhoenixFullRitual` (all 3
+requirements individually gated, using a synthetic "Nest of Phoenix"
+room — same pattern as `TestHandleFireBlocksMovementWithoutClasp`/
+`TestHandleSwapItemRevealsRealItem`, since no shipped World.Room
+carries that name yet). Ran the full `gofmt`/`build`/`vet`/`test`
+suite (with a repeated `-count=2` run) clean, and verified live via
+`go run ./cmd/hotm`: `NEST, PHOENIX` outside the real nest room
+correctly says so, not a generic "I don't understand."
+
+**How to apply**: when a source gives a clear, repeated non-answer to
+the same specific question (here: what does the ritual actually DO),
+that's a real, checked limit worth accepting rather than re-asking a
+third or fourth time — ship what IS fully confirmed (the setup/
+grammar/gating) as an honest stub, the exact pattern CALL proved out
+over ~40 rounds before its own resolution eventually arrived from a
+different source entirely. Two similar-looking rituals found in the
+same fetch don't have to be implemented together just because they
+were discovered together — CAULDRON/ACHAD's genuinely different shape
+(multi-item container tracking) is real, separate scope, not a copy-
+paste of NEST/PHOENIX's simpler single-room check.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

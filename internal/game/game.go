@@ -364,6 +364,10 @@ func (g *Game) Handle(cmd parser.Command) string {
 		return g.passGuards()
 	}
 
+	if strings.EqualFold(cmd.Target, "NEST") && strings.EqualFold(cmd.Verb, "PHOENIX") {
+		return g.nestPhoenix()
+	}
+
 	if dir, ok := world.ParseDirection(cmd.Verb); ok {
 		return g.move(dir)
 	}
@@ -690,6 +694,46 @@ func (g *Game) passGuards() string {
 	}
 	room.Guards = false
 	return "The guards step aside and let you pass."
+}
+
+// nestPhoenix handles the real, sourced conversation-form command
+// "NEST, PHOENIX" (round 136). World of Spectrum's plain-text
+// instructions file gives the exact setup: "Get the Shell and swap it
+// for the egg. Go to the nest (while carrying the salamander charm)
+// and drop the egg in it. Stand well back... and say 'NEST, PHOENIX'."
+// Cross-references 3 already-real facts: numbered_room_contents.go's
+// #96 "Nest of Phoenix" (already ported, round 91, via the
+// independently-confirmed "PHOENIX" vocabulary word); the numbered
+// map's own #21 "Cabinet (clasp - Salamander charm)" turns out to
+// describe the SAME Clasp already placed in Trollwynd (round 63), not
+// a separate item; and round 132's Shell-Egg swap tip. Gated on the
+// current room's real Name (no source states the ritual works
+// anywhere else) and both real setup requirements: carrying the Clasp
+// and an Egg already dropped here. The ritual's own EFFECT isn't
+// stated in any source fetched so far (see this round's writeup in
+// ../../CLAUDE.md) - an honest "confirmed real, effect unknown" stub,
+// the same convention CALL used before round 125 resolved it. No real
+// World.Room is currently named "Nest of Phoenix" (real, scoped follow-
+// up work, same "mechanic real, not yet reachable" pattern already
+// used for TollItem/Fire/Guards/SwapItem before their first placement).
+func (g *Game) nestPhoenix() string {
+	room := g.World.CurrentRoom()
+	if room == nil || !strings.EqualFold(room.Name, "Nest of Phoenix") {
+		return "There is no phoenix nest here."
+	}
+	if !g.hasItem("Clasp") {
+		return "You need the Salamander charm before you dare approach the nest."
+	}
+	hasEgg := false
+	for _, item := range room.Items {
+		if strings.EqualFold(item, "Egg") {
+			hasEgg = true
+		}
+	}
+	if !hasEgg {
+		return "You'll need to drop an Egg in the nest first."
+	}
+	return "You stand well back and call out: NEST, PHOENIX! The ritual succeeds, though its exact effect isn't modeled yet."
 }
 
 // hasItem reports whether the player is carrying an item by name.
