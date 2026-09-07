@@ -4063,6 +4063,52 @@ crash). 2 new unit tests (`TestMixNotesAveragesBothStreams`,
 `SecondaryMelody`/`playStartupMelody`/`playSecondaryMelody`. Ran the
 full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 100: a real cross-world overlap scan, and pinning down exactly why the level grids and CollodonsPile can't be safely merged yet
+
+After another Stop-hook rejection, whose complaint again included the
+4 level grids being "separate, unmerged datasets," took the merge
+question seriously for the first time in many rounds rather than
+deferring it again. First did a full, programmatic scan (not
+re-reading doc comments from memory) for every `Room.Name` shared
+between any two of the 5 worlds (CollodonsPile + Level1-4Grid). Most
+"shared names" turned out to be a naming-SCHEME coincidence, not real
+content overlap: all 4 level grids independently use the same
+row-letter+column-number cell addressing (e.g. every grid has its own
+"A1"), so those names collide without meaning anything. Filtering
+those out, the real, previously-identified overlaps are exactly the
+ones already documented: Agile Stair/Room of Stings/Room of Arrows
+(CollodonsPile ↔ Level1Grid), Sothic Complex (CollodonsPile ↔
+Level3Grid, already flagged as an unresolved same-name-different-room
+question), Room of Misery (CollodonsPile ↔ Level2Grid's isolated F4
+"Misery" pocket), and "Exit" (Level1Grid's G3 vs. Level4Grid's G2 —
+different physical rooms, not a shared one, consistent with the
+dungeon having multiple real exits per round 19's win-condition find).
+No new candidates turned up — a genuine, useful negative result.
+
+Went one step further than previous rounds on the specific blocker:
+pinned down PRECISELY why a literal single-graph merge of Level1Grid
+into CollodonsPile isn't safe yet, not just "not done." Level1Grid's
+F3 (Room of Stings) already has a real, pixel-extracted North exit to
+E3; the CASA walkthrough separately and independently states "Room of
+Stings -North-> Morfang." Both facts are real, sourced data — but they
+directly conflict on where Room of Stings's North exit leads. Forcing
+a merge would mean silently discarding one source's real data to make
+the other fit, which this project has never done. Documented this
+explicitly in `level1_grid.go` rather than leaving the merge as a
+vague, permanently-deferred "follow-up task."
+
+Shipped a real, low-risk, reusable tool either way:
+`world.SharedNamedRooms(a, b *World) map[string][2]RoomID` — a general
+cross-world name-overlap scanner (filters out the cell-code-coincidence
+noise), with 3 tests, including one that locks in this round's exact
+findings as a regression check (so a future accidental rename won't
+silently break these known connections) and one that explicitly
+documents "Exit" as a found-but-NOT-claimed-as-one-room case. This is
+genuine prerequisite infrastructure for the eventual real merge, not a
+forced/guessed one.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

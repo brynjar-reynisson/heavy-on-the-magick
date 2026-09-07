@@ -130,6 +130,22 @@ package world
 // Room of Arrows), which were sourced from a walkthrough that doesn't
 // use this same per-cell addressing - a real follow-up task, not done
 // here.
+//
+// Round 100: re-confirmed via world.SharedNamedRooms (a general cross-
+// world scan, not specific to Level 1) that Agile Stair/Room of Stings/
+// Room of Arrows remain the ONLY genuinely-named overlaps between this
+// file and CollodonsPile - no new candidates turned up. Also pinned down
+// the SPECIFIC reason a literal single-graph splice isn't safe yet, not
+// just "not done": F3 (Room of Stings) already has a real, pixel-
+// extracted North exit to E3 here, but the CASA walkthrough (line ~33
+// above) separately states "Room of Stings -North-> Morfang" - two
+// independently-sourced sources both claim the SAME direction from the
+// SAME named room, but disagree on where it leads. Neither source is
+// obviously wrong (E3 is real extracted grid data; Morfang is a real
+// walkthrough fact), so forcibly picking one to build a merged graph
+// would silently discard the other's real data rather than resolve
+// anything - left unresolved rather than guessed, same discipline as
+// Sothic Complex's Level 2 vs Level 3 naming clash (see level3_grid.go).
 func Level1Grid() *World {
 	w := New(level1Room("A1"))
 	for _, r := range level1Cells {
