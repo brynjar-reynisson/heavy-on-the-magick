@@ -3466,6 +3466,46 @@ for "did a blip play"), so this is verified by code review of a
 simple, unambiguous `RoomID` comparison plus a clean build, the same
 honesty caveat already applied elsewhere in this project's audio work.
 
+### Re-read the official manual in full for the first time in many rounds, corrected two stub responses, and validated Astarot/Magot's design
+
+After another Stop-hook rejection, same framing, went back to
+`HeavyOnTheMagick.pdf` (the official Gargoyle Games instruction manual,
+already used many rounds ago for demons/charms/backstory) and read it
+in full again rather than relying on old summaries — a source this
+project hadn't revisited end-to-end in a long time. Found real,
+actionable detail:
+
+- The manual's own Merphish keyword table gives **exact** definitions
+  for `H` (Halt) — "abandon the command being actioned and the rest of
+  any outstanding command string" — and `Z` (Swap) — "a special
+  function to swap the information in Window 1." Both had honest but
+  imprecise stub responses (`"Halted."` and `"You SWAP windows."`) that
+  didn't match this exact wording. Corrected both to name the real
+  confirmed behavior precisely, still honestly noting what this port
+  doesn't model (a queued comma-separated command string for HALT to
+  abandon; the dual-window display and Window 1's actual contents for
+  SWAP).
+- The manual directly confirms the conversational form (`"name,
+  object"`) is genuinely multi-purpose: *"object is the name of the ...
+  Thing that you wish to be **attacked** or about which you require
+  **information** or that you wish to **locate**."* This is direct
+  validation — not just a plausible inference — that `game.astarotTeleport`
+  (locate a *place*) and `game.magotLocate` (locate an *object*) are
+  the right reading of this grammar for those two demons.
+- The manual's own "a few Merphish object names" list (`BOX`, `BOTTLE`,
+  `CANDLE`, `CHAIR`, `WALL`, `RUBY`, among others already known) turned
+  up a real, honestly-flagged discrepancy: only `RUBY` of those actually
+  appears in the extracted 316-word vocabulary table, despite all of
+  them fitting the confirmed 3–11 letter bucket range. Recorded as an
+  open discrepancy in `parser/vocabulary.go` rather than silently
+  assumed either way — could mean the memory extraction missed some
+  real words, or the manual's list is illustrative rather than literal.
+
+Added regression test coverage (`TestHandleHalt` updated to match the
+new response), ran the full `gofmt`/`build`/`vet`/`test` suite (with a
+repeated `-count=2` run) clean, and verified live: `H` and `Z` both now
+give precise, manual-accurate responses.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

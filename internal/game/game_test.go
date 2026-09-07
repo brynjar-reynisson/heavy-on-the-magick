@@ -882,11 +882,15 @@ func TestHandleAbbreviatedMovement(t *testing.T) {
 	}
 }
 
+// TestHandleHalt covers HALT (Merphish "H") - round 85 corrected the
+// response to reflect the manual's precise definition ("abandon the
+// command being actioned and the rest of any outstanding command
+// string"), not just a generic "Halted."
 func TestHandleHalt(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("HALT"))
-	if got != "Halted." {
-		t.Errorf("Handle(HALT) = %q, want %q", got, "Halted.")
+	if !strings.Contains(got, "halted") {
+		t.Errorf("Handle(HALT) = %q, want it to acknowledge the command was halted", got)
 	}
 }
 

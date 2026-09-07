@@ -203,8 +203,29 @@ func NewLevel4Exploration() *Game {
 // caveat as the synonyms above.
 //
 // SWAP is a real recognized keyword (Merphish "Z") with an honest stub
-// response — the manual's own table entry ("swap Window 1") isn't
-// detailed enough to model the underlying dual-window/spell-hand display.
+// response — the manual's own keyword table entry ("a special function
+// to swap the information in Window 1") confirms the effect precisely,
+// but not what Window 1 actually shows or the underlying dual-window
+// display, so the response is corrected (round 85) to match the
+// manual's exact wording without inventing further detail.
+//
+// HALT (round 85, Merphish "H") was a bare "Halted." stub until a
+// closer manual read found its precise definition: "abandon the
+// command being actioned and the rest of any outstanding command
+// string" — a real detail about Merphish's comma-separated multi-
+// command strings, which this port doesn't queue (Handle processes one
+// command per call), so there's nothing to actually abandon, but the
+// response now names the real confirmed behavior rather than a vague
+// placeholder.
+//
+// The manual also confirms (round 85) the conversational form
+// ("name, object") is genuinely multi-purpose depending on who's
+// addressed: "object is the name of the ... Thing that you wish to be
+// attacked or about which you require information or that you wish to
+// locate" — direct validation that game.astarotTeleport (locate a
+// place) and game.magotLocate (locate an object) are the RIGHT
+// interpretation of this grammar for those two demons, not just a
+// plausible inference.
 //
 // CALL is a real, confirmed 4th spell (parser.Vocabulary has the word;
 // the numbered map poster's key list independently has "Scroll (CALL
@@ -253,7 +274,7 @@ func (g *Game) Handle(cmd parser.Command) string {
 	case "EXAMINE":
 		return g.examine(cmd.Target)
 	case "HALT":
-		return "Halted."
+		return "Command halted. (Merphish keyword \"H\" - the manual confirms this abandons the command being actioned and the rest of any outstanding comma-separated command string; this port processes one command per Handle call, so there's no queued string to abandon, but the word is honestly acknowledged rather than silently no-opped.)"
 	case "PICKUP", "TAKE", "LIFT", "CARRY":
 		return g.pickup(cmd.Target)
 	case "NAME":
@@ -269,7 +290,7 @@ func (g *Game) Handle(cmd parser.Command) string {
 	case "SPELLS":
 		return g.spells()
 	case "SWAP":
-		return "You SWAP windows. (Merphish 'Z' - confirmed real command, but the underlying dual-window/spell-hand display isn't modeled yet.)"
+		return "You SWAP the information shown in Window 1. (Merphish 'Z' - the manual confirms this exact effect precisely, but the underlying dual-window display and what Window 1 actually shows aren't modeled yet.)"
 	case "CALL":
 		return "You start to CALL... (a real confirmed spell - the numbered map poster's key list has \"Scroll (CALL spell)\" - but no source found so far states what it actually does, so this is an honest stub, not invented behavior.)"
 	case "LEFT", "RIGHT":

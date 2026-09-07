@@ -26,6 +26,19 @@ var vocabularyJSON []byte
 
 // Vocabulary is every word the original parser recognizes, in the order
 // they appear in the game's own length-bucketed table.
+//
+// OPEN DISCREPANCY (round 85): the official instruction manual's own
+// Merphish reference section lists "a few Merphish object names" -
+// ASMODEE, ASTAROT, AXIL, BELEZBAR, BOOK, BOX, BOTTLE, LOAF, CANDLE,
+// CHAIR, DEMON, MAGOT, OBJECT, TABLE, WALL, MONSTER, SWORD, ROCK, SIGN,
+// RUBY - presented as real in-game object names, not hypothetical
+// examples. Only RUBY (of BOX/BOTTLE/CANDLE/CHAIR/WALL) is actually
+// present in this extracted 316-word table, despite all of them fitting
+// comfortably within the confirmed 3-11 letter bucket range. Not
+// resolved either way: could mean this extraction missed some real
+// words (memory-scan limits), or that the manual's list is illustrative
+// rather than exhaustive/literal. Recorded honestly rather than
+// silently assumed either way.
 var Vocabulary = mustLoadVocabulary()
 
 func mustLoadVocabulary() []string {
