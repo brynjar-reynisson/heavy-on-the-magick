@@ -2947,6 +2947,51 @@ is trustworthy enough to fill gaps the checkable data can't reach on
 its own, and disagreements that don't resolve cleanly are worth
 recording as open discrepancies rather than forcing a fix either way.
 
+### Extended the Wormring monster scan to Level4Grid's row A, exactly matched a zone_monsters.go count
+
+After another Stop-hook rejection, same framing, went back to the 2
+open zone_monsters.go entries left unresolved last round (Wraithvale,
+Wormring — "no known cell mapping at all") and actually found one. The
+source image (`heavymap-grid-clean.gif`) turned out to be a single
+678x706 GIF laid out as a clean 2x2 grid — Level 1 top-left, Level 2
+top-right, Level 3 bottom-left, Level 4 bottom-right — clear enough at
+full resolution to read directly with the Read tool rather than
+guessing crop coordinates blind. Re-derived Level 4's row-A pixel
+bounds specifically (rounds 58/68's monster sweep had only covered rows
+C-E, never row A) by scanning for continuous vertical/horizontal dark
+lines the same validated way used for every prior calibration in this
+project — column dividers at x=373/400/428/455/483/511/539/567/593,
+reusing the already-correct row-A y-band (327-353).
+
+Running the established pixel-fraction monster-color scan against that
+newly-bounded row found 3 more real, tight-crop-verified Wyverns at A1,
+A3, A5 — together with the already-shipped E5, that's **exactly 4**,
+matching zone_monsters.go's "Wormring: Wyvern x4" precisely. Also found
+a real Wraith at A6, sitting in the row's yellow "Methos" zone — an
+independent corroboration, from this map's own icon data rather than
+the zone-sighting list, of last round's CollodonsPile Methos/Wraith
+placement. A small red candidate at B6 tight-crop-verified as the
+"up level" stairwell arrow icon, correctly excluded as a false positive
+(the same pattern this project has hit many times before). Also
+resolved a shape puzzle along the way by cropping the map's own icon
+legend directly: wraith and wyvern share the exact same lowercase "w"
+glyph shape, distinguished only by color (red vs. blue) — same
+disambiguation-by-color-not-shape situation as the already-documented
+wraith/medusa red pair, just a different pairing.
+
+Added all 4 as isolated cells (no Exits, same honest convention as
+every other special room in this file), updated the stale "23-cell/6
+isolated" references in `level4_grid_test.go`, `game.go`, and
+`cmd/hotm/main.go` to the new "27-cell/10 isolated" figures, added
+`TestLevel4GridWormringWyverns`, ran the full `gofmt`/`build`/`vet`/
+`test` suite (with a repeated `-count=2` run) clean, and verified live
+via `go run ./cmd/hotm -level4grid` (the mode still runs correctly;
+these 4 finds are isolated so, like every other isolated cell in this
+project, they're verified via unit test, not a live walkthrough).
+
+Wraithvale (a Level 2 zone) still has no known cell mapping — left open
+for a future round, same honest treatment.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

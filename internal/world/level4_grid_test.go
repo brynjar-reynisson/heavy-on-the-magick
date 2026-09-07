@@ -2,9 +2,31 @@ package world
 
 import "testing"
 
-func TestLevel4GridHas23Cells(t *testing.T) {
-	if len(level4Cells) != 23 {
-		t.Fatalf("len(level4Cells) = %d, want 23 (the validated 17-cell main component plus 6 isolated cells)", len(level4Cells))
+func TestLevel4GridHas27Cells(t *testing.T) {
+	if len(level4Cells) != 27 {
+		t.Fatalf("len(level4Cells) = %d, want 27 (the validated 17-cell main component plus 10 isolated cells)", len(level4Cells))
+	}
+}
+
+// TestLevel4GridWormringWyverns pins the round-72 find: 3 more real,
+// tight-crop-verified Wyverns at A1/A3/A5, which together with the
+// already-shipped E5 exactly match zone_monsters.go's "Wormring: Wyvern
+// x4" sighting - real cross-validation between this map's icon data and
+// that independent source. Also pins the real Wraith found at A6
+// (Methos zone), corroborating the prior round's CollodonsPile Methos
+// Wraith placement from a completely different source.
+func TestLevel4GridWormringWyverns(t *testing.T) {
+	w := Level4Grid()
+	wyverns := []string{"A1", "A3", "A5", "E5"}
+	for _, code := range wyverns {
+		room := w.Rooms[level4Room(code)]
+		if room == nil || room.Monster != "Wyvern" || room.MonsterHealth <= 0 {
+			t.Errorf("room %s = %+v, want an isolated cell with a live Wyvern", code, room)
+		}
+	}
+	a6 := w.Rooms[level4Room("A6")]
+	if a6 == nil || a6.Monster != "Wraith" || a6.MonsterHealth <= 0 {
+		t.Errorf("room A6 = %+v, want an isolated cell with a live Wraith", a6)
 	}
 }
 
