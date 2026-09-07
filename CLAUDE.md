@@ -3846,6 +3846,44 @@ Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
 correctly via the text frontend (their underlying `game.Handle` logic
 is unchanged, only the GUI wiring is new).
 
+### Made SecondaryMelody audible in the live GUI, and gathered real evidence for a room-description hypothesis
+
+After another Stop-hook rejection, same framing, gave round 90's
+`SecondaryMelody` the same live-audibility treatment `StartupMelody`
+got last round: added a `B` key in `cmd/hotm-gui` that plays it,
+standalone (not mixed with `StartupMelody`, since how the two streams
+really combine isn't confirmed). Rebalancing the on-screen help text to
+fit the new key (last round's 3-line layout couldn't fit a 4th item
+without exceeding 512px again) turned into a small but real
+verification exercise of its own — split into 4 properly-measured
+lines (widest now ~462px, comfortably under screenWidth) instead of
+just appending text and hoping, and confirmed with a fresh throwaway
+build + screenshot that all 4 lines render completely.
+
+Separately, tried once more to make progress on the single
+most-repeated complaint (room description text) — this time by
+checking whether a room-name/prose text table might use the SAME
+high-bit-terminated encoding round 92 confirmed for the parser
+vocabulary table, rather than plain ASCII. Searched for known real room/
+zone names (`WOLFDORP`, `TROLLWYND`, `MISERY`, etc.) under that
+encoding — all of them land inside the *already-known* 24270-26200
+vocabulary table, not a separate table. This doesn't prove room
+descriptions don't exist as text, but combined with two other
+already-on-file facts — the game's own "Adventure/Graphics" genre
+classification (round 74's web search) and the confirmed real
+screenshot atlas showing each room as a drawn corridor *scene* with no
+on-screen text area at all — there's now a real, three-source body of
+circumstantial evidence worth naming plainly: this may be a *wrong
+assumption* (that descriptive room prose exists and just hasn't been
+found) rather than an actual gap. Documented honestly in
+`world.Room.Description`'s own doc comment — NOT rewritten to claim
+more than is known, just naming the hypothesis and its evidence, with
+the corollary that if it's right, the real remaining "faithful room
+content" work is graphics fidelity, not undiscovered prose.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

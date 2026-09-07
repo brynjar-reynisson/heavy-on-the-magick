@@ -67,9 +67,28 @@ type RoomID int
 
 // Room is a single location in the dungeon.
 type Room struct {
-	ID          RoomID
-	Name        string
-	Level       int // dungeon level, 1 = topmost (per contemporary descriptions of a multi-level dungeon); 0 = unknown/unset
+	ID    RoomID
+	Name  string
+	Level int // dungeon level, 1 = topmost (per contemporary descriptions of a multi-level dungeon); 0 = unknown/unset
+	// Description is honestly still a placeholder everywhere - no room
+	// description TEXT has ever been located in the disassembly, despite
+	// dozens of rounds' attempts (see CLAUDE.md's "Open next steps": the
+	// string-print loop and movement/room dispatcher are still untraced).
+	// Worth naming a real, growing body of circumstantial evidence
+	// (round 95) that this may not be a gap so much as a wrong
+	// assumption: the game is classified "Adventure/Graphics" (round 74's
+	// web search), the confirmed real screenshot atlas
+	// (heavymap-speccy-screenshots.png) shows each room as a drawn
+	// corridor SCENE with no on-screen text area at all, and a targeted
+	// high-bit-masked memory search for known real room/zone names
+	// (round 95) found them all sitting inside the already-known 316-
+	// word parser vocabulary table, not a separate prose/message table -
+	// consistent with "the room's real content IS the picture," not with
+	// a hidden text table nobody's found yet. Not confirmed either way -
+	// still an honest placeholder, not rewritten to claim more than is
+	// known - but if true, the real remaining "faithful room content"
+	// gap is graphics fidelity (see internal/graphics's ongoing work),
+	// not undiscovered prose.
 	Description string
 	Exits       map[Direction]RoomID
 

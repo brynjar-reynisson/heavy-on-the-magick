@@ -224,7 +224,25 @@ func (gui *GUI) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
 		gui.appendLog(gui.g.Handle(parser.Parse("INVENTORY")))
 	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyB) {
+		gui.playSecondaryMelody()
+	}
 	return nil
+}
+
+// playSecondaryMelody plays the real, extracted audio.SecondaryMelody
+// (round 90's second discovered note stream) on its own, standalone -
+// not mixed with StartupMelody, since how the two streams really
+// combine during real playback isn't confirmed (see pitch_table.go's
+// doc comment). This is deliberately a separate, clearly-labeled key
+// (B, no strong mnemonic - just the first free letter) rather than
+// silently folded into playStartupMelody, so a listener isn't misled
+// into thinking this is a confirmed harmony/simultaneous arrangement.
+func (gui *GUI) playSecondaryMelody() {
+	samples := hotmaudio.RenderNotes(hotmaudio.SecondaryMelody, 0.15, hotmaudio.SampleRate)
+	pcm := hotmaudio.ToStereo16(samples)
+	player := gui.audioCtx.NewPlayerFromBytes(pcm)
+	player.Play()
 }
 
 // dropFirstItem handles the O key (drOp — D and X, the more obvious
@@ -380,15 +398,21 @@ func (gui *GUI) Draw(screen *ebiten.Image) {
 	// the right edge the whole time. Fixed both: moved well clear of the
 	// broken Y zone, and split across 3 lines (helpText below) so each
 	// line actually fits on screen.
-	helpOpts.GeoM.Translate(8, 250)
+	helpOpts.GeoM.Translate(8, 232)
 	helpOpts.LineSpacing = 16
 	helpOpts.ColorScale.ScaleWithColor(grey)
 	etext.Draw(screen, helpText, face, helpOpts)
 }
 
-const helpText = "WASD/arrows+QEZC=move  L=look  M=map  V=examine  SPACE=blast  F=freeze\n" +
-	"T=transfusion  P=pickup  O=drop  I=invoke  G=pass guards  K=talk to Apex\n" +
-	"H=help  N=name  S=spells  R=grade  J=inventory  ALT+ENTER=fullscreen"
+// helpText is 4 lines (round 95: rebalanced from 3 to fit round 94's
+// new B=2nd-melody key without any line exceeding screenWidth - the
+// widest line here is 66 chars/~462px, comfortably under 512px, unlike
+// the original single-line text this replaced in round 94, which was
+// ~1160px and silently clipped the whole time).
+const helpText = "WASD/arrows+QEZC=move  L=look  M=map  V=examine\n" +
+	"SPACE=blast  F=freeze  T=transfusion  P=pickup  O=drop\n" +
+	"I=invoke  G=pass guards  K=talk to Apex  H=help  N=name\n" +
+	"S=spells  R=grade  J=inventory  B=2nd melody  ALT+ENTER=fullscreen"
 
 // apexPortraitShouldShow reports whether the most recent log line is a
 // talkToApex response ("APEX, TALK"/"APEX, SPEAK") — split out from
