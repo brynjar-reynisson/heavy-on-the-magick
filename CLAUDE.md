@@ -7083,6 +7083,67 @@ file in this project starts approaching this same scale — `game_test.go`
 to keep this one's diff reviewable and its verification (identical
 test results) unambiguous.
 
+### Round 161: finished round 160's own flagged next step — split game_test.go (1729 lines, 113 tests) to match the 10-file production split
+
+After another Stop-hook rejection, same "faithful porting" framing,
+picked up exactly where round 160 left off: its own "How to apply" note
+named `game_test.go` (1729 lines) as "the next obvious candidate,"
+deliberately deferred that round to keep its own diff reviewable. Did
+it this round, with extra rigor given the larger scale (113 test
+functions, one shared helper).
+
+Given the real risk of a manual line-range transcription error at this
+scale (a genuine concern, not hypothetical — round 143 of this same
+project once caught a real hand-eyeballed row-count mistake elsewhere),
+used a small Python script instead of manual cut-and-paste: parsed
+`game_test.go` into its 114 top-level blocks (113 tests + the shared
+`walkToWolfdorp` helper, each with its leading doc comment attached),
+built an explicit name→file mapping covering every single block, and
+had the script itself verify (before writing anything) that the
+mapping's name set exactly equals the real function name set parsed
+from the file — no function double-counted, none dropped. Only after
+that check passed did it write the 10 new files, computing each file's
+own import list from what that file's tests actually reference (e.g.
+`combat_test.go` needs only `parser`; `movement_test.go`/`rituals_test.go`/
+`items_test.go` also construct synthetic `world.Room`s directly and so
+need `world`/`character` too — caught by grepping the real generated
+files for literal `world.`/`character.` usage after a first pass, not
+assumed from which production file each test corresponds to).
+
+Result: `game.go`+`game_test.go`'s corresponding pairs
+(`combat.go`/`combat_test.go`, `demons.go`/`demons_test.go`, `apex.go`/
+`apex_test.go`, `doors.go`/`doors_test.go`, `rituals.go`/`rituals_test.go`,
+`options.go`/`options_test.go`, `help.go`/`help_test.go`, `items.go`/
+`items_test.go`, `movement.go`/`movement_test.go`, plus `helpers.go`
+with no dedicated test file of its own since its 2 tiny query methods
+are already exercised indirectly by dozens of the others) — `game_test.go`
+itself is now 109 lines (just the two generic-dispatch tests, the
+shared `walkToWolfdorp` helper, and the 5 constructor-visited-on-start
+regression tests), down from 1729. `movement_test.go`, at 684 lines, is
+now the largest test file — expected, since `movement.go` legitimately
+covers the most ground (compass movement, LOOK, and 5 drop-triggered
+monster mechanics), and still less than half the size of the original
+single file.
+
+Verified thoroughly: `gofmt -l` clean, `go build ./...` clean, `go vet
+./...` clean, and — the decisive check — `go test ./internal/game/...
+-v` showing **121 passing, 0 failing** (113 from the split files + 8
+already-separate `save_test.go` tests, matching exactly), the full
+project suite clean with a repeated `-count=2` run, and a live
+`cmd/hotm` playthrough (LOOK, door password, combat defeating a real
+monster, MAP) behaving identically to before the split.
+
+**How to apply**: at real scale (100+ functions), a scripted split with
+an explicit, VERIFIED name-coverage check (missing-set and extra-set
+both empty before writing anything) is safer than manual line-range
+tracking — this project's own history has hit real transcription
+mistakes at similar or smaller scale before now. When bucketing test
+files by their production-file counterpart, don't assume the mapping
+matches 1:1 by convention — grep the actual generated output for
+literal package-qualified references (`world.`, `character.`) to catch
+tests that construct synthetic data directly and need imports a same-
+titled production file might not.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
