@@ -137,9 +137,19 @@ func (gui *GUI) Update() error {
 		if inpututil.IsKeyJustPressed(key) {
 			// Goes through parser.Parse + world.ParseDirection exactly like
 			// the text frontend (cmd/hotm) does — no GUI-only shortcut path.
+			before := gui.g.World.Current
 			result := gui.g.Handle(parser.Parse(directionWord(dir)))
 			gui.appendLog(result)
-			gui.playBlip(byte(7 + int(dir)*3)) // varies pitch by direction, not gameplay-meaningful yet
+			// Only play the movement blip if the move actually succeeded -
+			// previously played unconditionally, so a blocked move ("You
+			// can't go that way", or the new Fire-blocked rejection) sounded
+			// identical to a real step. Comparing room IDs (not scanning
+			// result text for specific rejection strings) stays correct
+			// automatically as new kinds of blocked-movement messages are
+			// added.
+			if gui.g.World.Current != before {
+				gui.playBlip(byte(7 + int(dir)*3)) // varies pitch by direction, not gameplay-meaningful yet
+			}
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyL) {

@@ -142,7 +142,15 @@ type Room struct {
 	// added). No source states what happens to a player without the
 	// Clasp beyond "enables you to walk through" - game.move models the
 	// simplest honest reading (blocks passage), the same convention
-	// already used for Guards' "simplest honest reading" precedent.
+	// already used for Guards' "simplest honest reading" precedent. A
+	// THIRD independent source cross-confirms fire is real dungeon
+	// content (round 84): level_items.go's LevelOneItems (from a
+	// completely different map, heavymap-levels1-2.jpg) includes a plain
+	// "Fire" entry - on Level 1, not Level 2, so it's not the same D6
+	// cell specifically (this project's sources have disagreed on exact
+	// Level numbers before, e.g. Room of Misery/Sothic Complex), but it's
+	// good independent evidence this hazard is a real, recurring dungeon
+	// feature, not a one-off.
 	Fire bool
 
 	// HasTable is true for a real, sourced room fixture: the CASA

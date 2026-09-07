@@ -3436,6 +3436,36 @@ live: both the full words and the `L`/`R` keyword abbreviations are now
 recognized with an honest, specific response instead of the generic
 stub message.
 
+### Fixed a real GUI audio-feedback bug the new Fire mechanic exposed, and found a third source confirming Fire is real
+
+After another Stop-hook rejection, same framing, cross-checked
+`level_items.go`'s `LevelOneItems` (from a third, independent map
+source, `heavymap-levels1-2.jpg`) against the Fire mechanic added last
+round — it includes a plain `"Fire"` entry on Level 1. Not the same D6
+cell (that one's Level 2, and this project's sources have disagreed on
+exact Level numbers before), but real, independent evidence that fire
+is a recurring dungeon feature, not a one-off — documented in
+`world.Room.Fire`'s doc comment as a third corroborating source.
+
+While reviewing how a Fire-blocked move would actually play out in
+`cmd/hotm-gui`, found a real, pre-existing bug the new mechanic exposed:
+the movement key handler played its direction-pitched feedback blip
+**unconditionally**, regardless of whether `game.Handle` actually moved
+the player — so `"You can't go that way"` (and now the new Fire
+rejection) sounded identical to a real step. Fixed by comparing
+`World.Current` before and after the call, playing the blip only on an
+actual move — a robust check that stays correct automatically as new
+kinds of blocked-movement rejections get added later, rather than
+string-matching specific rejection messages.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and confirmed a disposable throwaway build of
+`cmd/hotm-gui` still compiles and runs. The audio-timing correctness
+itself isn't independently verifiable by screenshot (no visual signal
+for "did a blip play"), so this is verified by code review of a
+simple, unambiguous `RoomID` comparison plus a clean build, the same
+honesty caveat already applied elsewhere in this project's audio work.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
