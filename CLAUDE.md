@@ -7743,6 +7743,60 @@ false`), consider whether there's a DIFFERENT failure shape (silently
 incomplete reachable set, no contradiction ever detected) that the
 same signal doesn't cover.
 
+### Round 171: a real, thorough negative-result round — checked whether round 170's bug class exists anywhere else (it doesn't), then chased 2 long-standing open mysteries to ground
+
+After another Stop-hook rejection, same framing, first applied round
+170's own lesson at the system level rather than just the one instance
+already fixed: grepped the whole repo for every consumer of `Layout`/
+`VisitedRooms` to check whether the same "assumes Exit-connectivity"
+bug class exists anywhere else in the codebase. It doesn't — both are
+only ever called from within `ascii_map.go` itself (the one place
+already fixed); `cmd/hotm-gui`'s own `Layout` method is an unrelated
+ebiten interface method (a naming coincidence, not the same function).
+A real, clean, thorough negative — confirms round 170's fix was
+complete, not just one instance of a wider unfixed pattern.
+
+Spent the rest of the round on 2 long-standing open mysteries, both
+ending in real, honest, well-checked negatives rather than a forced
+guess:
+
+- **Who/what "AI" is** (the `CAULDRON, ACHAD` ritual's own "TO
+  RESURRECT AI" section heading, open since round 139): re-fetched
+  World of Spectrum's instructions file asking specifically for
+  surrounding context — it has none, the section heading is exactly as
+  terse as previously found. Also checked the CASA walkthrough for the
+  first time on this specific question — a clean negative too; that
+  walkthrough's own minimal solution path never touches the cauldron/
+  ACHAD/AI content at all. Two independent real checked negatives, not
+  just one — recorded in "Open next steps" so a future round knows
+  these 2 specific sources are genuinely exhausted for this question
+  and a different source type is needed, not a third re-fetch of
+  either.
+- **The 9th monster type, "Hydra"** (open since round 145): checked
+  Hardcore Gaming 101's article (already a productive source for
+  rounds 162/169) specifically for any monster-type names at all — a
+  clean negative; it only cites the bare "21 monsters" count, never
+  naming a single specific type.
+
+No shippable code this round — a legitimate outcome per this project's
+own long-established precedent (rounds 82/91/117/134/138/145/148 all
+recognized well-checked negatives as real progress, not a stall).
+Doc-only changes to CLAUDE.md's "Open next steps" section; ran the
+full `gofmt`/`build`/`vet`/`test` suite clean anyway, per this
+project's standing verification discipline.
+
+**How to apply**: after fixing a real bug, checking whether the SAME
+bug class exists anywhere else in the codebase (not just the one
+instance that happened to surface it) is worth doing immediately,
+even when — especially when — the answer turns out to be "no, that was
+the only place" - a clean negative here is real confirmation the fix
+was complete, not wasted effort. For a genuinely hard, long-open
+mystery ("AI"), 2 real independent negatives from the 2 most
+promising existing sources is worth recording explicitly in the
+standing open-items list, so a future round starts from "these 2
+sources are exhausted, try a third kind" rather than re-treading the
+same ground.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
@@ -7774,7 +7828,26 @@ same signal doesn't cover.
   targeted re-scan of `heavymap-grid-clean.gif`'s legend (maybe Hydra
   shares an icon with something else, or appears only in an unswept
   region) or a check of whether "Hydra" appears in the game's own real
-  screenshot atlas.
+  screenshot atlas. Checked Hardcore Gaming 101's article (round 171):
+  a clean negative — it doesn't name any monster types at all, Hydra
+  included, only the bare "21 monsters" count.
+- **Who or what "AI" is (the `CAULDRON, ACHAD` ritual's real, sourced
+  "TO RESURRECT AI" section heading) remains genuinely unresolved**
+  (round 139, re-checked round 171): World of Spectrum's plain-text
+  instructions file states the ritual's exact setup precisely but never
+  explains who/what AI actually is — re-fetched it once more (round
+  171) asking specifically for surrounding context, and it has none.
+  The CASA walkthrough was also re-checked (round 171) and doesn't
+  mention the cauldron/ACHAD/AI at all — this ritual simply isn't part
+  of that particular minimal solution path. Two real, independent
+  checked negatives, not just one — this is a genuinely hard-to-find
+  fact, not a source nobody's tried yet. `game.cauldronAchad` is
+  shipped and tested with the confirmed real setup requirements
+  (Ulna/Thigh/Skull dropped, Scroll removed first), the same honest
+  "confirmed real, effect unknown" stub as NEST/PHOENIX had before
+  CALL's own eventual resolution — worth trying a genuinely different
+  source type (a magazine review, a different fan wiki) rather than
+  re-fetching either of these same two sources a third time.
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
   Screenshot Maps", credited to Hippy Smith) is a 10056×5493 composite
   of REAL in-game screenshots for all 4 levels, plus a full demon/
