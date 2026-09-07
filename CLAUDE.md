@@ -103,9 +103,14 @@ deduplicated number this port has actually placed is somewhere in that
 **Graphics** — one real, shared `PNGRenderer` draws for both frontends
 (no separate/diverging drawing code). **13 real extracted portraits**
 (Apex, all 4 demons, all 8 monster types) and **12 of CollodonsPile's
-14 rooms** (plus each level grid's own starting cell) show real
-screenshots extracted from an actual 1986 in-game screenshot atlas —
-live in `cmd/hotm-gui`, not just offline assets. The one major,
+14 rooms** show real screenshots extracted from an actual 1986 in-game
+screenshot atlas — live in `cmd/hotm-gui`, not just offline assets.
+Round 167 extended this to the level-grid exploration modes too, at
+zero extraction cost: `Level1Grid`'s A7/A8/F3/F5 and `Level2Grid`'s F4
+are confirmed the SAME physical rooms as 5 of those 12 (Agile Stair,
+Furnace Room, Room of Stings, Room of Arrows, Room of Misery), so
+`-level1grid` now shows 5 real screenshots (not just its own start
+cell) and `-level2grid` shows 2. The one major,
 honestly-unresolved gap: the original's own actual in-game picture-
 rendering FORMAT (the 120-byte table at Z80 address 48054) has never
 been cracked — this port substitutes real reference screenshots and a
@@ -7479,6 +7484,61 @@ guessing at plausible real-world adventure-game synonyms) can turn a
 confirmed text already establishes this meaning" — worth a quick grep
 across prior rounds' quoted source material before defaulting to the
 weaker inference tier for a new synonym candidate.
+
+### Round 167: extended real room art to the level-grid exploration modes for free, by reusing already-verified samples instead of extracting anything new
+
+After another Stop-hook rejection, same graphics-coverage framing,
+checked whether any of `Level1Grid`/`Level2Grid`/`Level3Grid`/
+`Level4Grid`'s own real, named cells happen to share a name with one
+of CollodonsPile's 12 rooms that already have real extracted art —
+since `cmd/hotm-gui`'s `drawCorridorSample` matches purely by
+`world.Room.Name`, any genuine name match is a free, zero-extraction
+win. Found 5 real matches, all already-confirmed-exact-cell identities
+(not name coincidences): `Level1Grid`'s A7/A8/F3/F5 are the SAME
+physical Agile Stair/Furnace Room/Room of Stings/Room of Arrows
+already given real art in rounds 108/137/141, and `Level2Grid`'s F4 is
+explicitly confirmed (round 105) to be the SAME real Room of Misery —
+the default game's own starting room, not a coincidence.
+
+Added `Agile Stair`/`Furnace Room`/`Room of Stings`/`Room of Arrows`
+to `-level1grid`'s room-art map (4 real screenshots now visible in
+that mode, up from just its own A1 start cell) and `Room of Misery` to
+`-level2grid`'s (though F4 sits in the "Room of Misery pocket," a
+disconnected 7-cell group with no real Exits, so — same honest
+"real but not live-walkthrough-reachable" scope this project has
+shipped many times before — it's confirmed correct but not visible via
+ordinary movement in that mode yet).
+
+Deliberately did NOT reuse `SothicComplexSample` for `Level3Grid`'s
+own D4 cell, also named "Sothic Complex" — checked first, not just
+missed: round 51's own doc comment already flags this as a genuinely
+unresolved cross-source ambiguity (CollodonsPile's Sothic Complex is
+Level 2; this cell is Level 3; whether they're the same physical
+location or two different rooms sharing a name was never settled).
+Reusing Level 2's own screenshot there would have presented unconfirmed
+art as if it were settled fact — the same discipline that's kept this
+project's graphics claims honest since round 137's "position AND
+content must both agree" standard.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified live via the disposable-throwaway-
+repo-copy + DPI-aware `PrintWindow` technique: launched a patched
+build with `-level1grid`, teleported to the real "Room of Stings" cell
+at startup, and confirmed the exact same real yellow-corridor
+screenshot renders correctly there too — proving this is genuinely the
+same confirmed asset showing up through a second, independent room
+graph, not a new extraction that might be wrong.
+
+**How to apply**: before reaching for a new pixel-extraction pass, check
+whether an ALREADY-EXTRACTED, already-verified sample can be reused for
+free via a genuine name match across this project's 5 separate room
+datasets — the `map[string]image.Image` architecture (round 108) was
+built exactly for this kind of trivial extension. But a name match
+alone isn't enough to trust: cross-check whether that specific match
+has already been flagged as an unresolved ambiguity elsewhere in this
+project (Sothic Complex's Level-2-vs-Level-3 question) before reusing
+art for it — a real name match and a confirmed-safe name match aren't
+automatically the same thing.
 
 ## Open next steps
 

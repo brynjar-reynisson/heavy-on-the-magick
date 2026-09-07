@@ -759,9 +759,45 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 
 	switch {
 	case *level1Grid:
-		return game.NewLevel1Exploration(), " (Level 1 grid)", map[string]image.Image{"A1": graphics.Level1CorridorSample()}
+		// Round 167: level1_grid.go's own A7/A8/F3/F5 cells are the SAME
+		// real, named CollodonsPile rooms (Agile Stair/Furnace Room/Room
+		// of Stings/Room of Arrows - confirmed exact name matches, not a
+		// coincidence) already given real extracted art in default mode
+		// (rounds 108/137/141) - the identical physical dungeon location,
+		// just reached via a different room-addressing scheme. No new
+		// extraction needed: reusing the same already-verified samples
+		// here is a genuine, zero-risk coverage increase, and proves the
+		// round-108 map[string]image.Image design really is as easy to
+		// extend as it was meant to be.
+		return game.NewLevel1Exploration(), " (Level 1 grid)", map[string]image.Image{
+			"A1":             graphics.Level1CorridorSample(),
+			"Agile Stair":    graphics.AgileStairSample(),
+			"Furnace Room":   graphics.FurnaceRoomSample(),
+			"Room of Stings": graphics.RoomOfStingsSample(),
+			"Room of Arrows": graphics.RoomOfArrowsSample(),
+		}
 	case *level2Grid:
-		return game.NewLevel2Exploration(), " (Level 2 grid)", map[string]image.Image{"A1": graphics.CorridorSample()}
+		// Round 167: level2_grid.go's own F4 cell is explicitly confirmed
+		// (round 105) to be the SAME real "Room of Misery" - the
+		// default game's own starting room - not just a same-named
+		// coincidence, so reusing RoomOfMiserySample here is safe. F4
+		// sits in the disconnected "Room of Misery pocket" (7 isolated
+		// cells, no real Exits - see level2_grid.go's doc comment), so
+		// this isn't reachable via ordinary movement in -level2grid
+		// mode yet, the same honest "real but not live-walkthrough-
+		// reachable" scope several other real facts in this project
+		// have shipped with before their own first real placement.
+		// Deliberately NOT reusing SothicComplexSample for Level3Grid's
+		// own D4 "Sothic Complex" cell (checked, not just missed) - that
+		// name match is a genuinely unresolved cross-source ambiguity
+		// (round 51: possibly a different physical Level-3 room sharing
+		// the name with CollodonsPile's Level-2 Sothic Complex, not
+		// confirmed either way), so reusing Level 2's own screenshot
+		// there would risk presenting unconfirmed art as settled fact.
+		return game.NewLevel2Exploration(), " (Level 2 grid)", map[string]image.Image{
+			"A1":             graphics.CorridorSample(),
+			"Room of Misery": graphics.RoomOfMiserySample(),
+		}
 	case *level3Grid:
 		return game.NewLevel3Exploration(), " (Level 3 grid)", map[string]image.Image{"A1": graphics.Level3CorridorSample()}
 	case *level4Grid:
