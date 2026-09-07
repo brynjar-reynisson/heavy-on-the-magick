@@ -16,13 +16,15 @@
 // not a hand-maintained mirror list that could silently drift out of
 // sync with game.go's actual switch cases.
 //
-// KNOWN BLIND SPOT, honestly documented rather than silently wrong: 8
-// real vocabulary words (see targetPositionWords below) are only ever
-// recognized by Handle when they appear as cmd.Target, paired with a
-// SPECIFIC companion verb (e.g. "APEX" is only recognized alongside
-// TALK/SPEAK/THANKS) — this tool only calls Handle with each word as
-// cmd.Verb (empty Target), the dominant pattern for the other ~22
-// modeled words, so it can't detect these 8 through that single check.
+// KNOWN BLIND SPOT, honestly documented rather than silently wrong: 12
+// real vocabulary words (see targetPositionWords below) only work in a
+// specific TARGET-VERB pairing — some (APEX, ASTAROT, MAGOT, GUARDS,
+// DOOR, NEST, CAULDRON) are recognized as cmd.Target paired with a
+// specific companion verb; others (TALK, SPEAK, THANKS, PHOENIX, ACHAD)
+// are the reverse — recognized as cmd.Verb only paired with a specific
+// companion Target. This tool only calls Handle with each word alone as
+// cmd.Verb (empty Target), the dominant pattern for the other 30
+// modeled words, so it can't detect these 12 through that single check.
 // Rather than either miscount them as "unimplemented" or build fragile
 // per-word position-pairing logic to chase every combination, they're
 // explicitly excluded and listed separately.
@@ -41,14 +43,18 @@ import (
 // as cmd.Target, paired with the listed companion verb(s) — see this
 // file's package doc comment.
 var targetPositionWords = map[string]string{
-	"APEX":    "recognized as cmd.Target, paired with verb TALK/SPEAK/THANKS",
-	"ASTAROT": "recognized as cmd.Target, paired with any non-empty verb (a location name)",
-	"MAGOT":   "recognized as cmd.Target, paired with any non-empty verb (an object name)",
-	"GUARDS":  "recognized as cmd.Target, paired with verb DOOR",
-	"DOOR":    "recognized as cmd.Target, verb compared against the current room's real DoorPasswords/TollItem",
-	"TALK":    "recognized as cmd.Verb, only when paired with cmd.Target APEX",
-	"SPEAK":   "recognized as cmd.Verb, only when paired with cmd.Target APEX",
-	"THANKS":  "recognized as cmd.Verb, only when paired with cmd.Target APEX",
+	"APEX":     "recognized as cmd.Target, paired with verb TALK/SPEAK/THANKS",
+	"ASTAROT":  "recognized as cmd.Target, paired with any non-empty verb (a location name)",
+	"MAGOT":    "recognized as cmd.Target, paired with any non-empty verb (an object name)",
+	"GUARDS":   "recognized as cmd.Target, paired with verb DOOR",
+	"DOOR":     "recognized as cmd.Target, verb compared against the current room's real DoorPasswords/TollItem",
+	"TALK":     "recognized as cmd.Verb, only when paired with cmd.Target APEX",
+	"SPEAK":    "recognized as cmd.Verb, only when paired with cmd.Target APEX",
+	"THANKS":   "recognized as cmd.Verb, only when paired with cmd.Target APEX",
+	"NEST":     "recognized as cmd.Target, paired with verb PHOENIX (round 136)",
+	"PHOENIX":  "recognized as cmd.Verb, only when paired with cmd.Target NEST (round 136)",
+	"CAULDRON": "recognized as cmd.Target, paired with verb ACHAD (round 139)",
+	"ACHAD":    "recognized as cmd.Verb, only when paired with cmd.Target CAULDRON (round 139)",
 }
 
 func uniqueSorted(words []string) []string {

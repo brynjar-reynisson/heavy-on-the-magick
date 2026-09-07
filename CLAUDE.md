@@ -5848,6 +5848,48 @@ one (here, plain `Items`) already models the concept precisely enough.
 A multi-item gate is just several single-item checks in a row against
 the same slice, not a fundamentally new kind of state.
 
+### Round 140: fixed a stale self-audit — cmd/vocab-coverage's own excluded-word list had drifted out of sync with 4 rounds of new commands
+
+After another Stop-hook rejection, same framing, went back to
+`cmd/vocab-coverage` — the tool this project built (round 102)
+specifically to give an exact, self-verified number for "how much of
+the vocabulary is unimplemented," rather than leave that as a vague,
+easy-to-repeat claim. Its own `targetPositionWords` exclusion list
+(words only recognized in a specific TARGET-VERB pairing, which the
+tool's single bare-cmd.Verb check can't detect) hadn't been updated
+since round 111 — 4 rounds since then (125-139) added 4 more real,
+confirmed vocabulary words that fit exactly this same blind spot:
+`NEST`/`CAULDRON` (round 136/139, recognized as `cmd.Target`) and
+`PHOENIX`/`ACHAD` (the companion `cmd.Verb`s). Left unfixed, the tool
+was silently MISCOUNTING all 4 as "unimplemented" — the same "these
+are correctly modeled but the audit tool doesn't know it yet" gap the
+tool's own doc comment already warns about for the original 8.
+
+Added all 4 to `targetPositionWords` and corrected the package doc
+comment's counts (8→12 excluded, ~22→30 verb-position modeled words)
+to match. The existing `TestTargetPositionWordsAreExcludedButRealVocabulary`
+automatically validated the 4 new entries with no test changes needed
+— exactly the kind of self-checking this project's own tooling is
+built for. Re-ran the tool: "Excluded... 12" / "30 have modeled Handle
+behavior" (was 8/30 with 4 words wrongly still counted as
+"unimplemented" in the uncovered list). Ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean.
+
+Also did a fresh full read of the current uncovered-word list looking
+for new obvious verb candidates (the same technique that found TAKE/
+LIFT/CARRY/GRADE/SPELLS/NAME/ATTACK/KILL many rounds back) — a real,
+checked negative this time: the list is now almost entirely NOUN
+content (item/monster/place names already used elsewhere), no new
+safe candidate found.
+
+**How to apply**: a tool built to keep this project honest about its
+own coverage numbers needs the same maintenance discipline as the
+game code itself — every time a new TARGET-VERB-paired command is
+added (the exact shape `targetPositionWords` exists to track), check
+whether that list needs a matching update, or the self-audit quietly
+starts lying in the conservative direction (undercounting real
+coverage), which is just as worth catching as overclaiming.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
