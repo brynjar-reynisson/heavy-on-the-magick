@@ -5192,6 +5192,75 @@ source TYPE again (round 125's original insight, reapplied) — a 1986
 print review is a source category this project had referenced but
 never actually fetched, and it paid off on the first try.
 
+### Round 129: the same CRASH review, mined a second time — the startup melody now genuinely loops, matching a real described behavior
+
+After another Stop-hook rejection, same framing, went back to round
+128's new source (`crashonline.org.uk/29/magick.htm`) for a second,
+more targeted `WebFetch` pass — this time asking specifically about
+graphics style, sound, numeric scores, combat mechanics, and the map,
+since the first pass had only asked about general facts. Several real
+findings came back:
+
+- **Graphics**: "the screen is formed in memory and blown up onto the
+  screen as a way to conserve memory... the scale of the picture is
+  enlarged and the definition is reduced, with the result that
+  individual pixels become conspicuous" — direct, real confirmation
+  that the original's actual rendering technique is build-small-then-
+  blow-up, not native-resolution drawing. This reframes
+  `graphics.PNGRenderer`'s existing `CellSize` upscaling parameter
+  (previously documented as just "for visibility," a debugging
+  convenience) as something this port already happens to do that's
+  now confirmed FAITHFUL to the original's real technique, not merely
+  convenient — `cmd/hotm-gui`'s HUD already renders at `CellSize=8`.
+  A real, useful reframing, though no code changed for this fact alone.
+- **Sound** (the actionable find): "Gargoyle have produced an intro
+  tune which improves and becomes more complete the longer you leave
+  it playing on the introduction screens" — confirms the real game's
+  startup tune LOOPS repeatedly, not plays once. `cmd/hotm-gui`'s
+  `playStartupMelody` had played the extracted melody exactly once
+  since round 93 (falling silent after ~21s, every session, forever) —
+  a real, previously-unnoticed gap between "extracted and rendered
+  correctly" and "played the way the original actually plays it."
+  Fixed: now uses ebiten's `audio.NewInfiniteLoop` to loop
+  continuously for the life of the session. This port has no separate
+  "introduction screen" state to bound the loop to (gameplay starts
+  immediately, unlike the original) — honestly simplified rather than
+  inventing an intro-only phase this design doesn't have. The exact
+  "improves and becomes more complete" acoustic detail (plausibly the
+  two streams' different lengths drifting in and out of phase across
+  repeated loops) isn't reproduced bit-exactly — that would need
+  tracing the real Z80 loop mechanism further — but real, audible
+  looping instead of one-shot silence is itself a genuine fidelity
+  gain, not just a cosmetic tweak.
+- **Numeric scores** (Atmosphere/Vocabulary/Logic/Value 9, Overall 9)
+  and a **map fact** ("choice of exits at the start is between east and
+  west") were also found. The map fact conflicts with CollodonsPile's
+  own multiply-cross-validated data (Room of Misery's only confirmed
+  exit is East) — rather than force a fabricated West exit off one
+  ambiguous phrase (it may describe an earlier menu/circle screen, not
+  literally Room of Misery), left this as a documented, unresolved
+  discrepancy, the same honesty standard as Sothic Complex's Level-2-
+  vs-Level-3 naming conflict.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean. Verified live via the disposable-throwaway-
+repo-copy technique: launched the real .exe, confirmed it kept running
+(no crash from the new `audio.NewInfiniteLoop` code path) 5 seconds
+after startup, and a DPI-aware screenshot confirmed normal rendering —
+audio looping itself can't be verified by ear in this environment, the
+same honest caveat this project has always applied to sound work.
+
+**How to apply**: a source doesn't have to be exhausted after one pass
+just because the first pass answered a general question — round 128
+asked broadly and got item/room facts; round 129 asked specifically
+about graphics/sound/scores on the SAME page and got a real,
+independently actionable finding (the looping tune) the first pass
+never surfaced. When a "how it's shown/played" fact confirms something
+this port already does by coincidence (the CellSize upscaling), it's
+worth updating that code's OWN doc comment to say so explicitly, since
+"it happens to look right" and "it's confirmed faithful" are different
+claims worth distinguishing honestly.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

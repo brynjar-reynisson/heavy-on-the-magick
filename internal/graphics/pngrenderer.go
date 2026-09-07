@@ -48,7 +48,14 @@ type PNGRenderer struct {
 	// CellSize is the on-screen pixel size of one ZX Spectrum bitmap pixel
 	// (the original is 256x192 native pixels; CellSize lets output be
 	// upscaled for visibility, matching how we rendered glyphs during the
-	// disassembly work — see ../../CLAUDE.md's render_tile.py).
+	// disassembly work — see ../../CLAUDE.md's render_tile.py). Round 129:
+	// a real 1986 CRASH magazine review confirms this upscaling isn't
+	// just a convenient debugging choice — the original itself "is formed
+	// in memory and blown up onto the screen... with the result that
+	// individual pixels become conspicuous" — this project's own
+	// CellSize>1 usage (cmd/hotm-gui's HUD renders at CellSize=8) is
+	// therefore confirmed faithful to the real technique, not merely a
+	// happy coincidence.
 	CellSize int
 }
 

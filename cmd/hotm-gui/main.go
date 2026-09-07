@@ -10,6 +10,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"image"
@@ -74,6 +75,9 @@ type GUI struct {
 	hud       *ebiten.Image // confirmed rune glyphs, rendered once via graphics.PNGRenderer
 	portraits map[string]*ebiten.Image
 	roomArt   map[string]*ebiten.Image // real extracted room screenshots, keyed by world.Room.Name - see drawCorridorSample
+	// startupPlayer holds the looping startup-melody player (round 129)
+	// so it isn't garbage-collected mid-loop; not otherwise read.
+	startupPlayer *ebitenaudio.Player
 }
 
 // NewGUI builds a live GUI session around g. Round 97: previously always
@@ -127,12 +131,34 @@ func NewGUI(g *game.Game, roomArt map[string]image.Image) *GUI {
 // of two independently-clocked toggle counters, see
 // tStatesPerPeriodUnit's doc comment), and RenderXORInterleaved
 // actually reproduces it, rather than MixNotes's simpler sample-
-// averaging stand-in. Fire-and-forget, same as playBlip - doesn't
-// block Update()/gameplay while it plays.
+// averaging stand-in.
+//
+// Round 129: now LOOPS continuously (via ebiten's audio.InfiniteLoop),
+// not a single fire-and-forget play as before. Sourced by a genuinely
+// new source type (a 1986 CRASH magazine review,
+// crashonline.org.uk/29/magick.htm): "Gargoyle have produced an intro
+// tune which improves and becomes more complete the longer you leave
+// it playing on the introduction screens" — direct confirmation the
+// real game's tune loops repeatedly, not plays once and stops (this
+// port previously fell silent after ~21s, every time). This port has
+// no separate "introduction screen" state to bound the loop to (unlike
+// the original, gameplay starts immediately) - honestly simplified to
+// loop for the life of the session rather than invent an intro-only
+// phase no design here currently has. The exact "improves and becomes
+// more complete" acoustic detail (plausibly the two streams' different
+// lengths drifting in and out of phase across repeated loops) isn't
+// reproduced bit-exactly - that would need tracing the real Z80 loop
+// mechanism further, not attempted this round - but real, audible
+// looping (vs. one-shot silence) is itself a genuine fidelity gain.
 func (gui *GUI) playStartupMelody() {
 	samples := hotmaudio.RenderXORInterleaved(hotmaudio.StartupMelody, hotmaudio.SecondaryMelody, 0.15, hotmaudio.SampleRate)
 	pcm := hotmaudio.ToStereo16(samples)
-	player := gui.audioCtx.NewPlayerFromBytes(pcm)
+	loop := ebitenaudio.NewInfiniteLoop(bytes.NewReader(pcm), int64(len(pcm)))
+	player, err := gui.audioCtx.NewPlayer(loop)
+	if err != nil {
+		return
+	}
+	gui.startupPlayer = player
 	player.Play()
 }
 
