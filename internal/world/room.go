@@ -85,13 +85,20 @@ type Room struct {
 	// rooms (no known password puzzle, or none exists there).
 	DoorPasswords []string
 
-	// TollItem is the item name a "Toll" door in this room requires -
-	// real, distinct confirmed mechanic (Spectrum Computing's
-	// instructions file for the game: "For a door with a toll sign by
-	// it (ask apex) a bag of gold is the key (put it on the table)" —
-	// see ../../CLAUDE.md), separate from DoorPasswords (which are typed
-	// words, not carried items). Empty for rooms with no known toll
-	// door.
+	// TollItem is the item name this room's door requires dropped/placed
+	// to open - real, distinct confirmed mechanic, separate from
+	// DoorPasswords (which are typed words, not carried items). Two
+	// independent sources agree on the mechanic: Spectrum Computing's
+	// instructions file ("For a door with a toll sign by it (ask apex) a
+	// bag of gold is the key (put it on the table)") and a fresh, more
+	// detailed CASA walkthrough re-read (round 64) that found the real
+	// trigger phrase used repeatedly is literally "DROP <item>"
+	// ("EXAMINE TABLE, DROP KEY (door opens)", also seen with BAG and
+	// SLAT at other rooms) - i.e. this isn't only a "Toll sign" special
+	// case, it's the same general item-drop mechanic recurring at
+	// several rooms with no toll sign mentioned at all. See
+	// game.drop/game.payToll for where this is checked. Empty for rooms
+	// with no known required-drop door.
 	TollItem string
 
 	// Monster is the name of a creature present in this room, and

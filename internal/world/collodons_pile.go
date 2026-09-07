@@ -83,6 +83,18 @@ package world
 // NOT placed then — assigning them to a guessed room would have been
 // fabrication.
 //
+// TollItem placements (round 64): the same fresh, more detailed CASA
+// walkthrough re-read found the real drop-to-open-door mechanic (see
+// world.Room.TollItem's doc comment) recurring at 3 more rooms, each
+// individually confirmed under that room's own paragraph heading (not
+// just nearby text): Room of Stings needs a Key dropped, Morfang needs
+// the Bag (already placed in Wolfdorp — a real, satisfying pickup-then-
+// use chain), and Room of Arrows needs the Slat (already placed in
+// Morfang — likewise). A fourth apparent "DROP KEY" instance near
+// Pilefoot in the raw text turned out, on closer checking, to be listed
+// under a different, unidentified room's heading, not Pilefoot's own -
+// left unplaced rather than guess which room it really belongs to.
+//
 // CORRECTED (round 63): a fresh, more detailed re-read of the same CASA
 // walkthrough resolved 2 of those 3 - it gives Nougat and a Scroll both
 // specifically in the Trollwynd area, and a SECOND separate Scroll
@@ -142,9 +154,9 @@ func CollodonsPile() *World {
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget"}},
 		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll"}},
 		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}},
-		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}},
-		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Items: []string{"Slat"}},
-		{ID: roomArrows, Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{East: roomNidus, North: roomWolfdorp}},
+		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key"},
+		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Items: []string{"Slat"}, TollItem: "Bag"},
+		{ID: roomArrows, Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{East: roomNidus, North: roomWolfdorp}, TollItem: "Slat"},
 		{ID: roomNidus, Name: "Nidus", Level: 1, Exits: map[Direction]RoomID{West: roomPilefoot}, Monster: "Cyclops", MonsterHealth: 3},
 		{ID: roomPilefoot, Name: "Pilefoot", Level: 1, Exits: map[Direction]RoomID{North: roomPileCollodom}, DoorPasswords: []string{"ELEVEN"}},
 		{ID: roomPileCollodom, Name: "Pile Collodom", Level: 1},

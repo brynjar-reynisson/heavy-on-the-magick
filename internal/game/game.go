@@ -574,10 +574,24 @@ func (g *Game) pickup(target string) string {
 }
 
 // drop moves a named item from the player's inventory into the current
-// room's Items, if the player is carrying it.
+// room's Items, if the player is carrying it. If the dropped item is
+// exactly this room's real world.Room.TollItem, it instead pays the
+// toll and opens the door (see payToll) - a fresh, more detailed CASA
+// walkthrough re-read (round 64) found the real trigger phrase is
+// literally "DROP <item>" ("EXAMINE TABLE, DROP KEY (door opens)"),
+// matching the instructions file's "put it on the table" wording far
+// more literally than this port's original "DOOR, <item>" guess did.
+// Both forms are kept working (see the DOOR-target handling above)
+// since nothing confirms the guessed form is wrong, just that DROP is
+// also, and probably primarily, real.
 func (g *Game) drop(target string) string {
 	if target == "" {
 		return "Drop what?"
+	}
+	if room := g.World.CurrentRoom(); room != nil && room.TollItem != "" && strings.EqualFold(target, room.TollItem) {
+		if g.hasItem(room.TollItem) {
+			return g.payToll(room)
+		}
 	}
 	for i, item := range g.Player.Items {
 		if strings.EqualFold(item, target) {

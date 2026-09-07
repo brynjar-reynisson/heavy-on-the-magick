@@ -2679,6 +2679,50 @@ and a second Scroll at Sothic Complex, and
 `TestNougatDefeatsWerewolfOnDrop` exercises the actual mechanic against
 a real Werewolf in `Level1Grid`.
 
+### Found the Toll mechanic's real trigger phrase, and 3 real placements - a satisfying pickup-then-use puzzle chain now actually works
+
+After another Stop-hook rejection, same framing, went back to the CASA
+walkthrough a third time this session with yet another targeted
+question set (Guards/Toll/Keys/locked-doors/demons/win-condition) -
+mostly clean negatives (this walkthrough never mentions Guards, Toll
+signs, Bag of Gold, or any of the 4 demons - genuinely doesn't cover
+that content, not a missed extraction), but one real, significant find:
+the actual phrase that opens several doors is literally
+**`"DROP <item>"`** ("EXAMINE TABLE, DROP KEY (door opens)"), not the
+`"DOOR, <item>"` form this port originally guessed at when the Toll
+mechanic was first modeled many rounds ago. The instructions file's
+own "put it on the table" wording matches DROP far more literally than
+DOOR ever did.
+
+Carefully disambiguated a real ambiguity in the walkthrough's own
+formatting (room names appear both as paragraph headings AND as
+travel-destination annotations after movement lists, which look
+similar) before trusting any of it - confirmed via 2 follow-up fetches
+that 3 instances are genuinely under their stated room's own heading
+(Room of Stings/Key, Morfang/Bag, Room of Arrows/Slat), while a 4th
+apparent instance near Pilefoot turned out, on closer checking, to
+actually belong to a different, unidentified room - correctly left
+unplaced rather than guessed.
+
+Wired `game.drop` to check a room's real `TollItem` and pay the toll
+automatically on a matching drop (keeping the original `"DOOR, <item>"`
+form working too, since nothing confirms it's wrong, just that DROP is
+also, and probably primarily, real). Placed the 3 confirmed
+`TollItem`s - and two of them chain beautifully with items already
+real and placed in earlier rounds: Wolfdorp's already-real Bag is
+exactly what Morfang's door needs, and Morfang's already-real Slat is
+exactly what Room of Arrows' door needs - a genuine pickup-here-use-
+there puzzle, not a coincidence.
+
+Updated `world.Room.TollItem`'s doc comment (the mechanic is broader
+than "toll signs" specifically) and `TestHandleTollDoorRequiresItem`'s
+stale claim that no real room had one yet. Added
+`TestHandleDropPaysRealToll`, ran the full `gofmt`/`build`/`vet`/`test`
+suite (with a repeated `-count=2` run) clean, and verified live: picked
+up the real Bag in Wolfdorp, carried it through Room of Stings (where
+dropping it correctly does nothing — that door needs a Key), and
+`DROP BAG` at Morfang for real opened the door.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

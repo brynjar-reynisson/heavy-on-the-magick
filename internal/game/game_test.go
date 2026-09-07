@@ -280,10 +280,11 @@ func TestHandleDoorNoPasswordKnown(t *testing.T) {
 	}
 }
 
-// TestHandleTollDoorRequiresItem uses a synthetic TollItem room since no
-// real CollodonsPile/Level1Grid room has one confirmed-placed yet (see
-// world.Room.TollItem's doc comment) — the mechanic itself is real and
-// sourced, just not yet reachable through real room data.
+// TestHandleTollDoorRequiresItem uses a synthetic TollItem room to
+// isolate the "DOOR, <item>" form specifically (see
+// TestHandleDropPaysRealToll below for the real, now-placed rooms and
+// the "DROP <item>" form a fresh walkthrough re-read found to be the
+// actual trigger phrase — see world.Room.TollItem's doc comment).
 func TestHandleTollDoorRequiresItem(t *testing.T) {
 	g := New()
 	g.World.CurrentRoom().TollItem = "Bag of Gold"
@@ -300,6 +301,43 @@ func TestHandleTollDoorRequiresItem(t *testing.T) {
 	}
 	if g.hasItem("Bag of Gold") {
 		t.Error("Bag of Gold should be spent (removed from inventory) after paying the toll")
+	}
+}
+
+// TestHandleDropPaysRealToll covers the real, now-placed TollItem rooms
+// (round 64) and confirms "DROP <item>" - the phrase a fresh CASA
+// walkthrough re-read found is the actual trigger - opens the door.
+func TestHandleDropPaysRealToll(t *testing.T) {
+	g := New()
+	g.Handle(parser.Parse("EAST")) // Secunda Porta
+	g.Handle(parser.Parse("DOOR, SILENCE"))
+	g.Handle(parser.Parse("NORTH")) // Trollwynd
+	g.Handle(parser.Parse("SOUTH")) // Sothic Complex
+	g.Handle(parser.Parse("SOUTH")) // Wolfdorp
+	room := g.World.CurrentRoom()
+	if room.Name != "Wolfdorp" {
+		t.Fatalf("test setup bug: expected to be in Wolfdorp, got %q", room.Name)
+	}
+	g.Handle(parser.Parse("PICKUP BAG"))
+	g.Handle(parser.Parse("NORTH-WEST")) // Room of Stings
+	if g.World.CurrentRoom().Name != "Room of Stings" {
+		t.Fatalf("test setup bug: expected to be in Room of Stings, got %q", g.World.CurrentRoom().Name)
+	}
+	if got := g.Handle(parser.Parse("DROP BAG")); strings.Contains(got, "swings open") {
+		t.Errorf("Handle(DROP BAG) at Room of Stings (needs a Key, not a Bag) = %q, should not open the door", got)
+	}
+	g.Handle(parser.Parse("PICKUP BAG")) // take it back before moving on
+
+	g.Handle(parser.Parse("NORTH")) // Morfang, needs the Bag
+	if g.World.CurrentRoom().Name != "Morfang" {
+		t.Fatalf("test setup bug: expected to be in Morfang, got %q", g.World.CurrentRoom().Name)
+	}
+	got := g.Handle(parser.Parse("DROP BAG"))
+	if !strings.Contains(got, "swings open") {
+		t.Errorf("Handle(DROP BAG) at Morfang (needs a Bag) = %q, want it to open the door", got)
+	}
+	if g.hasItem("Bag") {
+		t.Error("Bag should be spent (removed from inventory) after paying the real toll")
 	}
 }
 
