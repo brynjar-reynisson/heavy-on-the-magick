@@ -51,6 +51,22 @@ func TestKnownImplementedWordsAreNotUncovered(t *testing.T) {
 	}
 }
 
+// TestPickUpVocabularyEntryIsCovered covers round 155's real fix: this
+// tool used to build a bare parser.Command{Verb: w} directly, which
+// silently miscounted the vocabulary's one real multi-word entry,
+// "PICK UP" (parser.Vocabulary), as unimplemented - Handle only
+// recognizes the normalized Verb "PICKUP" that parser.Parse's own
+// special-case produces, not the raw, un-parsed "PICK UP" string. Pins
+// that routing through the real parser.Parse (what main() now does)
+// correctly finds it covered.
+func TestPickUpVocabularyEntryIsCovered(t *testing.T) {
+	g := game.New()
+	resp := g.Handle(parser.Parse("PICK UP"))
+	if isGenericResponse(resp) {
+		t.Errorf("Handle(Parse(%q)) = %q, want real modeled PICKUP behavior, not the generic stub", "PICK UP", resp)
+	}
+}
+
 // TestTargetPositionWordsAreExcludedButRealVocabulary pins that every
 // word in targetPositionWords is (a) actually in the real vocabulary
 // (not a typo) and (b) genuinely falls through to the generic stub when

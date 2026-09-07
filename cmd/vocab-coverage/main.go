@@ -28,6 +28,23 @@
 // Rather than either miscount them as "unimplemented" or build fragile
 // per-word position-pairing logic to chase every combination, they're
 // explicitly excluded and listed separately.
+//
+// ROUND 155 FIX (was a real, silent undercounting bug, not previously
+// documented as a blind spot): this tool used to build a bare
+// parser.Command{Verb: w} directly, bypassing parser.Parse entirely.
+// That's wrong for the vocabulary's one real multi-word entry, "PICK
+// UP" (parser.Vocabulary — stored as a single dictionary entry
+// containing a space, see parser.Parse's own doc comment) — Handle only
+// recognizes the normalized Verb "PICKUP", produced by Parse's own
+// special-case for this exact entry, so calling Handle with the raw,
+// un-parsed "PICK UP" string always hit the generic stub, silently
+// miscounting a real, working, already-tested command as unimplemented.
+// Fixed by routing every word through the real parser.Parse (what an
+// actual player's input goes through) instead of hand-building a
+// Command — strictly more honest as a testing methodology too, and a
+// no-op for every other word (parser.ExpandKeyword passes through any
+// unrecognized ≥3-letter word unchanged, and no other vocabulary entry
+// contains a space).
 package main
 
 import (
@@ -84,7 +101,7 @@ func main() {
 			continue
 		}
 		g := game.New()
-		resp := g.Handle(parser.Command{Verb: w})
+		resp := g.Handle(parser.Parse(w))
 		if isGenericResponse(resp) {
 			uncovered = append(uncovered, w)
 		}

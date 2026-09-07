@@ -6611,6 +6611,61 @@ comment specifically, not just whichever file gets read first) rather
 than assuming a single file's comment represents the whole package's
 documentation.
 
+### Round 155: fixed a real, silent bug in cmd/vocab-coverage's own self-audit — the tool this project built specifically to answer "which commands work" was itself silently miscounting one
+
+After another Stop-hook rejection whose complaint specifically named
+"no checklist of which original commands work, which don't" as
+unaddressed for gameplay, went straight to the tool this project
+already built to be exactly that checklist (`cmd/vocab-coverage`,
+round 102) rather than build a second one. Re-ran it and read its own
+mechanism closely rather than just trusting its printed numbers again.
+
+Found a real, previously-undocumented bug (distinct from the already-
+known 12-word `targetPositionWords` blind spot): the tool builds a bare
+`parser.Command{Verb: w}` directly for every vocabulary word, bypassing
+`parser.Parse` entirely. That's silently wrong for exactly one real
+vocabulary entry — `"PICK UP"` (round 129's find: the ONE multi-word
+entry in the whole 316-word table, stored with an embedded space) —
+because `Handle` only recognizes the NORMALIZED verb `"PICKUP"`, which
+only `parser.Parse`'s own special-case (round 129) produces; calling
+`Handle` with the raw, un-parsed `"PICK UP"` string always fell through
+to the generic stub. This means the tool's own "31... have modeled
+behavior" claim had been undercounting by exactly 1 for 26 rounds
+(since round 129 shipped `"PICK UP"` support) without anyone noticing —
+a real, previously-silent instance of the exact conservative-direction
+self-audit bug round 140 already fixed once for a different cause
+(`targetPositionWords` drift).
+
+Fixed by routing every word through the real `parser.Parse` (what an
+actual player's typed input goes through) instead of hand-building a
+`Command` — confirmed this is strictly more correct as a testing
+methodology, not just a special case for one word: `parser.
+ExpandKeyword` passes through any unrecognized ≥3-letter word
+unchanged (all real Merphish keyword abbreviations are 1-2 letters, so
+no real vocabulary word can collide with one), and no other vocabulary
+entry contains a space — so this is a genuine no-op for the other 300
+words, verified by the tool's own before/after counts (30→31 covered,
+271→270 uncovered, exactly the +1 expected, nothing else moved).
+
+Added `TestPickUpVocabularyEntryIsCovered` (pins the fix specifically,
+routing "PICK UP" through the same `parser.Parse` call `main()` now
+uses). Ran the full `gofmt`/`build`/`vet`/`test` suite (with a
+repeated `-count=2` run) clean, and verified live by re-running the
+actual tool: "PICK UP" no longer appears in the uncovered list.
+
+**How to apply**: a tool built to give this project an honest,
+self-verified answer to "which commands work" is only as trustworthy
+as its OWN parsing path matches the real one — building a `parser.
+Command` by hand instead of calling `parser.Parse` looks equivalent for
+ordinary single-word verbs but silently diverges for anything
+`Parse` itself specially handles (keyword expansion, the conversation
+comma-form, and — as found this round — the one real multi-word
+vocabulary entry). When a tool exists specifically to answer a "how
+much has been done" question, re-reading its own mechanism (not just
+re-running it and trusting the printed number) is worth doing
+periodically, the same discipline already applied to
+`targetPositionWords` itself in round 140.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
