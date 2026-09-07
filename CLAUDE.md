@@ -4109,6 +4109,45 @@ forced/guessed one.
 
 Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 101: named Trollwynd's monster "Troll" — evidence for this had been sitting unused in the codebase's own doc comments since round 71
+
+After another Stop-hook rejection, same framing, first tried 3 fresh
+CASA walkthrough re-fetches (CALL's effect; TRANSFUSION's exact
+restore number; a batch check for READ/SEARCH/OPEN/WEAR/CLIMB/PUSH/
+PULL/LISTEN/SMELL/THROW/WAVE/RUB/LIGHT/BURN/EAT/DRINK/KISS/SHOUT/WAIT/
+SLEEP as possible unmodeled verbs) — all 3 came back clean negatives
+(this walkthrough is genuinely terse; none of those words appear in
+it at all). Rather than force something from an exhausted source,
+looked instead for a fix the codebase already had the evidence for but
+had never acted on.
+
+Found one: `CollodonsPile`'s Trollwynd room had `Monster: "monster"` —
+a generic placeholder — despite `collodons_pile.go`'s OWN doc comment
+(written for the Methos/Vampire fix, round 71) already stating
+`zone_monsters.go`'s independently-sourced "Trollwynd: Troll x4" was
+cross-checked against `Level3Grid`'s data and found to match EXACTLY
+(4 tight-crop-verified Trolls at C4/C6/E7/F8, all within the Trollwynd
+zone). That evidence was used to justify trusting a DIFFERENT room's
+placement (Methos) but never applied back to Trollwynd's own still-
+generic field. Fixed: `Monster: "monster"` → `Monster: "Troll"`.
+
+This has a real, visible downstream effect in `cmd/hotm-gui`: Trollwynd
+now resolves a real portrait (`graphics.Portrait("troll")`) and the
+correct dark-olive "t" glyph (`monsterGlyphColor["Troll"]`) instead of
+silently falling back to the generic unconfirmed-icon "?" — verified
+via a direct test constructing a real `Game` at Trollwynd and checking
+`currentPortraitName()`/`monsterGlyphColor` both resolve correctly
+(live navigation there isn't currently possible to screenshot, since
+`SendInput` key-injection has been a settled-broken environment
+limitation for many rounds — this is the same "test what's testable
+without ebiten's window" pattern used elsewhere in that file).
+`TestHandleExamineReportsMonster` updated (it was incidentally
+matching the literal string "monster", not really testing the room's
+actual monster — now checks for "Troll" instead, testing the real
+thing).
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

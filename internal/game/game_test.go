@@ -863,10 +863,10 @@ func TestHandleOptionsRealignRerollsStats(t *testing.T) {
 func TestHandleExamineReportsMonster(t *testing.T) {
 	g := New()
 	g.Handle(parser.Parse("EAST"))
-	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a Monster
+	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a Monster (Troll - see collodons_pile.go round 101)
 
 	got := g.Handle(parser.Parse("EXAMINE"))
-	if !strings.Contains(got, "monster") {
+	if !strings.Contains(got, "Troll") {
 		t.Errorf("Handle(EXAMINE) in a room with a monster = %q, want it mentioned", got)
 	}
 }

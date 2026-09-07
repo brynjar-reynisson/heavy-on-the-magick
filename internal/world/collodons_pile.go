@@ -63,6 +63,15 @@ package world
 // Nidus, both confirmed "BLAST (until monster dies)" — i.e. multiple
 // hits, not one-shot. The exact original hit count isn't stated, so
 // MonsterHealth=3 here is a placeholder guess, not extracted fact.
+// Trollwynd's monster was left generically named "monster" for many
+// rounds even after zone_monsters.go's independent ZoneMonsterSightings
+// ("Trollwynd: Troll x4") was cross-checked against Level3Grid's own
+// data and found to match EXACTLY (4 tight-crop-verified Trolls at
+// C4/C6/E7/F8, all within the Trollwynd zone — see the Methos/Vampire
+// note below, which used this same match as supporting evidence but
+// never went back and applied it here). Round 101: named it "Troll"
+// accordingly — not a new source, just finally acting on already-
+// verified evidence sitting a few paragraphs below this one.
 //
 // CORRECTED (round 15): this room was originally ported as "Midus" and
 // the Level 2 room below as "Solthic Complex", both transcribed from the
@@ -224,7 +233,7 @@ func CollodonsPile() *World {
 	for _, r := range []*Room{
 		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta}, Items: []string{"Grimoire", "Poison-smeared book"}, HasTable: true},
 		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}},
-		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "monster", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll"}, HasTable: true},
+		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "Troll", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll"}, HasTable: true},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget"}, HasTable: true, Monster: "Vampire", MonsterHealth: 2},
 		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower"}, HasTable: true},
