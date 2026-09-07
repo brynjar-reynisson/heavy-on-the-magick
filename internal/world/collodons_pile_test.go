@@ -2,10 +2,16 @@ package world
 
 import "testing"
 
-func TestCollodonsPileHasThirteenRooms(t *testing.T) {
+// TestCollodonsPileHasFourteenRooms: 13 real rooms from the CASA
+// walkthrough's own path, plus round 126's Furnace Room - a real room
+// too (see CollodonsPile's doc comment), but sourced differently (a
+// first-hand playthrough account, not the walkthrough's own path) and
+// reached only via a failed INVOKE's real punishment teleport, not a
+// normal directional exit.
+func TestCollodonsPileHasFourteenRooms(t *testing.T) {
 	w := CollodonsPile()
-	if len(w.Rooms) != 13 {
-		t.Errorf("len(w.Rooms) = %d, want 13 (per the walkthrough this data was sourced from)", len(w.Rooms))
+	if len(w.Rooms) != 14 {
+		t.Errorf("len(w.Rooms) = %d, want 14 (13 from the walkthrough path + round 126's Furnace Room)", len(w.Rooms))
 	}
 }
 

@@ -289,6 +289,20 @@ package world
 // Nickel") - which exact Sign this is (if any specific zodiac one)
 // isn't confirmed, so only the bare fact of a Sign being present is
 // added, not a guessed Zodiac/metal-key association.
+// Furnace Room (round 126): a real, sourced punishment destination, not
+// a normal explorable room - The CRPG Addict's first-hand playthrough
+// account (the same source round 125 used to confirm CALL's effect)
+// states:
+// "When you INVOKE them, you have to be holding their particular
+// talisman--found within the dungeon--or they send you to a furnace
+// room with no exits." "Furnace Room" is independently already a real,
+// confirmed room name in this project - Level1Grid's own isolated A8
+// cell, which has no Exits either, an exact cross-source match on both
+// name AND "no exits" (see level1_grid.go). Added here with no Exits
+// of its own, reached only via game.invoke's real Talisman-failure
+// path (world.Teleport), never as a normal directional destination -
+// faithfully honest about it being a genuine dead end, not inventing
+// an escape route no source mentions.
 func CollodonsPile() *World {
 	w := New(roomMisery)
 	for _, r := range []*Room{
@@ -305,6 +319,7 @@ func CollodonsPile() *World {
 		{ID: roomNidus, Name: "Nidus", Level: 1, Exits: map[Direction]RoomID{West: roomPilefoot}, Monster: "Cyclops", MonsterHealth: 3},
 		{ID: roomPilefoot, Name: "Pilefoot", Level: 1, Exits: map[Direction]RoomID{North: roomPileCollodom}, DoorPasswords: []string{"ELEVEN"}},
 		{ID: roomPileCollodom, Name: "Pile Collodom", Level: 1},
+		{ID: roomFurnace, Name: "Furnace Room", Level: 1},
 	} {
 		if r.Description == "" {
 			r.Description = "(room description not yet extracted from the original game)"
@@ -332,4 +347,5 @@ const (
 	roomNidus
 	roomPilefoot
 	roomPileCollodom
+	roomFurnace
 )

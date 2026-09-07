@@ -5014,6 +5014,62 @@ CALL (with scroll): You CALL out... Apex the Ogre eyes you warily, then grunts..
 
 Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 126: found and implemented INVOKE's real failure punishment — a furnace room with no exits, already sitting in this project's own data
+
+Immediately after round 125 shipped, went back to The CRPG Addict's
+blog post (the same new-source-type find that resolved CALL) for a
+second `WebFetch` pass, asking specifically what happens when INVOKE
+fails. It answered directly: "When you INVOKE them, you have to be
+holding their particular talisman--found within the dungeon--or they
+send you to a furnace room with no exits." Failing to INVOKE isn't
+just a rejected command in the original — it's a real punishment with
+a real destination.
+
+The striking part: "Furnace Room" is not a name this project had to
+invent or guess a location for — `Level1Grid`'s own isolated A8 cell
+has been named exactly that, with no Exits, since round 19's original
+Level 1 extraction, sitting unexplained (just "a dead end") for over
+100 rounds. A first-hand playthrough account independently describing
+a "furnace room with no exits" as INVOKE's failure destination is an
+exact cross-source match on both name and structure — strong
+confirmation this is real, not a coincidence.
+
+Added a `Furnace Room` to `world.CollodonsPile()` too (Level1Grid's own
+A8 isn't reachable from CollodonsPile's separate room graph — see the
+still-open Level1Grid/CollodonsPile merge blocker), with no `Exits` of
+its own, reached only via the real punishment teleport, not as a
+normal directional destination. `game.invoke`'s Talisman-failure branch
+now calls a new `game.punishFailedInvoke`, which teleports the player
+there via the same `World.Teleport` mechanism `astarotTeleport` already
+uses, when the active `World` has a real Furnace Room — worlds without
+one (Level2-4Grid) fall back to the plain rejection message, an honest
+scope limit rather than a fabricated destination for every mode.
+
+Verified end-to-end via a real `Handle` call, not just the field
+itself:
+
+```
+INVOKE ASTAROT (no Sword): You begin the ritual to invoke ASTAROT, the
+Spirit of Assemblage... but you have no suitable Talisman (a Sword).
+The ritual backfires! You are flung into a furnace room with no exits.
+Current room after: Furnace Room
+```
+
+Adding the room bumped `CollodonsPile`'s real room count from 13 to
+14, and added a 4th real cross-world name overlap to round 100's
+`SharedNamedRooms(CollodonsPile, Level1Grid)` scan (alongside Agile
+Stair/Room of Stings/Room of Arrows) — both existing tests updated to
+match rather than silently left stale. Added
+`TestHandleInvokeWithoutCharmTeleportsToFurnaceRoom`. Ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean.
+
+**How to apply**: a second pass over a genuinely new source (not just
+a new angle on an old one) can pay off immediately, not just once —
+this is the second real, confirmed mechanic The CRPG Addict's post has
+given this project in two consecutive rounds. Worth a third targeted
+re-read before assuming that source is exhausted.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

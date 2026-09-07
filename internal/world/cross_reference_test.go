@@ -18,14 +18,17 @@ func TestSharedNamedRoomsFiltersCellCodeCoincidences(t *testing.T) {
 
 // TestSharedNamedRoomsCollodonsPileLevel1Grid pins the exact set of
 // real, genuinely-named overlaps between CollodonsPile and Level1Grid
-// this round's cross-world scan found — all 3 were already independently
-// documented in Level1Grid's own doc comment before this test existed
-// (this locks them in against an accidental future rename breaking the
-// connection silently), and confirms the scan found no OTHERS beyond
-// what's already been reasoned about.
+// this project's cross-world scan found — the first 3 were already
+// independently documented in Level1Grid's own doc comment before this
+// test existed; "Furnace Room" joined in round 126 (CollodonsPile's
+// own doc comment - a real, independently-sourced match to Level1Grid's
+// A8, cross-confirmed on BOTH name and "no exits"). Locks all 4 in
+// against an accidental future rename breaking the connection silently,
+// and confirms the scan finds no OTHERS beyond what's already reasoned
+// about.
 func TestSharedNamedRoomsCollodonsPileLevel1Grid(t *testing.T) {
 	shared := SharedNamedRooms(CollodonsPile(), Level1Grid())
-	want := []string{"Agile Stair", "Room of Stings", "Room of Arrows"}
+	want := []string{"Agile Stair", "Room of Stings", "Room of Arrows", "Furnace Room"}
 	if len(shared) != len(want) {
 		t.Errorf("SharedNamedRooms(CollodonsPile, Level1Grid) = %v, want exactly %v", shared, want)
 	}

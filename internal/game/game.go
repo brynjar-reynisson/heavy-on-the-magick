@@ -500,7 +500,7 @@ func (g *Game) invoke(target string) string {
 			continue
 		}
 		if !g.hasItem(d.Charm) {
-			return fmt.Sprintf("You begin the ritual to invoke %s, %s... but you have no suitable Talisman (a %s).", d.Name, d.Title, d.Charm)
+			return g.punishFailedInvoke(d)
 		}
 		if strings.HasPrefix(d.Ability, "Warning:") {
 			return fmt.Sprintf("You invoke %s, %s! %s", d.Name, d.Title, d.Ability)
@@ -511,6 +511,27 @@ func (g *Game) invoke(target string) string {
 		return fmt.Sprintf("You invoke %s, %s! The ritual succeeds, though its exact effect isn't modeled yet.", d.Name, d.Title)
 	}
 	return "There is no demon by that name."
+}
+
+// punishFailedInvoke handles invoking a demon without its Charm - a
+// real, confirmed punishment, not just a rejection message. The CRPG
+// Addict's first-hand playthrough account (the same source that
+// confirmed CALL's effect, round 125): "When you INVOKE them, you have
+// to be holding their particular talisman--found within the
+// dungeon--or they send you to a furnace room with no exits." If the
+// active World has a real Furnace Room (world.CollodonsPile does,
+// added round 126; so does world.Level1Grid, independently, as its
+// own isolated A8 cell), the player is genuinely teleported there,
+// same mechanism as game.astarotTeleport. Worlds without one (Level2-
+// 4Grid) fall back to the plain rejection message rather than fail -
+// an honest scope limit, not a fabricated destination.
+func (g *Game) punishFailedInvoke(d magic.Demon) string {
+	msg := fmt.Sprintf("You begin the ritual to invoke %s, %s... but you have no suitable Talisman (a %s). The ritual backfires!", d.Name, d.Title, d.Charm)
+	if id, ok := g.World.FindRoomByName("Furnace Room"); ok {
+		g.World.Teleport(id)
+		msg += " You are flung into a furnace room with no exits."
+	}
+	return msg
 }
 
 // talkToApex handles the confirmed real conversation-form NPC

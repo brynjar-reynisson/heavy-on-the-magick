@@ -95,6 +95,24 @@ func TestHandleInvokeSucceedsWithCharm(t *testing.T) {
 	}
 }
 
+// TestHandleInvokeWithoutCharmTeleportsToFurnaceRoom pins round 126's
+// real, sourced punishment mechanic (The CRPG Addict's first-hand
+// playthrough account, the same source round 125 used to resolve
+// CALL's effect): invoking a demon without its Charm doesn't just
+// reject the command, it actually teleports the player to the real
+// Furnace Room. Verifies both the message and the actual World state
+// change, not just text.
+func TestHandleInvokeWithoutCharmTeleportsToFurnaceRoom(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("I MAGOT")) // no Sunflower carried
+	if !strings.Contains(got, "furnace room") {
+		t.Errorf("Handle(I MAGOT) with no Charm = %q, want it to mention being sent to the furnace room", got)
+	}
+	if room := g.World.CurrentRoom(); room == nil || room.Name != "Furnace Room" {
+		t.Errorf("current room after a failed INVOKE = %+v, want Furnace Room", room)
+	}
+}
+
 // TestHandleApexThanksDismisses pins the hint screen's own confirmed
 // dismiss phrase ("To dismiss say \"APEX, THANKS\"" — see game.help's
 // verbatim text), wired for real for the first time this round.
