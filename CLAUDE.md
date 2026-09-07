@@ -7540,6 +7540,61 @@ project (Sothic Complex's Level-2-vs-Level-3 question) before reusing
 art for it — a real name match and a confirmed-safe name match aren't
 automatically the same thing.
 
+### Round 168: found and cleaned up a real stale package doc comment AND genuinely dead code in internal/magic — the same "easy to follow" audit round 154 already applied once to graphics, never repeated for this package
+
+After another Stop-hook rejection whose complaint again included "easy
+to follow" alongside the porting-status figures, re-ran the `go doc
+./internal/<pkg>` audit round 154 established (which found and fixed
+one stale `graphics` package comment that round) against all 7
+`internal/*` packages once more, 13 rounds later with substantially
+more code added since. Found `magic`'s own package doc comment had
+gone genuinely stale — it still framed the package as primarily about
+an unresolved "rune sigil" spellcasting mechanism (the pre-round-9
+exploratory phase, before this project pivoted to walkthrough-sourced
+data), barely mentioning `Demon`/`ZodiacKey` at all despite those now
+being the package's real, substantial, actively-developed content
+(all 4 demons have real invocable commands as of round 164).
+
+Went further than a wording fix: checked whether the OLD subject
+matter (`Rune`, `Spell`, `MaxRunes` in `spell.go`) was still load-
+bearing anywhere, via a full-repo grep — **zero references anywhere**,
+including this package's own tests. These were genuinely dead,
+placeholder types from the superseded rune-exploration avenue (their
+own doc comments already said "unconfirmed," "not yet understood,"
+"placeholder names" — an early, honest admission that was never
+revisited once the real spell system was found). Removed all three,
+the same "remove genuinely dead code once proven unused, don't just
+leave it around" discipline round 99 already applied once to
+`audio.Player`. The one real, sourced fact `MaxRunes=16` existed to
+record (routine 31932's confirmed 16-glyph selection space) isn't
+lost — it was already independently documented on
+`graphics.RuneGlyphs`'s own doc comment (the package that actually
+holds real extracted glyph data), so nothing needed duplicating there.
+Renamed the now doc-comment-only file `spell.go` → `doc.go`, the
+standard Go convention for a file whose sole purpose is the package
+doc comment.
+
+Checked the other 6 packages' `go doc` output the same way — all
+still read accurate, a real, checked negative for those 6, not
+skipped. Ran the full `gofmt`/`build`/`vet`/`test` suite (with a
+repeated `-count=2` run) clean, and confirmed via `go doc
+./internal/magic` that the corrected comment now accurately describes
+the package's real current content.
+
+**How to apply**: a "does the package doc comment still match reality"
+audit isn't a one-time fix — round 154 found and fixed exactly one
+stale case (in `graphics`) and didn't generalize into "re-run this
+audit periodically," so `magic`'s own drift sat unnoticed for 13+
+rounds despite the package growing substantially in that time (Demons'
+Correspondences, ZodiacKeys, and all 4 demons' real invocation
+commands all landed after the doc comment was last touched). When a
+stale comment traces back to genuinely superseded code (not just
+stale wording), checking whether that OLD code is still referenced
+anywhere is worth doing in the same pass — a doc-comment fix and a
+dead-code removal often travel together, the same discovery path this
+round took from "the comment is wrong" to "and also, the thing it's
+describing isn't used by anything."
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
