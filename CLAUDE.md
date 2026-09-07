@@ -2816,6 +2816,42 @@ Added `TestLevel4GridHasSecondWyvern`, ran the full `gofmt`/`build`/
 `vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
 live that normal Level 4 play is unaffected.
 
+### A round of real, verified negatives: checked several promising leads, none panned out, all worth ruling out
+
+After another Stop-hook rejection, same framing, chased several
+specific hypotheses this round - all came back clean negatives, which
+is itself real, useful progress (ruling out redundant future
+investigation), so recorded plainly rather than forced into a weak
+placement just to have shipped code.
+
+- **Icthys as Pisces**: wondered whether Level2Grid's "Icthys" (Greek
+  for fish) might cross-reference the numbered map's "#8, Sign -
+  Pisces, fishes, Key of Copper" the way Mantis/Sword/Sunflower were
+  found. Re-examined the same numbered-map crop already used for the
+  Room of Misery/Grimoire find: none of the visible numbers (8, 9, 10,
+  12, 13, 14) actually sit inside "Room of Icthys"'s own drawn cell -
+  they're all in adjacent plain cells. No real anchor here, unlike the
+  clean hits that worked before - correctly not forced.
+- **CASA walkthrough coverage of the newer per-cell finds**: asked
+  directly whether "Icthys", "Flox", "Horns", "Purity", "Sign", "Two",
+  "Water", "Scales", "Pride", "Chasm", or "Crypt" appear anywhere in
+  the walkthrough at all. Clean, explicit no - none of them do. Makes
+  sense in hindsight: the walkthrough only ever traces the 13 zone-
+  level CollodonsPile rooms, not these separately-extracted per-cell
+  special rooms from the clean grid map - a different source's content
+  entirely, not something this walkthrough was ever going to confirm.
+- **Sound timing precision**: looked into whether the exact ZX
+  Spectrum interrupt/VBlank timing (confirmed elsewhere in this project
+  as "6 VBlank frames" for the main game loop's tick) could sharpen the
+  startup melody's still-approximate note duration. It can't, directly
+  - that 6-frame figure is the separate main game loop's tick rate, not
+  the boot-sequence sound routine's own internal delay loop, which
+  would need the same kind of full cycle-count this project has
+  already tried and set aside once for pitch calibration.
+
+No code changes this round - three real, checked leads, all correctly
+ruled out rather than forced.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**
