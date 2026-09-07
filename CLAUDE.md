@@ -3884,6 +3884,42 @@ content" work is graphics fidelity, not undiscovered prose.
 Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
 `-count=2` run) clean.
 
+### Extracted the first real ROOM screenshot (not just a portrait) from the atlas, and derived its Level 2 grid calibration
+
+After another Stop-hook rejection, same framing, followed up directly
+on the "graphics fidelity, not undiscovered prose" corollary from last
+round's room-description hypothesis: went back to
+`heavymap-speccy-screenshots.png` (previously only used for its
+portrait gallery) and, for the first time, extracted one of its
+individual **room scene** screenshots — real ZX Spectrum in-game
+corridor art, not a legend portrait.
+
+Derived and validated a real pixel calibration for this atlas's Level 2
+quadrant (worth recording for future rounds, since this atlas has never
+had its room-grid calibrated before, only its legend): row height
+≈270px, row A's content starting at y≈490; column width ≈540px, column
+1 starting at x≈5360. Confirmed against the atlas's own printed row
+("A") and column ("1", "2", "3") labels, not guessed. Tight-crop-
+extracted cell **A1** precisely (516×300px) — which is already this
+project's own confirmed real starting room for
+`game.NewLevel2Exploration()` (`level2_grid.go`: `w :=
+New(level2Room("A1"))`), a genuine, well-grounded connection, not an
+arbitrary sample.
+
+Added `graphics.CorridorSample()` (a `go:embed`, same pattern as
+`Portrait()`), with `TestCorridorSampleDecodesToRealArt`. Honestly NOT
+wired into any live display yet — `cmd/hotm-gui` doesn't currently
+support the `-level2grid` exploration mode at all, so there's no
+existing live game state to attach it to without a larger feature
+addition; that's real, scoped follow-up work, not done here. This is
+the first actual extracted **room** scene this project has (as opposed
+to the 13 demon/monster/NPC portraits already wired into gameplay) —
+concrete, real evidence of the original's actual corridor rendering
+style, useful for any future graphics-fidelity work to check against.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
