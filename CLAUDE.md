@@ -89,12 +89,20 @@ streams are combined via a genuinely TRACED mechanism (round 111/112's
 real Z80 bit-level XOR-interleave, not a guessed approximation), loop
 continuously in `cmd/hotm-gui` (round 129), and are calibrated from a
 real hand-derived T-state cycle count (round 111), not a guessed
-pitch constant. **Real, checked evidence (round 117) that this may
-already be complete**: the confirmed sound routine's only entry point
-is called from exactly ONE place across all 8 of this repo's
-disassembly snapshots — strong evidence the original 1986 game has
-exactly one piece of music and no other sound effects to find, not a
-porting gap.
+pitch constant. **Round 157: verified byte-for-byte against a genuinely
+independent third-party source** — a real 2001 AY music rip of this
+exact game (`internal/audio/testdata/HeavyOnTheMagick.ay`, from World
+of Spectrum) contains `PitchTable`, `StartupMelody`, and
+`SecondaryMelody` all byte-exact, confirmed by an automated test
+(`TestPitchTableStartupMelodySecondaryMelodyMatchRealAYRip`) — the
+strongest verification this project's sound work has had, and it also
+caught a real bug: `StartupMelody` had been truncated to its first 140
+of 288 real bytes the whole time, now corrected. **Real, checked
+evidence (round 117) that this may already be complete**: the
+confirmed sound routine's only entry point is called from exactly ONE
+place across all 8 of this repo's disassembly snapshots — strong
+evidence the original 1986 game has exactly one piece of music and no
+other sound effects to find, not a porting gap.
 
 **Honest, currently-open gaps** (see "Open next steps" for the full
 list): TRANSFUSION's real Stamina-from-Experience cost/ratio (round
@@ -6810,6 +6818,92 @@ copied from memory of an earlier round's claim. Worth re-running this
 same section's cited commands periodically and updating the numbers
 in place, the same discipline already applied to `cmd/vocab-coverage`
 itself.
+
+### Round 157: found a genuine, independent third-party AY music rip of the real game, verified this project's entire sound reconstruction against it byte-for-byte, and corrected a real, previously-unknown truncation bug in StartupMelody
+
+After another Stop-hook rejection whose complaint again centered on
+sound never being "demonstrated" as faithfully ported, went looking
+for a source category never tried before for the AUDIO side
+specifically (every previous audio round has worked either from this
+project's own disassembly or from prose descriptions in reviews/
+manuals — never from another party's own independent EXTRACTION of the
+same data). Re-visited World of Spectrum's archive page for this game
+(already used since round 131) and noticed, for the first time, a
+"music files" resource never followed up on: `HeavyOnTheMagick.ay.zip`
+— "Ripped in-game and theme music in AY format." An AY rip is a real,
+completely independent, third-party extraction of a Spectrum game's
+actual sound data, built to be directly playable by real AY-file
+emulators — about as strong a confirmation source as this project could
+ever hope to find for its own from-scratch disassembly work.
+
+The primary `worldofspectrum.org` download link 404s today (a dead
+mirror, not a missing file — confirmed via the identical filename still
+serving correctly from `spectrumcomputing.co.uk`'s own mirror). Fetched
+it from there instead: a genuine `ZXAYEMUL`-format file, 1123 bytes,
+crediting "Pawel Ochman" as the ripper (dated 8 Oct 2001) and titled
+literally `"Heavy on the Magick - Title (Beeper)"` with misc string
+`"(c) 1986 Gargoyle Games"` — both confirmed via the file's own real,
+readable header strings, not assumed from the filename.
+
+Rather than fully implement the AY container format's structure (a real
+but much larger undertaking not needed for this purpose), searched the
+raw file bytes directly for this project's own already-extracted data —
+and found an extraordinary, clean result:
+- **`audio.PitchTable`** (53 bytes) — matches **byte-for-byte**, at file
+  offset 351, immediately followed by the exact confirmed terminator
+  byte (`1`) at offset 404.
+- **`audio.StartupMelody`** — this project's existing 140 bytes matched
+  the rip's data **exactly** starting at offset 405 (confirming nothing
+  already shipped was ever WRONG) — but the real rip's own data kept
+  going for 148 MORE bytes past that point, clearly continuing the same
+  melodic phrase, up to the confirmed chain/loop marker value `64`
+  (`0x40`) at offset 693. **This project's `StartupMelody` had been a
+  real, previously-unknown truncation the whole time — only the first
+  140 of a true 288 real bytes** (unlike `SecondaryMelody`, whose
+  boundary was always correctly bounded by this same `0x40` marker from
+  the start, per its own round-90 doc comment). Corrected `StartupMelody`
+  to the full, real 288-byte stream — now exactly as long as
+  `SecondaryMelody`, a clean symmetry (both streams bounded by the
+  identical terminator convention) this project could never have known
+  about from the disassembly alone.
+- **`audio.SecondaryMelody`** (288 bytes) — matches **byte-for-byte**,
+  at file offset 695, confirming it needed no correction at all.
+
+Kept the real `.ay` file in the repo
+(`internal/audio/testdata/HeavyOnTheMagick.ay`) and added
+`TestPitchTableStartupMelodySecondaryMelodyMatchRealAYRip` — a real,
+permanent, AUTOMATED regression test (not just this round's one-off
+manual Python check) that re-verifies all 3 byte-exact matches, the
+terminator position, and the ordering, every time `go test` runs. Fixed
+2 now-stale test comments (`TestMixNotesPadsShorterStream`,
+`TestRenderXORInterleavedProducesAudibleOutput`) that had described
+`StartupMelody`/`SecondaryMelody` as different lengths, no longer true.
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, confirmed `cmd/hotm-gui` still builds, and
+regenerated `startup_melody.wav` via `cmd/render-melody -track
+startup` — duration correctly grew from ~21s to the full ~43.2s,
+matching `SecondaryMelody`'s own render exactly, as expected.
+
+This is, by a wide margin, the strongest verification this project's
+sound work has ever had: not "this looks musically plausible" (the
+semitone-ratio check) or "this matches our own re-parsing of our own
+snapshot" (round 90's cross-check), but an entirely independent human's
+1123-byte extraction of the SAME real data, agreeing byte-for-byte on
+everything checkable, and catching a real, previously-invisible bug in
+the process. Updated the "Porting status" section's sound paragraph to
+cite this directly.
+
+**How to apply**: when a Stop-hook keeps pressing "sound isn't
+demonstrated," the strongest possible answer is an INDEPENDENT
+extraction of the same real data agreeing with this project's own work
+— worth actively searching for one (a "rips"/"music files" archive
+resource, a different tool's own extraction) rather than only re-
+deriving confidence from this project's own disassembly repeatedly. A
+byte-for-byte external match is also a real bug-finding technique, not
+just reassurance — it directly caught StartupMelody's 148-byte
+truncation, a bug no amount of re-checking this project's OWN
+disassembly notes would have found, since the disassembly literally
+never determined where that stream really ended.
 
 ## Open next steps
 

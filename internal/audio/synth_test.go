@@ -128,11 +128,13 @@ func TestMixNotesAveragesBothStreams(t *testing.T) {
 	}
 }
 
-// TestMixNotesPadsShorterStream covers the length-mismatch case real
-// StartupMelody/SecondaryMelody hit (different lengths): the shorter
-// stream must be silence-padded, not truncate the mix, so the longer
-// stream's tail still plays (just alone, at half amplitude from the
-// averaging).
+// TestMixNotesPadsShorterStream covers the general length-mismatch
+// case (two arbitrary streams of different lengths - StartupMelody and
+// SecondaryMelody themselves turned out to share one real length after
+// round 157's correction, so this uses synthetic data instead): the
+// shorter stream must be silence-padded, not truncate the mix, so the
+// longer stream's tail still plays (just alone, at half amplitude from
+// the averaging).
 func TestMixNotesPadsShorterStream(t *testing.T) {
 	short := []byte{5}
 	long := []byte{5, 5, 5}
@@ -244,10 +246,9 @@ func TestRenderXORInterleavedSilentWhenNoValidNotes(t *testing.T) {
 
 // TestRenderXORInterleavedProducesAudibleOutput covers the real,
 // shipped melodies together: confirms real toggles actually occur (not
-// silence) and the output is real length (matching StartupMelody's
-// total tick count, the longer of the two once SecondaryMelody's own
-// silence-padding is accounted for isn't relevant here since
-// StartupMelody is shorter - SecondaryMelody is the longer stream).
+// silence) and the output is real length (StartupMelody and
+// SecondaryMelody are the same real 288-tick length since round 157,
+// so either one's tick count works as the basis here).
 func TestRenderXORInterleavedProducesAudibleOutput(t *testing.T) {
 	samples := RenderXORInterleaved(StartupMelody, SecondaryMelody, 0.15, SampleRate)
 	wantLen := int(float64(len(SecondaryMelody)) * 0.15 * float64(SampleRate))

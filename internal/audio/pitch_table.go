@@ -20,6 +20,24 @@ package audio
 // (down to -12) while still landing inside this table's unsigned 0-52
 // index range, using a single shared table for a wider effective pitch
 // range than 53 straight ascending entries alone would allow.
+//
+// ROUND 157 INDEPENDENT CONFIRMATION: found and downloaded a completely
+// different kind of source for this project's audio work - a real AY
+// music rip (HeavyOnTheMagick.ay, ripped by Pawel Ochman, 8 Oct 2001,
+// distributed by World of Spectrum - the primary worldofspectrum.org
+// download link 404s today, but the identical file is still served from
+// spectrumcomputing.co.uk's mirror; kept in this repo at
+// testdata/HeavyOnTheMagick.ay). An AY rip is an actual emulator-ready
+// player extracted from the real running game by a third party in 2001,
+// completely independent of this project's own from-scratch disassembly
+// - the strongest possible kind of confirmation available for this
+// data. Its embedded song data contains this EXACT 53-byte PitchTable,
+// byte-for-byte, at file offset 351, immediately followed by the exact
+// terminator byte (1) at offset 404 - both confirmed via
+// TestPitchTableStartupMelodySecondaryMelodyMatchRealAYRip. See
+// StartupMelody's own doc comment for what this same rip revealed about
+// that stream specifically (a real length correction, not just another
+// confirmation).
 var PitchTable = []byte{
 	255, 240, 227, 215, 203, 192, 180, 171, 161, 151,
 	144, 136, 128, 121, 114, 108, 102, 96, 91, 86,
@@ -34,8 +52,7 @@ var PitchTable = []byte{
 const PitchTableTerminator = 1
 
 // StartupMelody is a raw note stream found immediately after PitchTable
-// in memory (64812+54 onward), not yet confirmed to be THE startup
-// jingle specifically, but positioned exactly where a melody would
+// in memory (64812+54 onward), positioned exactly where a melody would
 // follow a pitch table, and shaped like one: runs of the same value 2-4
 // times in a row (a held note, played across several timer ticks).
 //
@@ -51,6 +68,23 @@ const PitchTableTerminator = 1
 // -2) and 252 (signed -4) decode to real, valid PitchTable indices (10
 // and 8), not silence. See NoteIndex - RenderNotes now uses it for
 // every entry, with no special-casing.
+//
+// CORRECTED AGAIN (round 157) — this was previously only the first 140
+// of 288 real bytes, a genuine truncation, not wrong data: the original
+// disassembly-based extraction never confirmed exactly where this
+// stream ends (unlike SecondaryMelody, whose 288-byte length was always
+// bounded by the confirmed chain/loop marker value 64/0x40 - see its
+// own doc comment). Cross-checking against the independent AY rip
+// described in PitchTable's doc comment settled it precisely: this
+// project's existing 140 bytes matched the AY rip's data EXACTLY
+// (byte-for-byte, confirming nothing already shipped was WRONG), but
+// the rip's own data continues for 148 more bytes - clearly more of the
+// same melodic phrase, not unrelated data - up to the identical 0x40
+// marker at file offset 693, giving a true length of 288 bytes. This
+// makes StartupMelody exactly as long as SecondaryMelody, both bounded
+// by the same real terminator convention - a clean, sensible symmetry
+// this project's own guess-length version never had. Verified via
+// TestPitchTableStartupMelodySecondaryMelodyMatchRealAYRip.
 var StartupMelody = []byte{
 	26, 41, 27, 41, 29, 41, 31, 41, 32, 41, 31, 41, 27, 41, 31, 41,
 	26, 26, 27, 27, 29, 29, 31, 31, 32, 32, 31, 31, 27, 27, 31, 31,
@@ -60,7 +94,16 @@ var StartupMelody = []byte{
 	2, 2, 2, 2, 5, 5, 5, 5, 7, 7, 7, 7, 2, 2, 2, 2,
 	0, 0, 12, 0, 0, 0, 12, 0, 0, 0, 12, 0, 0, 0, 12, 14,
 	15, 14, 15, 14, 15, 14, 12, 14, 15, 14, 15, 14, 17, 17, 17, 17,
-	17, 17, 17, 17, 17, 19, 20, 17, 22, 20, 19, 20,
+	17, 17, 17, 17, 17, 19, 20, 17, 22, 20, 19, 20, 22, 20, 19, 20,
+	17, 17, 17, 17, 17, 19, 20, 17, 22, 20, 19, 17, 15, 13, 15, 13,
+	12, 12, 12, 12, 0, 0, 0, 0, 12, 12, 12, 12, 12, 12, 12, 12,
+	26, 26, 27, 27, 29, 29, 31, 31, 32, 32, 31, 31, 27, 27, 31, 31,
+	36, 31, 24, 19, 36, 31, 24, 19, 36, 29, 24, 17, 36, 29, 24, 17,
+	34, 29, 26, 22, 34, 29, 26, 22, 33, 29, 24, 19, 17, 19, 21, 24,
+	0, 3, 0, 5, 0, 6, 0, 3, 0, 41, 0, 5, 0, 6, 0, 3,
+	248, 36, 249, 31, 250, 36, 251, 31, 36, 31, 24, 31, 36, 31, 24, 31,
+	29, 31, 29, 32, 8, 9, 10, 11, 29, 31, 29, 32, 29, 34, 29, 36,
+	24, 26, 24, 27, 24, 29, 24, 31, 24, 26, 24, 27, 24, 29, 28, 31,
 }
 
 // SecondaryMelody is a SECOND, independent real note stream, found and
@@ -101,6 +144,16 @@ var StartupMelody = []byte{
 // (audio.RenderXORInterleaved); audio.MixNotes's sample-averaging
 // remains available too, as a simpler/cheaper approximation, not
 // because the real mechanism is still unknown.
+//
+// Round 157: these exact 288 bytes were confirmed, byte-for-byte, in a
+// completely independent real AY music rip (see PitchTable's doc
+// comment) - unlike StartupMelody, this stream needed no correction;
+// its already-confirmed 0x40-marker boundary was exactly right. Also
+// explains a small, satisfying symmetry the AY rip revealed: both real
+// streams are 288 bytes long, bounded by the identical terminator
+// convention - not a coincidence this project could see from the
+// disassembly alone, since StartupMelody's own true length wasn't
+// confirmed until this same round.
 var SecondaryMelody = []byte{
 	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
 	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
