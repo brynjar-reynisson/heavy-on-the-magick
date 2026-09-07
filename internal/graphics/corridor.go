@@ -446,3 +446,34 @@ func MorfangSample() image.Image {
 	}
 	return img
 }
+
+// assets/sothic_complex_sample.png (round 144) is a seventh zone-level-
+// confidence sample, same standard as Wolfdorp/Nidus/Trollwynd/
+// Pilefoot/Methos/Morfang above. heavymap-grid-clean.gif's own colored
+// zone boundary shows "Sothic Complex" as a real bright-yellow zone in
+// Level 2's grid (already independently confirmed, round 80: cell D6's
+// real "FIRE!" hazard sits within this same zone). Cell F7 was picked
+// as a representative cell: located precisely by template-matching the
+// already-extracted RoomOfMiserySample (F4, another pixel-exact 0.0-
+// score match) against the full atlas to derive Level 2's real row-A/
+// column-1 origin, then computing 3 columns over (same row F). Content
+// cross-check: shows a real table with an item on it, matching Sothic
+// Complex's own already-confirmed HasTable fixture (CollodonsPile,
+// CASA walkthrough sourcing) even at this zone-level confidence tier -
+// the same star/flower wall-emblem motif also seen in Morfang's sample,
+// suggesting it may be a recurring decorative element rather than
+// anything room-specific.
+//
+//go:embed assets/sothic_complex_sample.png
+var sothicComplexSamplePNG []byte
+
+// SothicComplexSample decodes the embedded representative Sothic-
+// Complex-zone screenshot. Panics on failure, matching CorridorSample()
+// above.
+func SothicComplexSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(sothicComplexSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded sothic_complex_sample.png: " + err.Error())
+	}
+	return img
+}

@@ -6030,6 +6030,53 @@ against an independently-derived, already-exact pixel position rather
 than trusting the label alone — position AND content agreeing is what
 makes a placement confident, not either alone.
 
+### Round 144: a 12th real room screenshot for CollodonsPile — Sothic Complex, plus a checked-but-inconclusive attempt at Secunda Porta
+
+After a break, resumed with graphics again. First tried Secunda
+Porta: `heavymap-grid-clean.gif`'s own Level 2 quadrant clearly labels
+a small 2-cell magenta zone "Secunda Porta" directly beneath the
+"Agile Stair" box — but computing that cell's atlas position (via the
+same precise template-matching-derived origin used for every sample
+this project has shipped since round 137) landed on content that's
+still visually Agile Stair's own blue archway art, not a distinct
+room. Tried both plausible rows without a confident resolution.
+Correctly left unplaced rather than guess — the same discipline round
+138 already established for an ambiguous Sothic-Complex-on-Level-3
+attempt.
+
+Pivoted to a cleaner target instead: **Sothic Complex** (the real,
+Level-2, CollodonsPile room — distinct from the earlier round 51/138
+Level-3 cell of the same name, a known real naming overlap this
+project has left unresolved rather than conflated). `heavymap-grid-
+clean.gif`'s own colored zone boundary clearly shows "Sothic Complex"
+as a real, large, unambiguous bright-yellow zone in Level 2's grid
+(already independently confirmed, round 80, via cell D6's "FIRE!"
+hazard sitting in this same zone). Template-matched the already-
+extracted `RoomOfMiserySample` (F4) against the full atlas — another
+pixel-exact 0.0-score match — to derive Level 2's real row-A/column-1
+origin precisely, then picked cell F7 (3 columns over, same row).
+Content cross-check: a real table with an item on it, matching Sothic
+Complex's own already-confirmed `HasTable` fixture.
+
+Added `graphics.SothicComplexSample()` (own test,
+`TestSothicComplexSampleDecodesToRealArt`) and wired it into `cmd/hotm-
+gui`'s default-mode room-art map — **CollodonsPile's 12th room with
+real extracted art**. Ran the full `gofmt`/`build`/`vet`/`test` suite
+(with a repeated `-count=2` run) clean, and verified live via a
+disposable-throwaway-repo-copy screenshot (teleported there — no
+monster occupies this room, so a single screenshot sufficed, unlike
+rounds 142/143).
+
+**How to apply**: when a candidate placement's position keeps landing
+on content that visually belongs to an ALREADY-confirmed neighboring
+room (here, Agile Stair's own blue art bleeding into every plausible
+Secunda-Porta guess), that's real evidence worth trusting over the
+positional math — don't force a placement past what the actual pixel
+content is telling you. Picking a DIFFERENT, more confidently-
+identifiable target the same round (Sothic Complex's large, unambiguous
+zone vs. Secunda Porta's small, adjacency-confused one) keeps the round
+productive without compromising on confidence for the harder case.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

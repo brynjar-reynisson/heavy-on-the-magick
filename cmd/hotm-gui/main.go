@@ -742,7 +742,9 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 		// 142 adds Methos at zone-level confidence (Level 4's own
 		// A6-A8 Methos zone), same tier as Wolfdorp/Nidus/Trollwynd/
 		// Pilefoot. Round 143 adds Morfang, also zone-level (Level 1's
-		// own D1/D2/G1/G2/H1 Morfang zone).
+		// own D1/D2/G1/G2/H1 Morfang zone). Round 144 adds Sothic
+		// Complex, also zone-level (Level 2's own bright-yellow Sothic
+		// Complex zone).
 		return game.New(), "", map[string]image.Image{
 			"Room of Misery": graphics.RoomOfMiserySample(),
 			"Room of Stings": graphics.RoomOfStingsSample(),
@@ -753,6 +755,7 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 			"Nidus":          graphics.NidusSample(),
 			"Trollwynd":      graphics.TrollwyndSample(),
 			"Pilefoot":       graphics.PilefootSample(),
+			"Sothic Complex": graphics.SothicComplexSample(),
 			"Methos":         graphics.MethosSample(),
 			"Morfang":        graphics.MorfangSample(),
 		}
