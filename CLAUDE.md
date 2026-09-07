@@ -3175,6 +3175,53 @@ technique: a forced live Vampire showed its real portrait correctly,
 and a forced Belezbar invocation correctly took priority over it in the
 same screenshot.
 
+### Implemented Magot's confirmed locate ability, and placed the real Sunflower Charm that makes it reachable
+
+After another Stop-hook rejection, same framing, extended the same
+`"DEMON, <object>"` grammar pattern used for Astarot's teleport (round
+75) to Magot: `magic.Demons`'s Magot entry already confirms both the
+underlying ability ("Reveals the whereabouts of any named object") and
+Charm ("Sunflower"). No source gives a literal `"MAGOT, X"` example the
+way the hint screen gives `"ASTAROT, WOLFDORP"`, but the manual's own
+confirmed conversation grammar ("name, object") is general, not
+restricted to the two demons it happens to illustrate — applying it
+here is an honestly-flagged inference, the same confidence tier this
+project already gives synonym words like TAKE/LIFT. Added
+`game.magotLocate`: gated on carrying Sunflower (same convention as
+Astarot), checks the player's own inventory first (an item already
+carried isn't "located" elsewhere), then searches every room in the
+current world for a real, sourced placement.
+
+Since Sunflower itself wasn't placed anywhere reachable yet (the same
+gap Sword had before round 52's fix), closed that gap the same way:
+re-examined the numbered map poster's key list (`heavymap-numbered-key.jpg`)
+and found room #7 is "Chest (Sunflower)" — tight-cropped that exact
+cell and confirmed it sits within the "SOTHIC COMPLEX" banner-labeled
+cluster on the poster's Level 2 grid (checked directly that it's NOT in
+the neighboring "KITCHEN OF AI" banner's cluster, since the two sit
+close together). Sothic Complex is already a real, connected, playable
+CollodonsPile room — added Sunflower to its Items, using the identical
+numbered-map-plus-zone-banner cross-reference method already validated
+for Wolfdorp's Sword.
+
+Caught and fixed a real casing bug while writing the "already carrying
+it" response: it initially echoed the player's raw uppercased typed
+target ("the SUNFLOWER") instead of the item's real stored casing — the
+exact same bug class already fixed once before for `examine()`. Fixed
+before shipping, with a regression test pinning the correct casing.
+
+Added `TestHandleMagotLocateRequiresSunflower`,
+`TestHandleMagotLocateFindsRealItem`,
+`TestHandleMagotLocateAlreadyCarried` (including the casing
+regression), `TestHandleMagotLocateUnknownObject`, and
+`TestCollodonsPileSothicComplexHasSunflower`, ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live end-to-end: walked to Sothic Complex, picked
+up the real Sunflower, then `MAGOT, GRIMOIRE` correctly located the
+Grimoire in Room of Misery, `MAGOT, SUNFLOWER` correctly reported
+already carrying it (with the casing fix confirmed on screen), and
+`MAGOT, NUGGET` correctly located the Nugget in Methos.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

@@ -307,6 +307,10 @@ func (g *Game) Handle(cmd parser.Command) string {
 		return g.astarotTeleport(cmd.Verb)
 	}
 
+	if strings.EqualFold(cmd.Target, "MAGOT") && cmd.Verb != "" {
+		return g.magotLocate(cmd.Verb)
+	}
+
 	if strings.EqualFold(cmd.Target, "GUARDS") && cmd.Verb == "DOOR" {
 		return g.passGuards()
 	}
@@ -482,6 +486,44 @@ func (g *Game) astarotTeleport(location string) string {
 	dest := g.World.Rooms[id]
 	g.World.Teleport(id)
 	return fmt.Sprintf("You invoke %s, %s! In an instant, you are transported to %s.", astarotName, astarotTitle, dest.Name)
+}
+
+// magotLocate handles the conversation-form command "MAGOT, <object>".
+// No source gives a literal "MAGOT, X" example the way the hint screen
+// gives "ASTAROT, WOLFDORP" - but the manual's own confirmed grammar
+// ("name, object") is general, not restricted to the 2 demons it
+// happens to illustrate, and magic.Demons's Magot entry already
+// confirms both the underlying ability ("Reveals the whereabouts of any
+// named object") and Charm ("Sunflower"). Applying the same
+// TARGET-comma-VERB grammar and Charm-gating convention already
+// established for Astarot's teleport is a natural, honestly-flagged
+// inference, not a fabricated mechanic - the same confidence level this
+// project already applies to vocabulary synonyms like TAKE/LIFT.
+// Checks the player's own inventory first (an item they're already
+// carrying isn't "located" anywhere else), then every room in the
+// CURRENT world - so, like Astarot's teleport, this only ever reports
+// real placements that genuinely exist in whichever world is active.
+// Echoes the item's real stored casing in both branches, not the
+// player's raw uppercased typed target - the same casing-honesty fix
+// already applied once before to examine().
+func (g *Game) magotLocate(object string) string {
+	const magotName, magotTitle, magotCharm = "Magot", "the Diviner", "Sunflower"
+	if !g.hasItem(magotCharm) {
+		return fmt.Sprintf("You call out to %s, %s... but you have no suitable Talisman (a %s).", magotName, magotTitle, magotCharm)
+	}
+	for _, item := range g.Player.Items {
+		if strings.EqualFold(item, object) {
+			return fmt.Sprintf("You invoke %s, %s! No need - you already carry the %s yourself.", magotName, magotTitle, item)
+		}
+	}
+	for _, room := range g.World.Rooms {
+		for _, item := range room.Items {
+			if strings.EqualFold(item, object) {
+				return fmt.Sprintf("You invoke %s, %s! The %s lies in %s.", magotName, magotTitle, item, room.Name)
+			}
+		}
+	}
+	return fmt.Sprintf("You invoke %s, %s! %s senses no such object anywhere nearby.", magotName, magotTitle, magotName)
 }
 
 // passGuards handles the confirmed real command "GUARDS, DOOR" (source:

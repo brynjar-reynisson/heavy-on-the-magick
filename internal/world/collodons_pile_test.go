@@ -95,6 +95,24 @@ func TestCollodonsPileWolfdorpHasSword(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileSothicComplexHasSunflower pins the real, cross-
+// referenced Sunflower placement (Magot's confirmed Charm) - see
+// CollodonsPile's doc comment for the numbered-map-plus-zone-banner
+// sourcing (same method as Wolfdorp's Sword).
+func TestCollodonsPileSothicComplexHasSunflower(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomSothicComplex]
+	found := false
+	for _, item := range room.Items {
+		if item == "Sunflower" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Sothic Complex Items = %v, want it to include \"Sunflower\"", room.Items)
+	}
+}
+
 // TestCollodonsPileRoomOfMiseryHasBothNumberedItems pins Room of
 // Misery's 2 items - the numbered map poster labels this exact room
 // "1, 2", the strongest-confidence item placement in this file (see

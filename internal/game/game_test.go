@@ -144,6 +144,55 @@ func TestHandleAstarotTeleportUnknownLocation(t *testing.T) {
 	}
 }
 
+func TestHandleMagotLocateRequiresSunflower(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("MAGOT, GRIMOIRE"))
+	if !strings.Contains(got, "no suitable Talisman") {
+		t.Errorf("Handle(MAGOT, GRIMOIRE) with no Sunflower carried = %q, want a Talisman rejection", got)
+	}
+}
+
+// TestHandleMagotLocateFindsRealItem pins the natural-inference "MAGOT,
+// <object>" grammar (see magotLocate's doc comment) actually finding a
+// real item's real room, once the player carries Magot's confirmed
+// Charm (Sunflower). Grimoire is a real, already-shipped item in Room
+// of Misery.
+func TestHandleMagotLocateFindsRealItem(t *testing.T) {
+	g := New()
+	g.Player.Items = append(g.Player.Items, "Sunflower")
+	got := g.Handle(parser.Parse("MAGOT, GRIMOIRE"))
+	if strings.Contains(got, "no suitable Talisman") {
+		t.Errorf("Handle(MAGOT, GRIMOIRE) with Sunflower carried = %q, want the locate to succeed", got)
+	}
+	if !strings.Contains(got, "Room of Misery") {
+		t.Errorf("Handle(MAGOT, GRIMOIRE) = %q, want it to name Room of Misery", got)
+	}
+}
+
+func TestHandleMagotLocateAlreadyCarried(t *testing.T) {
+	g := New()
+	g.Player.Items = append(g.Player.Items, "Sunflower", "Grimoire")
+	got := g.Handle(parser.Parse("MAGOT, GRIMOIRE"))
+	if !strings.Contains(got, "already carry") {
+		t.Errorf("Handle(MAGOT, GRIMOIRE) while carrying it = %q, want an honest already-carried response", got)
+	}
+	// Regression: must echo the item's real stored casing ("Grimoire"),
+	// not the player's raw uppercased typed target ("GRIMOIRE") - the
+	// same casing bug already fixed once for examine().
+	if !strings.Contains(got, "Grimoire") || strings.Contains(got, "the GRIMOIRE") {
+		t.Errorf("Handle(MAGOT, GRIMOIRE) while carrying it = %q, want it to echo real casing \"Grimoire\"", got)
+	}
+}
+
+func TestHandleMagotLocateUnknownObject(t *testing.T) {
+	g := New()
+	g.Player.Items = append(g.Player.Items, "Sunflower")
+	got := g.Handle(parser.Parse("MAGOT, EXCALIBUR"))
+	if !strings.Contains(got, "senses no such object") {
+		t.Errorf("Handle(MAGOT, EXCALIBUR) = %q, want an honest not-found response", got)
+	}
+}
+
 func TestHandleMovementValidExit(t *testing.T) {
 	g := New()
 	// Room of Misery --East--> Secunda Porta, per the real (walkthrough-

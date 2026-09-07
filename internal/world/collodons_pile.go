@@ -164,6 +164,18 @@ package world
 // that validates this numbered-cell reading. #2 is "Poison-smeared
 // book", not previously placed anywhere; added here on the same
 // footing as the already-confirmed Grimoire.
+//
+// Sothic Complex's "Sunflower" (round 77): same numbered-map-plus-zone-
+// banner cross-reference method as Wolfdorp's Sword above. The poster's
+// key list gives room #7 as "Chest (Sunflower)", and #7 sits directly
+// within the "SOTHIC COMPLEX" banner-labeled cell cluster on that same
+// poster's Level 2 grid (tight-cropped and visually confirmed - #7 is
+// NOT inside the neighboring "KITCHEN OF AI" banner's cluster, checked
+// directly since the two banners sit close together). "Sunflower" is
+// Magot's confirmed real Charm (magic.Demons) - this makes Magot's new
+// "MAGOT, <object>" locate ability (see game.magotLocate) reachable in
+// real gameplay for the first time, the same way Sword's placement here
+// made Astarot's teleport reachable.
 func CollodonsPile() *World {
 	w := New(roomMisery)
 	for _, r := range []*Room{
@@ -172,7 +184,7 @@ func CollodonsPile() *World {
 		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "monster", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll"}, HasTable: true},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget"}, HasTable: true, Monster: "Vampire", MonsterHealth: 2},
-		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll"}, HasTable: true},
+		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower"}, HasTable: true},
 		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key", HasTable: true},
 		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Items: []string{"Slat"}, TollItem: "Bag", HasTable: true},
