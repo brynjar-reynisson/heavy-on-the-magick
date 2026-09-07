@@ -1131,6 +1131,44 @@ func TestCollodonsPileNougatDefeatsWolfdorpWerewolf(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileGarlicDefeatsMorfangVampire covers round 126's
+// second CRPG Addict find, end-to-end in the actual DEFAULT
+// (CollodonsPile) game: picks up the real, already-placed Garlic in
+// Wolfdorp, carries it to Morfang (both real rooms on the real
+// walkthrough path), and drops it there - confirming
+// game.checkGarlicVampire's real mechanic is genuinely reachable in a
+// normal playthrough, not just unit-testable in isolation.
+func TestCollodonsPileGarlicDefeatsMorfangVampire(t *testing.T) {
+	g := New()
+	g.Handle(parser.Parse("EAST"))          // Secunda Porta
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd
+	g.Handle(parser.Parse("NORTH"))         // Agile Stair
+	g.Handle(parser.Parse("SOUTH-EAST"))    // Methos
+	g.Handle(parser.Parse("SOUTH"))         // Sothic Complex
+	g.Handle(parser.Parse("SOUTH"))         // Wolfdorp - has the real Garlic
+	if got := g.Handle(parser.Parse("EXAMINE CHEST")); !strings.Contains(got, "chest") {
+		t.Fatalf("test setup bug: EXAMINE CHEST in Wolfdorp = %q, want it to acknowledge the chest", got)
+	}
+	if got := g.Handle(parser.Parse("PICKUP GARLIC")); !strings.Contains(got, "Garlic") {
+		t.Fatalf("test setup bug: PICKUP GARLIC in Wolfdorp = %q, want it to succeed", got)
+	}
+	g.Handle(parser.Parse("NORTH-WEST")) // Room of Stings
+	g.Handle(parser.Parse("NORTH"))      // Morfang - has the real Vampire
+
+	room := g.World.CurrentRoom()
+	if room.Name != "Morfang" || room.Monster != "Vampire" || room.MonsterHealth <= 0 {
+		t.Fatalf("test setup bug: expected a live Vampire in Morfang, got %+v", room)
+	}
+	got := g.Handle(parser.Parse("DROP GARLIC"))
+	if room.MonsterHealth > 0 {
+		t.Errorf("Morfang's Vampire should be defeated after dropping the real Garlic carried from Wolfdorp, MonsterHealth = %d", room.MonsterHealth)
+	}
+	if !strings.Contains(got, "Garlic") {
+		t.Errorf("Handle(DROP GARLIC) with a live Vampire present = %q, want it to mention the Garlic mechanic", got)
+	}
+}
+
 func TestLevel1ExplorationMovementAndCombat(t *testing.T) {
 	g := NewLevel1Exploration()
 	// A1 (start) has a real Ghost, per world.Level1Grid's extracted data.

@@ -143,6 +143,15 @@ func (p *Player) HasItem(name string) bool {
 // too low a Stamina (an unplayably-short game) since a real player
 // mentioned that's implausible for the original. Not extracted fact,
 // just a reasonable placeholder pending the real formula.
+//
+// Round 126 cross-validation: The CRPG Addict's first-hand playthrough
+// account (the same source that resolved CALL's effect and INVOKE's
+// furnace-room punishment) gives two more real example rolls in
+// Stamina-Skill-Luck order — "very high, moderate, and very low, like
+// 38-9-2 or 35-7-1" — both of which land cleanly inside these
+// independently-estimated ranges (28-45 / 4-12 / 1-8), a real,
+// unplanned confirmation that the estimate was reasonable, not proof
+// of the exact original bounds.
 const (
 	minStamina, maxStamina = 28, 45
 	minSkill, maxSkill     = 4, 12

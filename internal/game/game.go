@@ -868,6 +868,9 @@ func (g *Game) drop(target string) string {
 			if msg := g.checkNougatWerewolf(); msg != "" {
 				result += "\n" + msg
 			}
+			if msg := g.checkGarlicVampire(); msg != "" {
+				result += "\n" + msg
+			}
 			return result
 		}
 	}
@@ -930,10 +933,16 @@ func (g *Game) move(dir world.Direction) string {
 	if !g.World.Move(dir) {
 		return "You can't go that way."
 	}
-	msg := g.checkNougatWerewolf()
+	var msgs []string
+	if msg := g.checkNougatWerewolf(); msg != "" {
+		msgs = append(msgs, msg)
+	}
+	if msg := g.checkGarlicVampire(); msg != "" {
+		msgs = append(msgs, msg)
+	}
 	desc := g.describeCurrentRoom()
-	if msg != "" {
-		return msg + "\n" + desc
+	if len(msgs) > 0 {
+		return strings.Join(msgs, "\n") + "\n" + desc
 	}
 	return desc
 }
@@ -972,6 +981,41 @@ func (g *Game) checkNougatWerewolf() string {
 		if strings.EqualFold(item, "Nougat") {
 			room.MonsterHealth = 0
 			return "The Werewolf catches the scent of Nougat and lets you pass unharmed."
+		}
+	}
+	return ""
+}
+
+// checkGarlicVampire implements a second real, sourced instant-kill
+// mechanic (round 126), from the same source that resolved CALL's
+// effect (round 125) and INVOKE's furnace-room punishment (round 126):
+// The CRPG Addict's first-hand playthrough account states "you find
+// some garlic which allows you to instantly kill vampires, as well as
+// a 'nugget' that allows you to instantly kill werewolves" - described
+// with identical treatment to the already-modeled Nougat/Werewolf
+// mechanic above. Neither item's exact trigger (carry vs. drop) is
+// stated in THIS source, but a more detailed, independent source (the
+// CASA walkthrough, round 63) already settled that question for Nougat
+// specifically ("killable by walking through after dropping NOUGAT") -
+// applying the same drop-triggered convention to Garlic here, given
+// the "identical treatment" wording, is a reasonable inference, the
+// same honesty tier as this project's other inferred-not-confirmed
+// synonym mappings (e.g. TAKE/LIFT as PICKUP synonyms), not an
+// independently confirmed mechanic of its own. Garlic itself is
+// already real, sourced, placed data (Wolfdorp's chest, round 11), and
+// Vampire is already a real, placed monster in 2 reachable
+// CollodonsPile rooms (Methos, Morfang) - so, unlike checkNougatWerewolf
+// when it first shipped, this is immediately reachable in real
+// gameplay from the start.
+func (g *Game) checkGarlicVampire() string {
+	room := g.World.CurrentRoom()
+	if room == nil || room.Monster != "Vampire" || room.MonsterHealth <= 0 {
+		return ""
+	}
+	for _, item := range room.Items {
+		if strings.EqualFold(item, "Garlic") {
+			room.MonsterHealth = 0
+			return "The Vampire recoils from the Garlic and crumbles to dust."
 		}
 	}
 	return ""

@@ -5070,6 +5070,64 @@ this is the second real, confirmed mechanic The CRPG Addict's post has
 given this project in two consecutive rounds. Worth a third targeted
 re-read before assuming that source is exhausted.
 
+### Round 127: a third pass on the same new source pays off again — Garlic instantly kills Vampires, plus a real cross-validation of the stat-roll ranges
+
+After another Stop-hook rejection, same framing, took round 126's own
+"How to apply" suggestion literally and went back to The CRPG Addict's
+blog post for a third targeted `WebFetch` pass — this time asking
+specifically about combat numbers, item locations, other spells, and
+monster weaknesses. Most of it re-confirmed facts already on file
+(the "get out" win condition, the 1-Stamina save cost, that BLAST/
+FREEZE/INVOKE/TRANSFUSION/CALL are the only spells), but one real,
+previously-unmodeled mechanic turned up: "Eventually, you find some
+garlic which allows you to instantly kill vampires, as well as a
+'nugget' that allows you to instantly kill werewolves." A follow-up
+fetch, asking specifically how Garlic is used (carried, dropped, or
+something else — the same "verify against raw text before shipping"
+discipline round 82 established), confirmed the passage gives both
+items **identical** treatment with no further mechanical detail either
+way.
+
+Round 63's CASA walkthrough already settled the Nougat/Werewolf half of
+this exact pairing more precisely — "killable by walking through after
+dropping NOUGAT" — so, given this new source's own "identical
+treatment" wording, applying that same drop-triggered convention to
+Garlic is a reasonable, honestly-flagged inference (the same confidence
+tier already used for synonym words like TAKE/LIFT), not an
+independently confirmed mechanic of its own. Added `game.
+checkGarlicVampire`, mirroring `checkNougatWerewolf` exactly (same
+trigger points: `drop` and `move`), and — unlike when
+`checkNougatWerewolf` first shipped (round 63) with no Werewolf/Nougat
+yet in the same reachable room — this one is immediately playable from
+the start: Garlic has been real, sourced, placed data in Wolfdorp's
+chest since round 11, and Vampire has been a real, placed monster in 2
+reachable CollodonsPile rooms (Methos since round 71, Morfang since
+round 106) all along.
+
+A second, smaller find from the same fetch: the post gives two real
+example character rolls in Stamina-Skill-Luck order — "very high,
+moderate, and very low, like 38-9-2 or 35-7-1" — both of which land
+cleanly inside this port's own independently-estimated roll ranges
+(28-45 / 4-12 / 1-8, set back in round 9 from a single observed
+sample). A genuine, unplanned cross-validation that the estimate was
+reasonable, documented in `character.player.go`'s roll-range doc
+comment — not proof of the exact original formula, but real evidence
+the guess wasn't far off.
+
+Added `TestCollodonsPileGarlicDefeatsMorfangVampire`, walking the real
+sourced path end-to-end (Room of Misery → ... → Wolfdorp, pick up the
+real Garlic → Room of Stings → Morfang, drop it on the real Vampire).
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified live via `go run ./cmd/hotm`: the
+exact same path, ending in "The Vampire recoils from the Garlic and
+crumbles to dust."
+
+**How to apply**: round 126's own advice held up on a second try — a
+third targeted pass on the same still-fresh source (The CRPG Addict's
+post) found another real, previously-unmodeled mechanic. Don't assume
+a good new source is exhausted after just one or two fetches; ask a
+different, more specific question each time.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
