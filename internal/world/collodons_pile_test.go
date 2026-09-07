@@ -2,16 +2,42 @@ package world
 
 import "testing"
 
-// TestCollodonsPileHasFourteenRooms: 13 real rooms from the CASA
-// walkthrough's own path, plus round 126's Furnace Room - a real room
-// too (see CollodonsPile's doc comment), but sourced differently (a
-// first-hand playthrough account, not the walkthrough's own path) and
-// reached only via a failed INVOKE's real punishment teleport, not a
-// normal directional exit.
-func TestCollodonsPileHasFourteenRooms(t *testing.T) {
+// TestCollodonsPileHasFifteenRooms: 13 real rooms from the CASA
+// walkthrough's own path, plus Furnace Room - a real room too (see
+// CollodonsPile's doc comment), but sourced differently (a first-hand
+// playthrough account, not the walkthrough's own path) and reached only
+// via a failed INVOKE's real punishment teleport, not a normal
+// directional exit - plus the Sign room, Room of Misery's real West
+// exit (see roomSign's doc comment), sourced the same way (a direct
+// account of real gameplay footage).
+func TestCollodonsPileHasFifteenRooms(t *testing.T) {
 	w := CollodonsPile()
-	if len(w.Rooms) != 14 {
-		t.Errorf("len(w.Rooms) = %d, want 14 (13 from the walkthrough path + round 126's Furnace Room)", len(w.Rooms))
+	if len(w.Rooms) != 15 {
+		t.Errorf("len(w.Rooms) = %d, want 15 (13 from the walkthrough path + Furnace Room + Sign)", len(w.Rooms))
+	}
+}
+
+// TestCollodonsPileRoomOfMiseryHasRealWestExit covers a real exit
+// confirmed via a direct account of actual gameplay footage (a Let's
+// Play video showing "EXITS: W E" in Room of Misery), independently
+// corroborated by Level2Grid's own already-named "Sign" cell (F3,
+// immediately adjacent to F4/Room of Misery) - see roomSign's doc
+// comment. Round-trip: unlike Furnace Room's genuine one-way
+// punishment teleport, Sign is a simple alcove with a real East exit
+// back to Room of Misery, not a dead end.
+func TestCollodonsPileRoomOfMiseryHasRealWestExit(t *testing.T) {
+	w := CollodonsPile()
+	dest, ok := w.Rooms[roomMisery].Exits[West]
+	if !ok {
+		t.Fatal("Room of Misery has no West exit, want one leading to the Sign room")
+	}
+	signRoom := w.Rooms[dest]
+	if signRoom.Name != "Sign" {
+		t.Errorf("Room of Misery's West exit leads to %q, want \"Sign\"", signRoom.Name)
+	}
+	back, ok := signRoom.Exits[East]
+	if !ok || back != roomMisery {
+		t.Errorf("Sign room's East exit = (%v, %v), want a real return to Room of Misery", back, ok)
 	}
 }
 

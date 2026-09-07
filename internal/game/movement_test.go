@@ -504,6 +504,7 @@ func TestSilverNuggetAlsoDefeatsWerewolfOnDrop(t *testing.T) {
 
 func TestLevel1ExplorationMovementAndCombat(t *testing.T) {
 	g := NewLevel1Exploration()
+	withGrimoire(g) // BLAST now requires it - see spellRequiresItem
 	// A1 (start) has a real Ghost, per world.Level1Grid's extracted data.
 	room := g.World.CurrentRoom()
 	if room.Monster != "Ghost" {

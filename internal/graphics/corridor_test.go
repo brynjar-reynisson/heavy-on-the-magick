@@ -73,6 +73,13 @@ func TestMorfangSampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, MorfangSample(), "MorfangSample()")
 }
 
+// TestSignSampleDecodesToRealArt mirrors TestCorridorSampleDecodesToRealArt
+// for the Sign room's real screenshot - exact-cell confidence (see
+// SignSample's doc comment).
+func TestSignSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, SignSample(), "SignSample()")
+}
+
 // TestMethosSampleDecodesToRealArt mirrors
 // TestCorridorSampleDecodesToRealArt for round 142's Methos addition -
 // zone-level confidence, same tier as WolfdorpSample above.

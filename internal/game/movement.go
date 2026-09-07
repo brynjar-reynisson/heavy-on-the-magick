@@ -274,9 +274,21 @@ func (g *Game) describeCurrentRoom() string {
 		}
 	}
 	if room.Level != 0 {
-		fmt.Fprintf(&b, "%s (Level %d)\n%s\n", room.Name, room.Level, room.Description)
+		fmt.Fprintf(&b, "%s (Level %d)\n", room.Name, room.Level)
 	} else {
-		fmt.Fprintf(&b, "%s\n%s\n", room.Name, room.Description)
+		fmt.Fprintf(&b, "%s\n", room.Name)
+	}
+	// Description is only ever printed when a room actually has one - no
+	// room has ever had real description TEXT confirmed (see
+	// world.Room.Description's own doc comment), so every room's
+	// Description was empty anyway; this used to be papered over with a
+	// literal "(room description not yet extracted...)" placeholder
+	// line printed for every single room, every single LOOK - genuinely
+	// unhelpful noise once the game had no real prose to show, removed
+	// at the source (the 5 world constructors no longer set that
+	// placeholder text at all) rather than just skipped here.
+	if room.Description != "" {
+		fmt.Fprintf(&b, "%s\n", room.Description)
 	}
 	if room.HasTable {
 		b.WriteString("There is a table here.\n")

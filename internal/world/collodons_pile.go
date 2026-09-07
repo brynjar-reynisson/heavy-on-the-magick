@@ -324,7 +324,24 @@ package world
 func CollodonsPile() *World {
 	w := New(roomMisery)
 	for _, r := range []*Room{
-		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta}, Items: []string{"Grimoire", "Poison-smeared book"}, HasTable: true},
+		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta, West: roomSign}, Items: []string{"Grimoire", "Poison-smeared book"}, HasTable: true},
+		// roomSign: a real West exit from Room of Misery, confirmed via a
+		// direct account of actual gameplay footage (a Let's Play video) -
+		// independently corroborated by this project's own already-real
+		// Level2Grid data: F3, immediately adjacent to F4 (confirmed as
+		// this same Room of Misery, see level2_grid.go's doc comment), is
+		// already named "Sign" there (round 56, read directly off the
+		// clean grid map: F3 is drawn "SIGN!"). Its only real content is
+		// the SATOR AREPO word-square art seen on-screen (round 105's
+		// writeup independently noted this same wall plaque while
+		// extracting Room of Misery's own screenshot, one column over
+		// from F4). A real East exit back to Room of Misery IS included
+		// here, unlike Furnace Room's genuinely one-way punishment
+		// teleport (game.punishFailedInvoke) - the source describes this
+		// as a simple alcove you walk into to read the sign and leave,
+		// not a deliberate trap, so modeling it as inescapable would be a
+		// worse, unsupported guess than the obvious return path.
+		{ID: roomSign, Name: "Sign", Level: 2, Exits: map[Direction]RoomID{East: roomMisery}},
 		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}, Items: []string{"Sign"}},
 		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "Troll", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll"}, HasTable: true},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
@@ -339,9 +356,6 @@ func CollodonsPile() *World {
 		{ID: roomPileCollodom, Name: "Pile Collodom", Level: 1},
 		{ID: roomFurnace, Name: "Furnace Room", Level: 1},
 	} {
-		if r.Description == "" {
-			r.Description = "(room description not yet extracted from the original game)"
-		}
 		w.AddRoom(r)
 	}
 	w.Rooms[roomMisery].Visited = true
@@ -366,4 +380,5 @@ const (
 	roomPilefoot
 	roomPileCollodom
 	roomFurnace
+	roomSign
 )

@@ -4,9 +4,21 @@
 // during actual gameplay, wired to the same internal/game engine used by
 // cmd/hotm's text frontend. No game logic lives in this file: it only
 // translates keyboard input into parser.Command values and renders
-// whatever internal/game.Game.Handle returns, plus the confirmed rune
-// glyphs from internal/graphics as a HUD strip — reusing the existing
-// PNGRenderer rather than duplicating glyph-drawing code.
+// whatever internal/game.Game.Handle returns.
+//
+// Layout: redesigned to match a real SpecEmu screenshot of the actual
+// original (Room of Misery, the default starting room) rather than this
+// project's own earlier invented arrangement (a rune-glyph HUD strip plus
+// a scrolling log, which doesn't resemble anything the original shows).
+// The real screen is: one big room picture across the top, then a
+// magenta-bordered 3-panel status bar below it - a left panel (EXITS, or
+// - per a second reference screenshot showing the SAME slot after
+// pressing Z/SWAP - the current room's name/level/grade; see
+// showRoomStatus), a middle panel (message/command-echo text on a light
+// background), and a right panel (STAMINA/SKILL/LUCK on green). This
+// version approximates that structure with solid-color panels (no chain-
+// link border texture asset exists) using the ZX Spectrum's own real,
+// confirmed non-bright palette values.
 package main
 
 import (
@@ -32,52 +44,103 @@ import (
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/world"
 )
 
+// Layout constants. pictureHeight/statusBar* were sized from a real
+// SpecEmu screenshot of Room of Misery: the room picture occupies the top
+// ~58% of the screen, the 3-panel status bar the rest - 224/160 out of a
+// 384-tall window matches that ratio while keeping this port's existing
+// 512x384 window size unchanged.
 const (
 	screenWidth  = 512
 	screenHeight = 384
-	maxLogLines  = 20
+
+	pictureHeight   = 224
+	statusBarY      = pictureHeight
+	statusBarHeight = screenHeight - pictureHeight // 160
+	borderThickness = 4
+
+	leftPanelWidth  = 148
+	midPanelWidth   = 196
+	rightPanelWidth = 148
+
+	// maxLogLines: the message panel has real, limited vertical room
+	// (statusBarHeight minus borders and the label row) - capped so the
+	// log can never run past its own panel, the bug found and fixed in
+	// this port's earlier single-column layout.
+	maxLogLines = 6
+
+	// midPanelMaxChars/midPanelMaxLines bound the message panel's real
+	// wrapped text (see wrapLine/drawMidPanelText) - a long response
+	// line (e.g. "(room description not yet extracted...)") would
+	// otherwise be drawn at its full pixel width, bleeding across the
+	// panel border into the stats panel to its right; game.Handle
+	// responses are prose, not pre-wrapped to any particular width, so
+	// this port's own renderer has to do it. basicfont.Face7x13 is a
+	// fixed 7px-wide font, so char-count math is exact, not approximate.
+	midPanelMaxChars = (midPanelWidth - 2*6) / 7
+	midPanelMaxLines = (statusBarHeight - 2*borderThickness) / 16
 )
 
 var face = etext.NewGoXFace(basicfont.Face7x13)
 
-// Colors matching the ZX Spectrum's palette (see internal/graphics.Color)
-// for visual consistency with the offline PNG renderer's output.
+// Colors matching the ZX Spectrum's real, confirmed non-bright palette
+// (see internal/graphics.Color / pngrenderer.go's palette) - used here so
+// the panel backgrounds match the same real values the offline renderer
+// uses, not arbitrary RGB guesses.
 var (
-	black = color.Black
-	white = color.White
-	cyan  = color.RGBA{0, 214, 214, 255}
-	grey  = color.RGBA{128, 128, 128, 255}
+	black      = color.Black
+	textOnLite = color.Black // the message/status panels have light backgrounds, so their text is black, matching the real screenshots
+	zxCyan     = color.RGBA{0, 214, 214, 255}
+	zxGreen    = color.RGBA{0, 214, 0, 255}
+	zxMagenta  = color.RGBA{214, 0, 214, 255}
+	zxWhite    = color.RGBA{214, 214, 214, 255} // the real ZX "white" (214, not 255) - the message panel's background
 )
 
-// keyDirections maps keyboard keys to compass directions using the
-// classic roguelike numpad-on-letters layout (Q/W/E / A-D / Z/X/C),
-// plus arrow keys for the 4 cardinals — both confirmed-real directions
-// from world.ParseDirection, not invented key names.
+// keyDirections maps every real single-letter compass abbreviation (N/S/
+// E/W - see parser/keywords.go's merphishKeywords) plus the 4 arrow keys
+// to the 4 real cardinal directions. Diagonals (NE/SE/SW/NW) have no
+// dedicated key at all - on a real Spectrum keyboard there's no single
+// key for a 2-letter abbreviation either, you type both letters and
+// press ENTER, which is exactly what this GUI's typed-command line
+// (updateTyping) now does. Previously (see git history) this used a
+// "roguelike numpad-on-letters" scheme where W meant North - directly
+// wrong once compared against a real SpecEmu screenshot, since the
+// original's own W means WEST.
 var keyDirections = map[ebiten.Key]world.Direction{
-	ebiten.KeyW:          world.North,
 	ebiten.KeyArrowUp:    world.North,
-	ebiten.KeyE:          world.NorthEast,
-	ebiten.KeyD:          world.East,
+	ebiten.KeyN:          world.North,
 	ebiten.KeyArrowRight: world.East,
-	ebiten.KeyC:          world.SouthEast,
-	ebiten.KeyX:          world.South,
+	ebiten.KeyE:          world.East,
 	ebiten.KeyArrowDown:  world.South,
-	ebiten.KeyZ:          world.SouthWest,
-	ebiten.KeyA:          world.West,
+	ebiten.KeyS:          world.South,
 	ebiten.KeyArrowLeft:  world.West,
-	ebiten.KeyQ:          world.NorthWest,
+	ebiten.KeyW:          world.West,
 }
 
 type GUI struct {
 	g         *game.Game
 	log       []string
 	audioCtx  *ebitenaudio.Context
-	hud       *ebiten.Image // confirmed rune glyphs, rendered once via graphics.PNGRenderer
 	portraits map[string]*ebiten.Image
-	roomArt   map[string]*ebiten.Image // real extracted room screenshots, keyed by world.Room.Name - see drawCorridorSample
+	roomArt   map[string]*ebiten.Image // real extracted room screenshots, keyed by world.Room.Name - see pictureImage
 	// startupPlayer holds the looping startup-melody player (round 129)
 	// so it isn't garbage-collected mid-loop; not otherwise read.
 	startupPlayer *ebitenaudio.Player
+	// typing/inputBuffer hold the real typed-command line (opened by
+	// ENTER, see updateTyping) - lets any real Merphish word/abbreviation
+	// or the conversation form ("NAME, OBJECT") reach game.Handle exactly
+	// as the original expects, not just whichever subset has a dedicated
+	// single-key shortcut below.
+	typing      bool
+	inputBuffer []rune
+	// showRoomStatus toggles the left status-bar panel between EXITS
+	// (false) and the room name/level/grade (true) - a real, observed
+	// mechanic: a second reference screenshot of the same game, after
+	// SWAP (Merphish "Z") was used, showed that exact panel's content
+	// replaced by "YOU ARE IN THE <room>, ON LEVEL <n>, YOUR GRADE IS
+	// <grade>" instead of "EXITS:". This is the first concrete evidence
+	// of what SWAP's "Window 1" actually shows - previously an honest
+	// stub with the display "not modeled yet" (see game.go's SWAP case).
+	showRoomStatus bool
 }
 
 // NewGUI builds a live GUI session around g. Round 97: previously always
@@ -90,10 +153,7 @@ type GUI struct {
 // roomArt maps real extracted room screenshots to the specific
 // world.Room.Name they were extracted for (round 108 — previously a
 // single image.Image tied to just the world's starting room; see
-// selectGame for what's populated per mode). This generalization is
-// what let round 108 add Room of Stings/Room of Arrows on top of
-// round 105's Room of Misery-only default mode without another
-// struct-shape change - only selectGame's map literal grew.
+// selectGame for what's populated per mode).
 func NewGUI(g *game.Game, roomArt map[string]image.Image) *GUI {
 	gui := &GUI{
 		g:        g,
@@ -106,7 +166,6 @@ func NewGUI(g *game.Game, roomArt map[string]image.Image) *GUI {
 		}
 	}
 	gui.appendLog(describeRoom(gui.g))
-	gui.hud = buildHUD()
 	gui.portraits = make(map[string]*ebiten.Image, len(graphics.PortraitNames))
 	for _, name := range graphics.PortraitNames {
 		gui.portraits[name] = ebiten.NewImageFromImage(graphics.Portrait(name))
@@ -116,40 +175,28 @@ func NewGUI(g *game.Game, roomArt map[string]image.Image) *GUI {
 }
 
 // playStartupMelody plays the real, extracted audio.StartupMelody
-// combined with audio.SecondaryMelody (round 99 — previously
-// StartupMelody alone, round 93). The disassembly (see SecondaryMelody's
-// doc comment) found the real Z80 sound routine reads both note streams
-// together on every call, via two independently-advancing pointers —
-// the most direct reading of that fact is the original plays them AT
-// THE SAME TIME, not one requiring a separate manual keypress to ever
-// be heard (SecondaryMelody's B-key binding, still available below,
-// only ever exercised it in isolation).
+// combined with audio.SecondaryMelody. The disassembly (see
+// SecondaryMelody's doc comment) found the real Z80 sound routine reads
+// both note streams together on every call, via two independently-
+// advancing pointers — the most direct reading of that fact is the
+// original plays them AT THE SAME TIME, not one requiring a separate
+// manual keypress to ever be heard (SecondaryMelody's Y-key binding,
+// still available below, only ever exercises it in isolation).
 //
-// Round 112: uses audio.RenderXORInterleaved, not round 99's
-// audio.MixNotes — round 111 traced the real single-bit-speaker
-// combining mechanism from the disassembly (bit-level XOR interleaving
-// of two independently-clocked toggle counters, see
-// tStatesPerPeriodUnit's doc comment), and RenderXORInterleaved
-// actually reproduces it, rather than MixNotes's simpler sample-
-// averaging stand-in.
+// Uses audio.RenderXORInterleaved (not the simpler audio.MixNotes): the
+// disassembly traced the real single-bit-speaker combining mechanism
+// (bit-level XOR interleaving of two independently-clocked toggle
+// counters, see tStatesPerPeriodUnit's doc comment), and
+// RenderXORInterleaved actually reproduces it.
 //
-// Round 129: now LOOPS continuously (via ebiten's audio.InfiniteLoop),
-// not a single fire-and-forget play as before. Sourced by a genuinely
-// new source type (a 1986 CRASH magazine review,
-// crashonline.org.uk/29/magick.htm): "Gargoyle have produced an intro
-// tune which improves and becomes more complete the longer you leave
-// it playing on the introduction screens" — direct confirmation the
-// real game's tune loops repeatedly, not plays once and stops (this
-// port previously fell silent after ~21s, every time). This port has
+// Loops continuously (via ebiten's audio.InfiniteLoop): a real 1986
+// CRASH magazine review confirms "Gargoyle have produced an intro tune
+// which improves and becomes more complete the longer you leave it
+// playing on the introduction screens" — direct confirmation the real
+// game's tune loops repeatedly, not plays once and stops. This port has
 // no separate "introduction screen" state to bound the loop to (unlike
 // the original, gameplay starts immediately) - honestly simplified to
-// loop for the life of the session rather than invent an intro-only
-// phase no design here currently has. The exact "improves and becomes
-// more complete" acoustic detail (plausibly the two streams' different
-// lengths drifting in and out of phase across repeated loops) isn't
-// reproduced bit-exactly - that would need tracing the real Z80 loop
-// mechanism further, not attempted this round - but real, audible
-// looping (vs. one-shot silence) is itself a genuine fidelity gain.
+// loop for the life of the session.
 func (gui *GUI) playStartupMelody() {
 	samples := hotmaudio.RenderXORInterleaved(hotmaudio.StartupMelody, hotmaudio.SecondaryMelody, 0.15, hotmaudio.SampleRate)
 	pcm := hotmaudio.ToStereo16(samples)
@@ -160,24 +207,6 @@ func (gui *GUI) playStartupMelody() {
 	}
 	gui.startupPlayer = player
 	player.Play()
-}
-
-// buildHUD renders the confirmed rune glyphs (internal/graphics.RuneGlyphs)
-// using the SAME PNGRenderer built for offline PNG export (cmd/render-glyphs)
-// — proving both frontends draw identical, confirmed assets rather than
-// each having their own separate (and possibly diverging) drawing code.
-func buildHUD() *ebiten.Image {
-	r := graphics.NewPNGRenderer(len(graphics.RuneGlyphs)+1, 1, 8)
-	r.Clear(graphics.Black)
-	for i, gl := range graphics.RuneGlyphs {
-		r.DrawGlyph(gl, i, 0, graphics.White, false)
-	}
-	// The magenta spell-icon's real confirmed ULA attribute is 0x43 -
-	// ink=magenta BRIGHT (see KnownIcons's doc comment) - so this is the
-	// first place this port renders a real confirmed bright color, not a
-	// cosmetic choice.
-	r.DrawGlyph(graphics.KnownIcons["magenta-icon"], len(graphics.RuneGlyphs), 0, graphics.Magenta, true)
-	return ebiten.NewImageFromImage(r.Image())
 }
 
 func describeRoom(g *game.Game) string {
@@ -205,11 +234,39 @@ func (gui *GUI) playBlip(noteIndex byte) {
 	player.Play()
 }
 
+// Update handles all keyboard input. Single-key action shortcuts are now
+// aligned to their REAL Merphish letter meaning (see parser/keywords.go's
+// merphishKeywords) wherever one is defined, instead of this port's
+// earlier ad hoc convenience bindings - e.g. D now really means DROP (was
+// previously O, since D was tied up in the old roguelike movement
+// scheme), X really means EXAMINE (was V), O really means OPTIONS (was
+// DROP), H really means HALT (was this port's own HELP shortcut - HELP
+// is still reachable by typing it in full via ENTER), L really means
+// LEFT (was this port's own LOOK shortcut - same typing fallback), R
+// really means RIGHT (was GRADE), Z really means SWAP (previously
+// unbound), and N/S/E/W are real movement letters (see keyDirections)
+// rather than this port's own NAME/SPELLS/etc. shortcuts. Letters with
+// no real Merphish meaning (M=map, T=transfusion, G=pass guards, K=talk
+// to Apex, J=inventory) are kept as this port's own reasonable
+// conveniences, since there's no real letter they'd be overriding.
 func (gui *GUI) Update() error {
 	// Alt+Enter toggles full screen, matching the convention used by most
-	// emulators and games (explicitly requested).
+	// emulators and games (explicitly requested). Checked before the
+	// typing-mode gate below so ALT+ENTER never gets swallowed as "submit
+	// the empty command line".
 	if ebiten.IsKeyPressed(ebiten.KeyAlt) && inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
+		return nil
+	}
+
+	if gui.typing {
+		gui.updateTyping()
+		return nil
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		gui.typing = true
+		gui.inputBuffer = nil
+		return nil
 	}
 
 	for key, dir := range keyDirections {
@@ -219,44 +276,48 @@ func (gui *GUI) Update() error {
 			before := gui.g.World.Current
 			result := gui.g.Handle(parser.Parse(directionWord(dir)))
 			gui.appendLog(result)
-			// Only play the movement blip if the move actually succeeded -
-			// previously played unconditionally, so a blocked move ("You
-			// can't go that way", or the new Fire-blocked rejection) sounded
-			// identical to a real step. Comparing room IDs (not scanning
-			// result text for specific rejection strings) stays correct
-			// automatically as new kinds of blocked-movement messages are
-			// added.
 			if gui.g.World.Current != before {
 				gui.playBlip(byte(7 + int(dir)*3)) // varies pitch by direction, not gameplay-meaningful yet
 			}
 		}
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyL) {
-		gui.appendLog(gui.g.Handle(parser.Parse("LOOK")))
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyX) {
+		gui.appendLog(gui.g.Handle(parser.Parse("EXAMINE")))
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
-		gui.appendLog(gui.g.Handle(parser.Parse("MAP")))
+	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		gui.pickUpFirstItem()
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
+		gui.dropFirstItem()
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyI) {
+		gui.invokeDemonForGroundedCharm()
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsKeyJustPressed(ebiten.KeyB) {
 		gui.handleAndPlay("BLAST")
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF) {
 		gui.handleAndPlay("FREEZE")
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyT) {
-		gui.handleAndPlay("TRANSFUSION")
+	if inpututil.IsKeyJustPressed(ebiten.KeyL) {
+		gui.appendLog(gui.g.Handle(parser.Parse("LEFT")))
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
-		gui.pickUpFirstItem()
+	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
+		gui.appendLog(gui.g.Handle(parser.Parse("RIGHT")))
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+		gui.appendLog(gui.g.Handle(parser.Parse("HALT")))
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyO) {
-		gui.dropFirstItem()
+		gui.appendLog(gui.g.Handle(parser.Parse("OPTIONS")))
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyV) {
-		gui.appendLog(gui.g.Handle(parser.Parse("EXAMINE")))
+	if inpututil.IsKeyJustPressed(ebiten.KeyZ) {
+		gui.appendLog(gui.g.Handle(parser.Parse("SWAP")))
+		gui.showRoomStatus = !gui.showRoomStatus
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyI) {
-		gui.invokeDemonForGroundedCharm()
+	if inpututil.IsKeyJustPressed(ebiten.KeyT) {
+		gui.handleAndPlay("TRANSFUSION")
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
 		gui.handleAndPlay("GUARDS, DOOR")
@@ -264,39 +325,77 @@ func (gui *GUI) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
 		gui.appendLog(gui.g.Handle(parser.Parse("APEX, TALK")))
 	}
-	// Round 94: these 5 real, already-tested game.Handle commands take
-	// no target, so (unlike ASTAROT/MAGOT, which need a free-typed name
-	// this GUI has no text input for) there's no reason they'd been left
-	// unreachable here - a real "confirmed but unsurfaced in the live
-	// GUI" gap, the same pattern that found HELP and StartupMelody
-	// unwired in earlier rounds.
-	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
-		gui.appendLog(gui.g.Handle(parser.Parse("HELP")))
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyN) {
-		gui.appendLog(gui.g.Handle(parser.Parse("NAME")))
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
-		gui.appendLog(gui.g.Handle(parser.Parse("SPELLS")))
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
-		gui.appendLog(gui.g.Handle(parser.Parse("GRADE")))
+	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+		gui.appendLog(gui.g.Handle(parser.Parse("MAP")))
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
 		gui.appendLog(gui.g.Handle(parser.Parse("INVENTORY")))
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyB) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyY) {
 		gui.playSecondaryMelody()
 	}
 	return nil
 }
 
+// updateTyping handles keyboard input while the real typed-command line
+// is open (entered via ENTER, see Update). This is what makes every real
+// Merphish word/abbreviation - not just the subset with its own
+// dedicated single-key shortcut above - genuinely reachable exactly as
+// the original expects: typing "N" or "NE" and pressing ENTER goes
+// through the exact same ExpandKeyword step the text frontend uses, and
+// "ASTAROT, WOLFDORP" (the conversation form) works character-for-
+// character the same way. ESCAPE cancels without submitting; BACKSPACE
+// edits; any other typed character is captured via
+// ebiten.AppendInputChars, the standard ebiten text-input API (works
+// across keyboard layouts, unlike reading individual key codes).
+func (gui *GUI) updateTyping() {
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		gui.typing = false
+		gui.inputBuffer = nil
+		return
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeyNumpadEnter) {
+		raw := string(gui.inputBuffer)
+		gui.typing = false
+		gui.inputBuffer = nil
+		if echo, result := submitTypedCommand(gui.g, raw); echo != "" {
+			gui.appendLog(echo)
+			gui.appendLog(result)
+			// See showRoomStatus's doc comment: SWAP toggles the left
+			// status panel, whether triggered by the Z quick-key (Update)
+			// or typed out here in full.
+			if parser.Parse(raw).Verb == "SWAP" {
+				gui.showRoomStatus = !gui.showRoomStatus
+			}
+		}
+		return
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) && len(gui.inputBuffer) > 0 {
+		gui.inputBuffer = gui.inputBuffer[:len(gui.inputBuffer)-1]
+	}
+	gui.inputBuffer = ebiten.AppendInputChars(gui.inputBuffer)
+}
+
+// submitTypedCommand runs one real typed command through the exact same
+// parser.Parse + game.Handle path as every other command in this file -
+// split out from updateTyping so this behavior is testable without a
+// real ebiten input context. A blank/whitespace-only command (ENTER
+// pressed with nothing typed) submits nothing, matching the real game's
+// own behavior of not re-running the last command on an empty line.
+func submitTypedCommand(g *game.Game, raw string) (echo, result string) {
+	cmd := strings.TrimSpace(raw)
+	if cmd == "" {
+		return "", ""
+	}
+	return "> " + strings.ToUpper(cmd), g.Handle(parser.Parse(cmd))
+}
+
 // playSecondaryMelody plays the real, extracted audio.SecondaryMelody
 // (round 90's second discovered note stream) on its own, standalone —
-// since round 99, playStartupMelody already plays it MIXED with
-// StartupMelody at actual startup (see that method's doc comment), so
-// this key is now for isolating/comparing the second voice alone, not
-// the only way to ever hear it during real play.
+// playStartupMelody already plays it MIXED with StartupMelody at actual
+// startup, so this key is now for isolating/comparing the second voice
+// alone, not the only way to ever hear it during real play. Bound to Y
+// (not B) since B now sends the real Merphish BLAST command.
 func (gui *GUI) playSecondaryMelody() {
 	samples := hotmaudio.RenderNotes(hotmaudio.SecondaryMelody, 0.15, hotmaudio.SampleRate)
 	pcm := hotmaudio.ToStereo16(samples)
@@ -304,10 +403,11 @@ func (gui *GUI) playSecondaryMelody() {
 	player.Play()
 }
 
-// dropFirstItem handles the O key (drOp — D and X, the more obvious
-// letters, are already movement keys in this GUI's roguelike layout).
-// The DROP counterpart to pickUpFirstItem: drops whichever item is first
-// in the player's real character.Player.Items inventory.
+// dropFirstItem handles the D key (real Merphish "D" = DROP - see
+// Update's doc comment). Drops whichever item is first in the player's
+// real character.Player.Items inventory, since this GUI has no free-text
+// object entry for the instant-key path (the typed-command line does,
+// via "DROP <name>").
 func (gui *GUI) dropFirstItem() {
 	if len(gui.g.Player.Items) == 0 {
 		gui.appendLog(gui.g.Handle(parser.Parse("DROP")))
@@ -316,13 +416,11 @@ func (gui *GUI) dropFirstItem() {
 	gui.appendLog(gui.g.Handle(parser.Parse("DROP " + gui.g.Player.Items[0])))
 }
 
-// pickUpFirstItem handles the P key. The GUI has no text input, so
-// PICKUP/DROP (which take a named object in the real command grammar,
-// see parser.Parse) can't offer a free-form target the way the text
-// frontend (cmd/hotm) can — this instead targets whichever item is first
-// in the current room's real, sourced world.Room.Items, going through
-// the exact same game.Game.Handle("PICKUP ...") path either way, not a
-// GUI-only shortcut that bypasses it.
+// pickUpFirstItem handles the P key (real Merphish "P" = PICKUP). The
+// instant-key path has no free-form target, so this targets whichever
+// item is first in the current room's real, sourced world.Room.Items,
+// going through the exact same game.Game.Handle("PICKUP ...") path
+// either way, not a GUI-only shortcut that bypasses it.
 func (gui *GUI) pickUpFirstItem() {
 	room := gui.g.World.CurrentRoom()
 	cmd := "PICKUP"
@@ -332,26 +430,19 @@ func (gui *GUI) pickUpFirstItem() {
 	gui.appendLog(gui.g.Handle(parser.Parse(cmd)))
 }
 
-// invokeDemonForGroundedCharm handles the I key. The GUI has no text
-// input, so INVOKE (which takes a specific demon name, see
-// parser.Parse) can't offer a free-form target the way the text
-// frontend can - this instead scans the CURRENT ROOM's real Items
-// against each confirmed magic.Demons's Charm and invokes the first
-// match, going through the exact same game.Game.Handle("INVOKE ...")
-// path either way. With no matching Charm on the ground, falls back to
-// bare INVOKE (lists the 4 demons and their requirements) rather than
-// doing nothing.
+// invokeDemonForGroundedCharm handles the I key (real Merphish "I" =
+// INVOKE). The instant-key path has no free-form target, so this scans
+// the CURRENT ROOM's real Items against each confirmed magic.Demons's
+// Charm and invokes the first match, going through the exact same
+// game.Game.Handle("INVOKE ...") path either way. With no matching Charm
+// on the ground, falls back to bare INVOKE (lists the 4 demons and their
+// requirements) rather than doing nothing.
 //
-// Round 131: previously scanned the player's CARRIED Items (renamed
-// from invokeCarriedDemon) - a genuinely new source (World of
-// Spectrum's plain-text instructions file) confirmed the real
+// Scans the room, not the player's carried Items: a real source (World
+// of Spectrum's plain-text instructions file) confirms the real
 // mechanic requires the Charm to be dropped on the ground, not merely
 // carried ("Place Ye the talisman on the ground and proceed with thy
-// invocation from a distance" - see game.invoke's doc comment for the
-// full correction). Scanning the room instead of the inventory keeps
-// this key's behavior consistent with the corrected text-frontend
-// mechanic, rather than silently trying (and now always failing) the
-// old carried-item assumption.
+// invocation from a distance" - see game.invoke's doc comment).
 func (gui *GUI) invokeDemonForGroundedCharm() {
 	room := gui.g.World.CurrentRoom()
 	var items []string
@@ -363,9 +454,8 @@ func (gui *GUI) invokeDemonForGroundedCharm() {
 
 // invokeCommandFor picks which real game.Handle("INVOKE ...") command
 // invokeDemonForGroundedCharm should send, given a set of item names
-// (the current room's real Items, since round 131) - split out so the
-// target-selection logic is testable without needing a real audio
-// context.
+// (the current room's real Items) - split out so the target-selection
+// logic is testable without needing a real audio context.
 func invokeCommandFor(items []string) string {
 	for _, d := range magic.Demons {
 		for _, item := range items {
@@ -437,60 +527,284 @@ func directionWord(d world.Direction) string {
 	}
 }
 
+// pictureImage picks whichever real extracted image belongs in the big
+// top picture area this frame: a demon/NPC/monster portrait (see
+// currentPortraitName) takes priority - the most immediately relevant
+// feedback for what the player just did/is facing - falling back to the
+// current room's own real extracted screenshot, if one exists. Neither
+// existing is a real, honest state (most rooms have no extracted art
+// yet): the caller just leaves the picture area black.
+func (gui *GUI) pictureImage() (*ebiten.Image, bool) {
+	if name, ok := gui.currentPortraitName(); ok {
+		return gui.portraits[name], true
+	}
+	room := gui.g.World.CurrentRoom()
+	if room == nil {
+		return nil, false
+	}
+	img, ok := gui.roomArt[room.Name]
+	return img, ok
+}
+
+// drawFitted scales img to fit entirely inside a (boxW x boxH) box,
+// preserving its aspect ratio (uniform scale, never stretched), centered
+// within the box - used for the big top picture area, whose real source
+// images have varying, individually-cropped aspect ratios.
+func drawFitted(screen *ebiten.Image, img *ebiten.Image, boxW, boxH float64) {
+	iw := float64(img.Bounds().Dx())
+	ih := float64(img.Bounds().Dy())
+	if iw == 0 || ih == 0 {
+		return
+	}
+	scale := boxW / iw
+	if ih*scale > boxH {
+		scale = boxH / ih
+	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(scale, scale)
+	op.GeoM.Translate((boxW-iw*scale)/2, (boxH-ih*scale)/2)
+	screen.DrawImage(img, op)
+}
+
+// fillPanel fills a rectangular sub-region of screen with clr - the
+// building block for the magenta-bordered 3-panel status bar (see
+// Draw), since ebiten.Image.Fill only fills the whole image.
+func fillPanel(screen *ebiten.Image, x, y, w, h int, clr color.Color) {
+	screen.SubImage(image.Rect(x, y, x+w, y+h)).(*ebiten.Image).Fill(clr)
+}
+
 func (gui *GUI) Draw(screen *ebiten.Image) {
 	screen.Fill(black)
 
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(8, 8)
-	screen.DrawImage(gui.hud, op)
+	if img, ok := gui.pictureImage(); ok {
+		drawFitted(screen, img, screenWidth, pictureHeight)
+	}
+	gui.drawPictureBadges(screen)
 
-	gui.drawMonster(screen)
-	gui.drawGuards(screen)
-	gui.drawItems(screen)
-	gui.drawFixtures(screen)
-	gui.drawPortrait(screen)
-	gui.drawCorridorSample(screen)
+	// The magenta-bordered 3-panel status bar (see the package doc
+	// comment). Filling the whole bar magenta first, then the 3 inset
+	// panels, leaves a uniform magenta border/gutter around and between
+	// them - a solid-color approximation of the original's chain-link
+	// border texture (no such texture asset exists in this port).
+	fillPanel(screen, 0, statusBarY, screenWidth, statusBarHeight, zxMagenta)
 
-	statsOpts := &etext.DrawOptions{}
-	statsOpts.GeoM.Translate(8, 76) // just below the 64px-tall HUD row (drawn at y=8)
-	statsOpts.ColorScale.ScaleWithColor(white)
-	etext.Draw(screen, gui.statsLine(), face, statsOpts)
+	leftX := borderThickness
+	midX := leftX + leftPanelWidth + borderThickness
+	rightX := midX + midPanelWidth + borderThickness
+	panelY := statusBarY + borderThickness
+	panelH := statusBarHeight - 2*borderThickness
 
-	drawOpts := &etext.DrawOptions{}
-	drawOpts.GeoM.Translate(8, 100)
-	drawOpts.LineSpacing = 16 // basicfont.Face7x13 is 13px tall; give lines breathing room
-	drawOpts.ColorScale.ScaleWithColor(cyan)
-	etext.Draw(screen, strings.Join(gui.log, "\n"), face, drawOpts)
+	leftBG := zxCyan
+	if gui.showRoomStatus {
+		leftBG = zxGreen // see showRoomStatus's doc comment - the real swapped panel is green, not cyan
+	}
+	fillPanel(screen, leftX, panelY, leftPanelWidth, panelH, leftBG)
+	fillPanel(screen, midX, panelY, midPanelWidth, panelH, zxWhite)
+	fillPanel(screen, rightX, panelY, rightPanelWidth, panelH, zxGreen)
 
-	helpOpts := &etext.DrawOptions{}
-	// Round 94: this used to be drawn at (8, screenHeight-20) as one long
-	// single line - discovered BOTH real bugs live-testing this round's
-	// new keybindings: (1) that Y position silently rendered nothing at
-	// all (confirmed empirically - even the pre-existing short text
-	// failed there too, so this was a real, previously-unnoticed bug,
-	// not something the new keybindings caused - the safe/broken
-	// boundary sits somewhere between logical y=300, confirmed working,
-	// and y=320, confirmed broken); (2) the line was always far wider
-	// than screenWidth (512px) even before adding the 5 new keys (the
-	// OLD text alone was ~1160px), so it was also silently clipped off
-	// the right edge the whole time. Fixed both: moved well clear of the
-	// broken Y zone, and split across 3 lines (helpText below) so each
-	// line actually fits on screen.
-	helpOpts.GeoM.Translate(8, 232)
-	helpOpts.LineSpacing = 16
-	helpOpts.ColorScale.ScaleWithColor(grey)
-	etext.Draw(screen, helpText, face, helpOpts)
+	gui.drawLeftPanelText(screen, leftX, panelY)
+	gui.drawMidPanelText(screen, midX, panelY)
+	gui.drawRightPanelText(screen, rightX, panelY)
 }
 
-// helpText is 4 lines (round 95: rebalanced from 3 to fit round 94's
-// new B=2nd-melody key without any line exceeding screenWidth - the
-// widest line here is 66 chars/~462px, comfortably under 512px, unlike
-// the original single-line text this replaced in round 94, which was
-// ~1160px and silently clipped the whole time).
-const helpText = "WASD/arrows+QEZC=move  L=look  M=map  V=examine\n" +
-	"SPACE=blast  F=freeze  T=transfusion  P=pickup  O=drop\n" +
-	"I=invoke  G=pass guards  K=talk to Apex  H=help  N=name\n" +
-	"S=spells  R=grade  J=inventory  B=2nd melody  ALT+ENTER=fullscreen"
+// drawPictureBadges overlays 2 small, real-colored indicators on the
+// picture area when they apply: a live Monster with no confirmed
+// portrait (monsterGlyphColor's letter+color, an honest "unconfirmed
+// icon" fallback for whichever creature isn't one of the 13 extracted
+// portraits) and a real, un-cleared Guards obstacle (guardsColor). Both
+// are genuinely sourced facts (see their own doc comments) that predate
+// this layout redesign - kept as small picture overlays rather than a
+// separate HUD row, closer to how the original likely conveys in-room
+// hazards pictorially rather than via a text sidebar.
+func (gui *GUI) drawPictureBadges(screen *ebiten.Image) {
+	room := gui.g.World.CurrentRoom()
+	if room == nil {
+		return
+	}
+	y := 4
+	if room.Monster != "" && room.MonsterHealth > 0 {
+		if _, hasPortrait := gui.currentPortraitName(); !hasPortrait {
+			letter, c := "?", color.RGBA{255, 255, 255, 255}
+			if gc, ok := monsterGlyphColor[room.Monster]; ok {
+				letter, c = gc.letter, gc.c
+			}
+			opts := &etext.DrawOptions{}
+			opts.GeoM.Translate(4, float64(y))
+			opts.ColorScale.ScaleWithColor(c)
+			etext.Draw(screen, letter+" "+room.Monster, face, opts)
+			y += 16
+		}
+	}
+	if room.Guards {
+		opts := &etext.DrawOptions{}
+		opts.GeoM.Translate(4, float64(y))
+		opts.ColorScale.ScaleWithColor(guardsColor)
+		etext.Draw(screen, "I Guards", face, opts)
+	}
+}
+
+// exitLetter returns room's short compass abbreviation for d ("N", "NE",
+// etc. - the same letters parser/keywords.go confirms as real Merphish
+// input), or "" if room has no exit that way.
+func exitLetter(room *world.Room, d world.Direction) string {
+	if room == nil {
+		return ""
+	}
+	if _, ok := room.Exits[d]; !ok {
+		return ""
+	}
+	switch d {
+	case world.North:
+		return "N"
+	case world.NorthEast:
+		return "NE"
+	case world.East:
+		return "E"
+	case world.SouthEast:
+		return "SE"
+	case world.South:
+		return "S"
+	case world.SouthWest:
+		return "SW"
+	case world.West:
+		return "W"
+	case world.NorthWest:
+		return "NW"
+	}
+	return ""
+}
+
+// exitsPanelLines lays room's real Exits out compass-style (a 3x3 grid
+// of text rows: NW/N/NE, W/·/E, SW/S/SE) approximating the real
+// SpecEmu screenshot's own "EXITS:" panel, which showed each direction
+// positioned roughly where that compass direction actually sits (W to
+// the left, E to the right) rather than a plain comma list. Split out
+// from drawLeftPanelText so this layout is testable without a real
+// ebiten image.
+func exitsPanelLines(room *world.Room) []string {
+	return []string{
+		"EXITS:",
+		"",
+		fmt.Sprintf("%-3s%-3s%-3s", exitLetter(room, world.NorthWest), exitLetter(room, world.North), exitLetter(room, world.NorthEast)),
+		fmt.Sprintf("%-3s   %-3s", exitLetter(room, world.West), exitLetter(room, world.East)),
+		fmt.Sprintf("%-3s%-3s%-3s", exitLetter(room, world.SouthWest), exitLetter(room, world.South), exitLetter(room, world.SouthEast)),
+	}
+}
+
+// roomStatusLines is the left panel's OTHER real mode (see
+// showRoomStatus's doc comment) - the room's name/level/grade, matching
+// the real observed "YOU ARE IN THE <room> ON LEVEL <n> YOUR GRADE IS
+// <grade>" screen text as closely as this port's own data allows. A
+// further real detail on that screenshot ("1°=10°", presumably some
+// grade-progress figure) isn't reproduced - its exact meaning isn't
+// confirmed, so it's honestly omitted rather than guessed at.
+func roomStatusLines(g *game.Game) []string {
+	room := g.World.CurrentRoom()
+	if room == nil {
+		return []string{"YOU ARE IN THE", "VOID"}
+	}
+	lines := []string{"YOU ARE IN THE", strings.ToUpper(room.Name)}
+	if room.Level != 0 {
+		lines = append(lines, fmt.Sprintf("ON LEVEL %d", room.Level))
+	}
+	lines = append(lines, "YOUR GRADE IS", strings.ToUpper(g.Player.Grade.String()))
+	return lines
+}
+
+func (gui *GUI) drawLeftPanelText(screen *ebiten.Image, x, y int) {
+	var lines []string
+	if gui.showRoomStatus {
+		lines = roomStatusLines(gui.g)
+	} else {
+		lines = exitsPanelLines(gui.g.World.CurrentRoom())
+	}
+	opts := &etext.DrawOptions{}
+	opts.GeoM.Translate(float64(x+6), float64(y+6))
+	opts.LineSpacing = 16
+	opts.ColorScale.ScaleWithColor(textOnLite)
+	etext.Draw(screen, strings.Join(lines, "\n"), face, opts)
+}
+
+// statsPanelLines formats the player's real confirmed Stamina/Skill/
+// Luck/XP stats (see character.Player's doc comment) one per line,
+// matching the real screenshot's right-hand green panel (STAMINA/SKILL/
+// LUCK) with XP added as a 4th line - real, sourced data this port
+// already tracks that the reference screenshot doesn't happen to show in
+// this exact panel, kept visible here rather than dropped.
+func statsPanelLines(g *game.Game) []string {
+	p := g.Player
+	return []string{
+		fmt.Sprintf("STAMINA %d/%d", p.Stamina, p.MaxStamina),
+		fmt.Sprintf("SKILL   %d", p.Skill),
+		fmt.Sprintf("LUCK    %d", p.Luck),
+		fmt.Sprintf("XP      %d", p.ExperiencePoints),
+	}
+}
+
+func (gui *GUI) drawRightPanelText(screen *ebiten.Image, x, y int) {
+	opts := &etext.DrawOptions{}
+	opts.GeoM.Translate(float64(x+6), float64(y+6))
+	opts.LineSpacing = 16
+	opts.ColorScale.ScaleWithColor(textOnLite)
+	etext.Draw(screen, strings.Join(statsPanelLines(gui.g), "\n"), face, opts)
+}
+
+// wrapLine breaks s into whole-word lines no wider than maxChars -
+// game.Handle's responses are ordinary prose, not pre-wrapped to any
+// particular width, so the panel that displays them has to do this
+// itself or long lines bleed across the panel's border into whatever's
+// drawn next to it (a real bug this exact function fixes - caught live
+// while first verifying this layout: "(room description not yet
+// extracted from the original game)" bled visibly into the stats
+// panel). A single word longer than maxChars is left on its own line
+// rather than split mid-word.
+func wrapLine(s string, maxChars int) []string {
+	if maxChars <= 0 {
+		return []string{s}
+	}
+	words := strings.Fields(s)
+	if len(words) == 0 {
+		return []string{s}
+	}
+	lines := make([]string, 0, 1+len(s)/maxChars)
+	cur := words[0]
+	for _, w := range words[1:] {
+		if len(cur)+1+len(w) > maxChars {
+			lines = append(lines, cur)
+			cur = w
+			continue
+		}
+		cur += " " + w
+	}
+	return append(lines, cur)
+}
+
+// drawMidPanelText draws the recent command/response log, real-word-
+// wrapped and capped to what actually fits in the panel (see
+// midPanelMaxChars/midPanelMaxLines), and - while the typed-command
+// line is open (see updateTyping) - the live input buffer as its own
+// trailing line, replacing the log's own idle state. This is the panel
+// a real reference screenshot showed holding exactly this kind of
+// content (a scrolling command echo, e.g. "EAST,WEST,WEST"), on the
+// same light background used here.
+func (gui *GUI) drawMidPanelText(screen *ebiten.Image, x, y int) {
+	raw := gui.log
+	if gui.typing {
+		raw = append(append([]string{}, raw...), "> "+string(gui.inputBuffer)+"_")
+	}
+	var wrapped []string
+	for _, line := range raw {
+		wrapped = append(wrapped, wrapLine(line, midPanelMaxChars)...)
+	}
+	if len(wrapped) > midPanelMaxLines {
+		wrapped = wrapped[len(wrapped)-midPanelMaxLines:]
+	}
+	opts := &etext.DrawOptions{}
+	opts.GeoM.Translate(float64(x+6), float64(y+6))
+	opts.LineSpacing = 16
+	opts.ColorScale.ScaleWithColor(textOnLite)
+	etext.Draw(screen, strings.Join(wrapped, "\n"), face, opts)
+}
 
 // apexPortraitShouldShow reports whether the most recent log line is a
 // talkToApex response ("APEX, TALK"/"APEX, SPEAK") — split out from
@@ -506,9 +820,9 @@ func apexPortraitShouldShow(log []string) bool {
 }
 
 // invokedDemonPortraitName reports which demon (if any) the most recent
-// log line represents a successful "You invoke <NAME>, ..." response
-// for (see game.invoke's doc comment) — split out for the same
-// testability reason as apexPortraitShouldShow.
+// log line represents a successful "You invoke ..." response for (see
+// game.invoke's doc comment) — split out for the same testability reason
+// as apexPortraitShouldShow.
 func invokedDemonPortraitName(log []string) (string, bool) {
 	if len(log) == 0 {
 		return "", false
@@ -526,8 +840,8 @@ func invokedDemonPortraitName(log []string) (string, bool) {
 }
 
 // currentPortraitName picks which real extracted portrait (see
-// graphics.Portrait's doc comment for sourcing) belongs in the corner
-// this frame, given the room's live Monster and the most recent log
+// graphics.Portrait's doc comment for sourcing) belongs in the picture
+// area this frame, given the room's live Monster and the most recent log
 // line — a just-happened conversation/invocation takes priority over
 // the room's ambient monster, since it's the more immediately relevant
 // feedback for what the player just did.
@@ -548,66 +862,19 @@ func (gui *GUI) currentPortraitName() (string, bool) {
 	return "", false
 }
 
-// drawPortrait shows whichever real extracted portrait
-// currentPortraitName picks - the first place this port displays actual
-// extracted 1986 game art (demon/NPC/monster) instead of a custom-drawn
-// approximation.
-func (gui *GUI) drawPortrait(screen *ebiten.Image) {
-	name, ok := gui.currentPortraitName()
-	if !ok {
-		return
-	}
-	img := gui.portraits[name]
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(screenWidth-img.Bounds().Dx()-8), 8)
-	screen.DrawImage(img, op)
-}
-
-// drawCorridorSample shows the real extracted room screenshot for the
-// player's CURRENT room, if one exists (round 96/98/103/104/105's
-// CorridorSample/Level1CorridorSample/Level3CorridorSample/
-// Level4CorridorSample/RoomOfMiserySample, round 97 GUI wiring; round
-// 108 generalized this from "only the world's starting room" to "any
-// room with real extracted art", adding Room of Stings/Room of Arrows
-// alongside Room of Misery in default mode) — the first time this port
-// shows actual extracted room-scene art (as opposed to a demon/
-// monster/NPC portrait) during live gameplay. Scaled down to fit the
-// corner (the source screenshots are wider than this GUI's whole 512px
-// screen at native size) and skipped whenever a portrait is already
-// showing there, to avoid the two overlapping.
-func (gui *GUI) drawCorridorSample(screen *ebiten.Image) {
-	room := gui.g.World.CurrentRoom()
-	if room == nil {
-		return
-	}
-	img, ok := gui.roomArt[room.Name]
-	if !ok {
-		return
-	}
-	if _, ok := gui.currentPortraitName(); ok {
-		return
-	}
-	const scale = 0.35
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(scale, scale)
-	w := float64(img.Bounds().Dx()) * scale
-	op.GeoM.Translate(float64(screenWidth)-w-8, 8)
-	screen.DrawImage(img, op)
-}
-
 // monsterGlyphColor maps each confirmed monster name to the real
 // letter+color icon it's drawn with on the game's own clean grid map
 // (heavymap-grid-clean.gif — exact RGB values read directly from the
 // image's own indexed palette and cross-checked against its printed
 // legend, e.g. "w wraith" in bright red vs. "w werewolf" in magenta -
-// see ../../CLAUDE.md's Level 1-3 monster-scan rounds). This is the
-// first time this port has drawn a monster as anything but plain text -
-// a real, sourced graphics improvement, not an invented sprite.
+// see ../../CLAUDE.md's Level 1-3 monster-scan rounds). Used by
+// drawPictureBadges as a fallback badge when no real portrait exists for
+// the room's monster.
 //
-// "Wraith" renamed to "Vampire" in round 74 (see Level1Grid's doc
-// comment) - the map's own legend glossed this red "w" icon "wraith",
-// but a second, more authoritative source (a real in-game creature-
-// portrait screenshot) confirms the actual name is "Vampire".
+// "Wraith" renamed to "Vampire" (see Level1Grid's doc comment) - the
+// map's own legend glossed this red "w" icon "wraith", but a second,
+// more authoritative source (a real in-game creature-portrait
+// screenshot) confirms the actual name is "Vampire".
 var monsterGlyphColor = map[string]struct {
 	letter string
 	c      color.RGBA
@@ -622,118 +889,10 @@ var monsterGlyphColor = map[string]struct {
 	"Wyvern":   {"w", color.RGBA{0, 132, 255, 255}},
 }
 
-// drawMonster renders the current room's real Monster (if any and still
-// alive) as its confirmed letter+color icon, next to the HUD row -
-// previously only ever shown as plain log text ("You see: a Vampire").
-// Monster names not in monsterGlyphColor (e.g. CollodonsPile's generic
-// "monster") fall back to a plain white "?", honestly signaling an
-// unconfirmed icon rather than guessing one.
-func (gui *GUI) drawMonster(screen *ebiten.Image) {
-	room := gui.g.World.CurrentRoom()
-	if room == nil || room.Monster == "" || room.MonsterHealth <= 0 {
-		return
-	}
-	letter, c := "?", color.RGBA{255, 255, 255, 255}
-	if gc, ok := monsterGlyphColor[room.Monster]; ok {
-		letter, c = gc.letter, gc.c
-	}
-	opts := &etext.DrawOptions{}
-	opts.GeoM.Translate(280, 8)
-	opts.ColorScale.ScaleWithColor(c)
-	etext.Draw(screen, letter+" "+room.Monster, face, opts)
-}
-
 // guardsColor is the confirmed real color of the clean grid map's
 // "guards" legend icon (a red "Ɪ" glyph) - see world.Room.Guards's doc
-// comment for the sourcing. Rendered here as the plain ASCII letter "I"
-// in that same confirmed color, the same "real color, plain-letter
-// stand-in" convention monsterGlyphColor already uses.
+// comment for the sourcing. Used by drawPictureBadges.
 var guardsColor = color.RGBA{255, 0, 0, 255}
-
-// drawGuards renders a real, un-cleared world.Room.Guards obstacle in
-// its confirmed color, next to the monster indicator - previously only
-// ever implied by room text (Exits/description), never shown visually.
-func (gui *GUI) drawGuards(screen *ebiten.Image) {
-	room := gui.g.World.CurrentRoom()
-	if room == nil || !room.Guards {
-		return
-	}
-	opts := &etext.DrawOptions{}
-	opts.GeoM.Translate(280, 26) // just below drawMonster's (280, 8) - verified visible live, unlike an earlier (400, 8) attempt that rendered nothing on screen for reasons not fully understood
-	opts.ColorScale.ScaleWithColor(guardsColor)
-	etext.Draw(screen, "I Guards", face, opts)
-}
-
-// itemsColor: the clean grid map's own legend draws its generic
-// "object" icon in black ("xx") - but this GUI's background is also
-// black, so rendering real Items in that confirmed color would be
-// invisible. Unlike monsterGlyphColor/guardsColor, this is honestly NOT
-// the confirmed icon color, just a legible stand-in (plain yellow,
-// matching this project's existing HUD color conventions elsewhere).
-var itemsColor = color.RGBA{255, 255, 0, 255}
-
-// drawItems renders the current room's real Items (if any) as a plain
-// list next to the monster/guards indicators - previously only ever
-// shown as log text ("You see: Grimoire"), never in the live HUD area.
-func (gui *GUI) drawItems(screen *ebiten.Image) {
-	room := gui.g.World.CurrentRoom()
-	if room == nil || len(room.Items) == 0 {
-		return
-	}
-	opts := &etext.DrawOptions{}
-	opts.GeoM.Translate(280, 44) // below drawGuards's (280, 26)
-	opts.ColorScale.ScaleWithColor(itemsColor)
-	etext.Draw(screen, strings.Join(room.Items, ", "), face, opts)
-}
-
-// drawFixtures renders the current room's real HasTable/HasChest
-// fixtures (round 151) - confirmed, sourced content (see
-// world.Room.HasTable's/HasChest's doc comments) that the text
-// frontend has surfaced since rounds 56/79 ("There is a table/chest
-// here." in LOOK), but this GUI never showed anywhere at all - the
-// same "confirmed but unsurfaced in the live GUI" gap this project has
-// repeatedly found and closed for other data (Monster, Guards, Items
-// above). itemsColor is reused (same honest "not the confirmed icon
-// color, just a legible stand-in" caveat already noted there).
-func (gui *GUI) drawFixtures(screen *ebiten.Image) {
-	room := gui.g.World.CurrentRoom()
-	if room == nil {
-		return
-	}
-	text := fixturesText(room.HasTable, room.HasChest)
-	if text == "" {
-		return
-	}
-	opts := &etext.DrawOptions{}
-	opts.GeoM.Translate(280, 62) // below drawItems's (280, 44)
-	opts.ColorScale.ScaleWithColor(itemsColor)
-	etext.Draw(screen, text, face, opts)
-}
-
-// fixturesText picks what drawFixtures should render, given a room's
-// real HasTable/HasChest fields - split out so the decision logic is
-// testable without needing a real ebiten image, the same convention
-// currentPortraitName's own split-out used.
-func fixturesText(hasTable, hasChest bool) string {
-	var fixtures []string
-	if hasTable {
-		fixtures = append(fixtures, "Table")
-	}
-	if hasChest {
-		fixtures = append(fixtures, "Chest")
-	}
-	return strings.Join(fixtures, ", ")
-}
-
-// statsLine renders the player's real confirmed stats (see
-// character.Player's doc comment for which fields are confirmed real)
-// as a single HUD line — previously not shown anywhere in this GUI at
-// all, only in the text frontend's LOOK/EXAMINE output indirectly.
-func (gui *GUI) statsLine() string {
-	p := gui.g.Player
-	return fmt.Sprintf("%s the %s | Stamina %d/%d | Skill %d | Luck %d | XP %d",
-		p.Name, p.Grade, p.Stamina, p.MaxStamina, p.Skill, p.Luck, p.ExperiencePoints)
-}
 
 func (gui *GUI) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
@@ -746,10 +905,7 @@ func (gui *GUI) Layout(outsideWidth, outsideHeight int) (int, int) {
 // title/log so it's clear which world is active, plus a map of real
 // extracted room screenshots keyed by world.Room.Name (round 108
 // generalized this from one image tied to the start room - see
-// GUI.roomArt's doc comment). Each level grid's own real starting cell
-// has one (round 98: Level 1/2; round 103: Level 3; round 104: Level
-// 4); default (CollodonsPile) mode has 3 as of round 108 (Room of
-// Misery, round 105; Room of Stings/Room of Arrows, round 108).
+// GUI.roomArt's doc comment).
 func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Image) {
 	level1Grid := flag.Bool("level1grid", false, "play the extracted Level 1 grid (64 real cells) instead of CollodonsPile")
 	level2Grid := flag.Bool("level2grid", false, "play the extracted Level 2 grid (50 real, fully-connected cells) instead of CollodonsPile")
@@ -759,16 +915,6 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 
 	switch {
 	case *level1Grid:
-		// Round 167: level1_grid.go's own A7/A8/F3/F5 cells are the SAME
-		// real, named CollodonsPile rooms (Agile Stair/Furnace Room/Room
-		// of Stings/Room of Arrows - confirmed exact name matches, not a
-		// coincidence) already given real extracted art in default mode
-		// (rounds 108/137/141) - the identical physical dungeon location,
-		// just reached via a different room-addressing scheme. No new
-		// extraction needed: reusing the same already-verified samples
-		// here is a genuine, zero-risk coverage increase, and proves the
-		// round-108 map[string]image.Image design really is as easy to
-		// extend as it was meant to be.
 		return game.NewLevel1Exploration(), " (Level 1 grid)", map[string]image.Image{
 			"A1":             graphics.Level1CorridorSample(),
 			"Agile Stair":    graphics.AgileStairSample(),
@@ -777,23 +923,6 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 			"Room of Arrows": graphics.RoomOfArrowsSample(),
 		}
 	case *level2Grid:
-		// Round 167: level2_grid.go's own F4 cell is explicitly confirmed
-		// (round 105) to be the SAME real "Room of Misery" - the
-		// default game's own starting room - not just a same-named
-		// coincidence, so reusing RoomOfMiserySample here is safe. F4
-		// sits in the disconnected "Room of Misery pocket" (7 isolated
-		// cells, no real Exits - see level2_grid.go's doc comment), so
-		// this isn't reachable via ordinary movement in -level2grid
-		// mode yet, the same honest "real but not live-walkthrough-
-		// reachable" scope several other real facts in this project
-		// have shipped with before their own first real placement.
-		// Deliberately NOT reusing SothicComplexSample for Level3Grid's
-		// own D4 "Sothic Complex" cell (checked, not just missed) - that
-		// name match is a genuinely unresolved cross-source ambiguity
-		// (round 51: possibly a different physical Level-3 room sharing
-		// the name with CollodonsPile's Level-2 Sothic Complex, not
-		// confirmed either way), so reusing Level 2's own screenshot
-		// there would risk presenting unconfirmed art as settled fact.
 		return game.NewLevel2Exploration(), " (Level 2 grid)", map[string]image.Image{
 			"A1":             graphics.CorridorSample(),
 			"Room of Misery": graphics.RoomOfMiserySample(),
@@ -803,24 +932,6 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 	case *level4Grid:
 		return game.NewLevel4Exploration(), " (Level 4 grid)", map[string]image.Image{"F2": graphics.Level4CorridorSample()}
 	default:
-		// Round 108: Room of Stings/Room of Arrows join round 105's Room
-		// of Misery - all 3 are real CollodonsPile rooms with a real
-		// extracted screenshot, shown whenever the player is actually in
-		// that specific room, not just at the start. Rounds 109/113/116/
-		// 123 add Wolfdorp/Nidus/Trollwynd/Pilefoot too, at an honestly
-		// lower (zone-level, not exact-cell) confidence - see
-		// graphics.WolfdorpSample's/NidusSample's/TrollwyndSample's/
-		// PilefootSample's doc comments. Round 137 adds Agile Stair, back
-		// at exact-cell confidence (level1_grid.go's own confirmed A7).
-		// Round 141 adds Furnace Room (A8, the cell right next to Agile
-		// Stair) - also exact-cell, and the clearest content-to-name
-		// match of any sample here (an actual fireplace scene). Round
-		// 142 adds Methos at zone-level confidence (Level 4's own
-		// A6-A8 Methos zone), same tier as Wolfdorp/Nidus/Trollwynd/
-		// Pilefoot. Round 143 adds Morfang, also zone-level (Level 1's
-		// own D1/D2/G1/G2/H1 Morfang zone). Round 144 adds Sothic
-		// Complex, also zone-level (Level 2's own bright-yellow Sothic
-		// Complex zone).
 		return game.New(), "", map[string]image.Image{
 			"Room of Misery": graphics.RoomOfMiserySample(),
 			"Room of Stings": graphics.RoomOfStingsSample(),
@@ -834,6 +945,7 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 			"Sothic Complex": graphics.SothicComplexSample(),
 			"Methos":         graphics.MethosSample(),
 			"Morfang":        graphics.MorfangSample(),
+			"Sign":           graphics.SignSample(),
 		}
 	}
 }

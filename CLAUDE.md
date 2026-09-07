@@ -7893,6 +7893,163 @@ work, not a wasted round — it prevents a regression that a
 less-careful round might have shipped on the strength of one
 screenshot alone.
 
+### Round 174: interactive session — real SpecEmu/video comparison drove a full cmd/hotm-gui redesign, real keybinding fidelity, a real Grimoire spell-gate, and a new room
+
+Departed from the autonomous Stop-hook loop this round: the user directly
+compared `cmd/hotm-gui`'s output against a live SpecEmu screenshot of the
+real game's own starting room, then against real gameplay footage (a
+YouTube Let's Play), surfacing several genuine, previously-unknown facts
+and gaps in one continuous session.
+
+**A real typed-command line**: `cmd/hotm-gui` previously only had single-
+key shortcuts, with movement on a "roguelike numpad-on-letters" scheme
+(W/A/S/D/Q/E/Z/C for all 8 directions, W=North) invented by this port,
+not the original. Comparing directly against a live SpecEmu screenshot of
+Room of Misery made the mismatch concrete: the real game's own Merphish
+grammar means W=WEST (a real, confirmed abbreviation - see
+parser/keywords.go), not "move north". Added `updateTyping`/
+`submitTypedCommand`: pressing ENTER opens a real text-input line
+(`ebiten.AppendInputChars`), submitting through the exact same
+`parser.Parse`+`game.Handle` path as the text frontend - so typing "N",
+"NE", or "ASTAROT, WOLFDORP" all work exactly as the original expects,
+including diagonals, which have no single-key equivalent in the real
+game either (you type both letters, then ENTER - this GUI now does the
+same). Arrows still work for quick cardinal movement.
+
+**Action keys realigned to their real Merphish letter meaning**, not
+just movement: P/I/F already matched (PICKUP/INVOKE/FREEZE), but D was
+previously DROP's letter had been bumped to O (since D was tied up in
+the old movement scheme) - real D=DROP, real O=OPTIONS (previously
+unbound). X was previously EXAMINE's real letter but this port had put
+EXAMINE on V instead (X was a movement key) - swapped back. Z
+(previously unbound) now sends real SWAP; H now sends real HALT (was
+this port's own HELP shortcut - HELP remains reachable by typing it in
+full); L now sends real LEFT (was this port's own LOOK shortcut - same
+typing fallback); R now sends real RIGHT (was GRADE). N/S/E/W move
+(real Merphish letters, not this port's NAME/SPELLS/etc - also reachable
+by typing). Letters with no real Merphish meaning (M=map, T=transfusion,
+G=pass guards, K=talk to Apex, J=inventory) were left as this port's own
+conveniences, since there's no real letter they'd be overriding.
+
+**A real SWAP mechanic, finally given a concrete effect**: a second
+reference screenshot (after the user pressed Z in the actual game)
+showed the exact same status-bar slot that normally reads "EXITS:"
+replaced by "YOU ARE IN THE <room> ON LEVEL <n> YOUR GRADE IS <grade>" -
+the first real evidence of what SWAP's "Window 1" actually displays
+(previously an honest stub: "the underlying dual-window display... isn't
+modeled yet"). Added `GUI.showRoomStatus`, toggled by Z (or by typing
+SWAP in full), switching the left status panel between the two real
+modes - also switching its background from cyan to green, matching the
+reference screenshot exactly.
+
+**The whole GUI layout redesigned to match the real screen**, not this
+port's own earlier invented arrangement (a constant rune-glyph HUD strip
++ a single scrolling log). The real layout: one big room picture across
+the top, then a magenta-bordered 3-panel status bar below (left: EXITS/
+room-status; middle: message/command-echo text on a light background;
+right: STAMINA/SKILL/LUCK). Rebuilt `Draw()` around this: `pictureImage`
+picks a portrait or room-art image and `drawFitted` scales it to fill a
+big top box (224px tall, 58% of the window, matching the real
+screenshot's own proportions) instead of a small corner thumbnail;
+`fillPanel` draws the 3 panels using the ZX Spectrum's own real,
+confirmed non-bright palette values (matching `internal/graphics`'s
+palette exactly, not arbitrary RGB); `exitsPanelLines` lays real Exits
+out in a compass-position grid (matching the reference screenshot's own
+W-left/E-right layout) instead of a comma list; `statsPanelLines`
+matches the real STAMINA/SKILL/LUCK panel (XP added as an honest 4th
+line - real, sourced data the reference screenshot doesn't happen to
+show in that exact box, kept visible rather than dropped). The old
+`drawMonster`/`drawGuards`/`drawItems`/`drawFixtures` HUD row was
+removed - Items/Fixtures info is already conveyed via the message
+panel's own text (game.Handle's LOOK/movement responses already mention
+them); Monster/Guards became small picture-area overlay badges instead
+(`drawPictureBadges`), closer to how the real game likely conveys in-
+room hazards pictorially. A real bug was caught live during this
+redesign: long response lines (e.g. a wrapped HELP screen) bled across
+the middle panel's border into the stats panel, since `etext.Draw`
+doesn't wrap - fixed with a real `wrapLine` word-wrapper, capped to what
+the panel can actually fit (`midPanelMaxChars`/`midPanelMaxLines`,
+computed from the real panel dimensions, not guessed).
+
+**Removed the "(room description not yet extracted...)" placeholder
+line entirely** (all 5 world constructors), per direct user feedback:
+this string had been printed on every single LOOK for every room this
+whole project, and round 95's own already-documented circumstantial
+evidence says the original likely has no room-description text at all -
+printing an internal placeholder as if it were real absent content was
+genuine noise, not honesty. `describeCurrentRoom` now simply omits the
+line when `Description` is empty (true for every room today).
+
+**A real Grimoire spell-gate**, sourced from a Let's Play video: the
+real game's own rejection text, "YOU CAN'T INVOKE SPELL", appeared when
+the video's player tried to cast before picking up the Grimoire - a
+real, previously-unmodeled requirement, not just inert starting loot.
+Added `spellRequiresItem` (a map, not a single hardcoded check, per the
+user's own explicit request - Axil is confirmed to find further spells
+later, and CALL already has its own separate real gate, the Scroll,
+following this exact same shape) gating BLAST/FREEZE/TRANSFUSION on
+carrying the Grimoire. Every existing combat/heal test needed a
+`withGrimoire(g)` setup call added (real, mechanical fallout of a real
+gameplay-rule discovery, not a design mistake), plus 3 new tests pinning
+the gate itself.
+
+**A real West exit from Room of Misery, and a new "Sign" room**: the
+SAME reference SpecEmu screenshot that drove the typed-command-line fix
+also showed "EXITS: W E" in Room of Misery - a second real exit this
+port had never modeled (only the CASA walkthrough's own single traveled
+path, East, was captured originally). The user separately confirmed
+from the Let's Play video that this leads to a room whose only purpose
+is displaying a sign - matching a fact already sitting unused in this
+project's own data: `Level2Grid`'s F3 cell (immediately adjacent to F4/
+Room of Misery) has been named "Sign" since round 56. Added `roomSign`
+to `CollodonsPile`, with a real round-trip: West to Sign, East back to
+Room of Misery - NOT modeled as a one-way dead end like Furnace Room,
+since (per the source) this is a simple alcove to look at and leave, not
+a deliberate punishment trap; the user caught this exact distinction
+live before it shipped wrong.
+
+**Extracted the Sign room's real art**: the "SATOR AREPO TENET OPERA
+ROTAS" word-square wall plaque - already glimpsed as a neighboring-cell
+cross-check when `RoomOfMiserySample` was extracted (round 105) but
+never pulled out as its own asset. The earlier coarse-to-fine pixel
+search technique (rounds 137/142/144) returned a false-positive match
+this time (landing on an unrelated door-and-columns scene elsewhere in
+the atlas's repetitive wall-stripe texture) - caught by visually
+checking the "match" before trusting it, then fixed with a more robust
+FFT-based exact template-matching approach (numpy, no OpenCV/SciPy
+available), which found both `RoomOfMiserySample` (F4) and
+`SothicComplexSample` (F7) at a numerically exact (SSD ≈ 0) pixel
+position, confirming they share a row and giving a precise derived
+column width (583.33px) to locate F3 from. `graphics.SignSample()`
+added following the exact same embed/decode/test pattern as every other
+room sample in the file.
+
+The SATOR AREPO square itself is a genuine, well-documented ~2000-year-
+old artifact (first attested at Pompeii, a real perfect palindrome, with
+a famous PATERNOSTER/Alpha-Omega cross rearrangement theory) - almost
+certainly borrowed wholesale as authentic occult set-dressing, fitting
+this game's already-established pattern of real esoteric references
+(Crowley's own magical name, the real Golden Dawn grade system, genuine
+grimoire demon names), not something invented for this game or encoding
+a game-specific puzzle - no source found suggests it's more than
+flavor.
+
+**How to apply**: comparing this port directly against real reference
+material (a live emulator screenshot, actual gameplay footage) - not
+just re-reading already-extracted text sources - surfaced more real,
+concrete, previously-unknown facts in one session than several rounds of
+re-mining the same walkthrough text. When a live comparison reveals a
+UI/gameplay mismatch, check whether it's this port's own INVENTED
+convenience overriding a real, confirmed mechanic (the WASD scheme, the
+DROP/EXAMINE letter swaps) before assuming it's just a styling
+difference - real fidelity bugs and cosmetic choices need different
+fixes. And when the user is actively using their own desktop
+(switching to a browser to find video timestamps, etc.), automated
+window-focus-stealing for live GUI screenshots becomes unreliable
+(Windows' foreground-lock protection) - don't burn many retries on it;
+say so plainly and fall back to code review + the passing test suite,
+or the focus-free text frontend, for verification instead.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the

@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/game"
+	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/world"
 )
 
 // TestMonsterGlyphColorMatchesLegend pins the exact letter+color pairs
@@ -50,15 +51,6 @@ func TestMonsterGlyphColorMatchesLegend(t *testing.T) {
 func TestGuardsColorMatchesLegend(t *testing.T) {
 	if guardsColor != (color.RGBA{255, 0, 0, 255}) {
 		t.Errorf("guardsColor = %v, want the confirmed bright red RGB(255,0,0)", guardsColor)
-	}
-}
-
-// TestItemsColorIsLegible pins itemsColor away from black - see its
-// doc comment for why the confirmed real "object" icon color (black)
-// can't be used against this GUI's black background.
-func TestItemsColorIsLegible(t *testing.T) {
-	if itemsColor == (color.RGBA{0, 0, 0, 255}) {
-		t.Error("itemsColor must not be black - it would be invisible against this GUI's black background")
 	}
 }
 
@@ -139,39 +131,155 @@ func TestCurrentPortraitNamePriority(t *testing.T) {
 	}
 }
 
-// TestFixturesText covers round 151's real, previously-unsurfaced-in-
-// the-GUI HasTable/HasChest content (see drawFixtures's doc comment).
-func TestFixturesText(t *testing.T) {
-	if got := fixturesText(false, false); got != "" {
-		t.Errorf("fixturesText(false, false) = %q, want empty", got)
-	}
-	if got := fixturesText(true, false); got != "Table" {
-		t.Errorf("fixturesText(true, false) = %q, want \"Table\"", got)
-	}
-	if got := fixturesText(false, true); got != "Chest" {
-		t.Errorf("fixturesText(false, true) = %q, want \"Chest\"", got)
-	}
-	if got := fixturesText(true, true); got != "Table, Chest" {
-		t.Errorf("fixturesText(true, true) = %q, want \"Table, Chest\"", got)
+// TestSubmitTypedCommandBlankDoesNothing covers round 174's real
+// typed-command line (see updateTyping's doc comment): pressing ENTER
+// with nothing typed should not resubmit anything or echo an empty
+// prompt line.
+func TestSubmitTypedCommandBlankDoesNothing(t *testing.T) {
+	g := game.New()
+	if echo, result := submitTypedCommand(g, "   "); echo != "" || result != "" {
+		t.Errorf("submitTypedCommand(blank) = (%q, %q), want (\"\", \"\")", echo, result)
 	}
 }
 
-// TestStatsLine constructs a bare *GUI directly (not via NewGUI, which
-// touches ebiten's audio/image APIs and needs a real display/audio
-// device) since statsLine only reads gui.g.Player - a pure formatting
-// function worth testing despite living in package main.
-func TestStatsLine(t *testing.T) {
-	gui := &GUI{g: game.New()}
-	gui.g.Player.Stamina = 30
-	gui.g.Player.MaxStamina = 39
-	gui.g.Player.Skill = 8
-	gui.g.Player.Luck = 4
-	gui.g.Player.ExperiencePoints = 21
+// TestSubmitTypedCommandExpandsRealAbbreviation confirms a single typed
+// letter ("W") goes through the exact same ExpandKeyword step the text
+// frontend uses (parser.ExpandKeyword: "W" -> "WEST") and actually moves
+// the player - the real fix for this round's request that keypresses
+// behave like the original's own Merphish grammar, not this port's
+// former WASD-as-North roguelike convention.
+func TestSubmitTypedCommandExpandsRealAbbreviation(t *testing.T) {
+	g := game.New()
+	before := g.World.Current
+	echo, result := submitTypedCommand(g, "e")
+	if echo != "> E" {
+		t.Errorf("submitTypedCommand(\"e\") echo = %q, want \"> E\"", echo)
+	}
+	if g.World.Current == before {
+		t.Errorf("submitTypedCommand(\"e\") did not move the player; result = %q", result)
+	}
+}
 
-	got := gui.statsLine()
-	for _, want := range []string{"Axil", "Neophyte", "Stamina 30/39", "Skill 8", "Luck 4", "XP 21"} {
+// TestSubmitTypedCommandSupportsDiagonal confirms a real hyphenated
+// compass word reaches the game exactly as the original expects - the
+// specific gap this round's request named ("arrows... don't capture
+// something like NORTH-EAST").
+func TestSubmitTypedCommandSupportsDiagonal(t *testing.T) {
+	g := game.New()
+	_, result := submitTypedCommand(g, "NORTH-EAST")
+	if strings.Contains(result, "don't understand") {
+		t.Errorf("submitTypedCommand(\"NORTH-EAST\") = %q, want a real recognized direction response", result)
+	}
+}
+
+// TestSubmitTypedCommandSupportsConversationForm confirms the real
+// "NAME, OBJECT" grammar (e.g. talking to Apex) still works when typed
+// through this new input line, not just the single-key K shortcut.
+func TestSubmitTypedCommandSupportsConversationForm(t *testing.T) {
+	g := game.New()
+	_, result := submitTypedCommand(g, "APEX, TALK")
+	if !strings.Contains(result, "Apex the Ogre") {
+		t.Errorf("submitTypedCommand(\"APEX, TALK\") = %q, want a real Apex response", result)
+	}
+}
+
+// TestWrapLineKeepsShortLinesWhole confirms wrapLine doesn't needlessly
+// split a line that already fits.
+func TestWrapLineKeepsShortLinesWhole(t *testing.T) {
+	got := wrapLine("Room of Misery", 26)
+	if len(got) != 1 || got[0] != "Room of Misery" {
+		t.Errorf("wrapLine(short line) = %v, want [\"Room of Misery\"]", got)
+	}
+}
+
+// TestWrapLineBreaksOnWordBoundaries covers the real bug this function
+// fixes (see its own doc comment): a long game.Handle response line -
+// this exact one bled across the middle panel's border into the stats
+// panel before wrapping existed - must break into multiple lines, none
+// exceeding maxChars, and never splitting a word in half.
+func TestWrapLineBreaksOnWordBoundaries(t *testing.T) {
+	const maxChars = 26
+	got := wrapLine("(room description not yet extracted from the original game)", maxChars)
+	if len(got) < 2 {
+		t.Fatalf("wrapLine(long line) = %v, want more than 1 line", got)
+	}
+	for _, line := range got {
+		if len(line) > maxChars {
+			t.Errorf("wrapLine line %q exceeds maxChars=%d", line, maxChars)
+		}
+	}
+	if strings.Join(got, " ") != "(room description not yet extracted from the original game)" {
+		t.Errorf("wrapLine(long line) = %v, lost or reordered words", got)
+	}
+}
+
+// TestStatsPanelLines covers the right status-bar panel's real
+// confirmed Stamina/Skill/Luck/XP content, matching the real reference
+// SpecEmu screenshot's own green STAMINA/SKILL/LUCK panel (see
+// statsPanelLines's doc comment for the honest XP-addition caveat).
+func TestStatsPanelLines(t *testing.T) {
+	g := game.New()
+	g.Player.Stamina = 30
+	g.Player.MaxStamina = 39
+	g.Player.Skill = 8
+	g.Player.Luck = 4
+	g.Player.ExperiencePoints = 21
+
+	got := strings.Join(statsPanelLines(g), "\n")
+	for _, want := range []string{"STAMINA 30/39", "SKILL   8", "LUCK    4", "XP      21"} {
 		if !strings.Contains(got, want) {
-			t.Errorf("statsLine() = %q, want it to contain %q", got, want)
+			t.Errorf("statsPanelLines() = %q, want it to contain %q", got, want)
+		}
+	}
+}
+
+// TestExitsPanelLinesMatchRealScreenshot pins the compass-grid layout
+// against the real SpecEmu screenshot of Room of Misery, which showed
+// "EXITS:" with W on the left and E on the right of the same box - the
+// panel exitsPanelLines is meant to approximate.
+func TestExitsPanelLinesMatchRealScreenshot(t *testing.T) {
+	room := &world.Room{Exits: map[world.Direction]world.RoomID{
+		world.West: 1,
+		world.East: 2,
+	}}
+	lines := exitsPanelLines(room)
+	if lines[0] != "EXITS:" {
+		t.Errorf("exitsPanelLines[0] = %q, want \"EXITS:\"", lines[0])
+	}
+	// The W/E compass row (index 3, see exitsPanelLines: "EXITS:", "",
+	// NW/N/NE row, W/E row, SW/S/SE row) should show W on the left and E
+	// on the right, matching the real screenshot's own left/right layout.
+	weRow := lines[3]
+	wIdx := strings.Index(weRow, "W")
+	eIdx := strings.Index(weRow, "E")
+	if wIdx == -1 || eIdx == -1 || wIdx >= eIdx {
+		t.Errorf("exitsPanelLines W/E row = %q, want W positioned before E (left/right compass layout)", weRow)
+	}
+}
+
+// TestExitsPanelLinesNoExits confirms an exit-less room (e.g. an
+// isolated named cell) still renders a stable, non-panicking panel.
+func TestExitsPanelLinesNoExits(t *testing.T) {
+	room := &world.Room{}
+	lines := exitsPanelLines(room)
+	if lines[0] != "EXITS:" {
+		t.Errorf("exitsPanelLines(no exits)[0] = %q, want \"EXITS:\"", lines[0])
+	}
+}
+
+// TestRoomStatusLines covers the left panel's OTHER real mode (see
+// showRoomStatus's doc comment - a real observed SWAP/"Z" effect):
+// showing the room name/level/grade instead of Exits.
+func TestRoomStatusLines(t *testing.T) {
+	g := game.New()
+	room := g.World.CurrentRoom()
+	room.Name = "Sothic Complex"
+	room.Level = 2
+
+	got := strings.Join(roomStatusLines(g), "\n")
+	for _, want := range []string{"YOU ARE IN THE", "SOTHIC COMPLEX", "ON LEVEL 2", "YOUR GRADE IS", "NEOPHYTE"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("roomStatusLines() = %q, want it to contain %q", got, want)
 		}
 	}
 }

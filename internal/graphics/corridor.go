@@ -477,3 +477,37 @@ func SothicComplexSample() image.Image {
 	}
 	return img
 }
+
+// assets/sign_sample.png is CollodonsPile's Sign room (Room of Misery's
+// real West exit - see collodons_pile.go's roomSign) at EXACT-cell
+// confidence, the same tier as Room of Misery/Stings/Arrows/Agile Stair/
+// Furnace Room above. Located precisely via FFT-based exact template
+// matching (not the coarser coarse-to-fine pixel search used in earlier
+// rounds, which returned a false-positive match elsewhere in this
+// atlas's repetitive wall-stripe texture before this more precise method
+// was used instead): matched the already-embedded RoomOfMiserySample
+// (F4) and SothicComplexSample (F7) against the full atlas, both to a
+// numerically exact (sum-of-squared-differences ~= 0) pixel position,
+// confirming both sit on the SAME row (y=1979) and giving a precise,
+// derived Level-2 column width (583.33px, from their 3-column, 1750px
+// separation) - independent of, and a refinement on, the coarser column
+// spacing estimates earlier samples in this file used. F3 (one column
+// left of F4) was computed from that real spacing, then visually
+// confirmed: the crop shows the real "SATOR AREPO TENET OPERA ROTAS"
+// word-square art exactly as already described in RoomOfMiserySample's
+// own doc comment (seen then only as a neighboring-cell cross-check,
+// never before extracted as its own asset).
+//
+//go:embed assets/sign_sample.png
+var signSamplePNG []byte
+
+// SignSample decodes the embedded real Sign-room screenshot (the SATOR
+// AREPO word-square). Panics on failure, matching CorridorSample()
+// above.
+func SignSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(signSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded sign_sample.png: " + err.Error())
+	}
+	return img
+}

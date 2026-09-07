@@ -152,9 +152,6 @@ func Level3Grid() *World {
 		if r.Name == "" {
 			r.Name = level3CellCode(r.ID)
 		}
-		if r.Description == "" {
-			r.Description = "(room description not yet extracted from the original)"
-		}
 		w.AddRoom(r)
 	}
 	w.Rooms[level3Room("A1")].Visited = true

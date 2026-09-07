@@ -7,9 +7,18 @@ import (
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/parser"
 )
 
+// withGrimoire grants g's player the real Grimoire item directly (rather
+// than walking to Room of Misery and picking it up), simulating "already
+// found it" for tests that exercise BLAST/FREEZE/TRANSFUSION - see
+// spellRequiresItem's doc comment for why this is now required.
+func withGrimoire(g *Game) {
+	g.Player.Items = append(g.Player.Items, "Grimoire")
+}
+
 func TestHandleAttackAndKillAreSynonymsForBlast(t *testing.T) {
 	for _, verb := range []string{"ATTACK", "ATTACKS", "KILL"} {
 		g := New() // Room of Misery has no known Monster
+		withGrimoire(g)
 		got := g.Handle(parser.Parse(verb))
 		if !strings.Contains(got, "nothing here") {
 			t.Errorf("Handle(%s) with no monster = %q, want the same response as BLAST", verb, got)
@@ -19,14 +28,56 @@ func TestHandleAttackAndKillAreSynonymsForBlast(t *testing.T) {
 
 func TestHandleBlastWithNoMonster(t *testing.T) {
 	g := New() // Room of Misery has no known Monster
+	withGrimoire(g)
 	got := g.Handle(parser.Parse("BLAST"))
 	if !strings.Contains(got, "nothing here") {
 		t.Errorf("Handle(BLAST) with no monster = %q, want it to say there's nothing to hit", got)
 	}
 }
 
+// TestHandleBlastRequiresGrimoire covers the real gate found via a Let's
+// Play video of the original (see spellRequiresItem's doc comment): the
+// game's own real rejection ("YOU CAN'T INVOKE SPELL") appears before
+// Axil has picked up the Grimoire, even with a real monster present.
+func TestHandleBlastRequiresGrimoire(t *testing.T) {
+	g := New()
+	g.Handle(parser.Parse("EAST"))
+	g.Handle(parser.Parse("DOOR, SILENCE"))
+	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a Monster
+	room := g.World.CurrentRoom()
+	startHealth := room.MonsterHealth
+
+	got := g.Handle(parser.Parse("BLAST"))
+	if !strings.Contains(got, "Grimoire") {
+		t.Errorf("Handle(BLAST) without the Grimoire = %q, want a rejection naming the Grimoire", got)
+	}
+	if room.MonsterHealth != startHealth {
+		t.Errorf("MonsterHealth changed to %d despite the missing Grimoire, want unchanged %d", room.MonsterHealth, startHealth)
+	}
+}
+
+// TestHandleFreezeRequiresGrimoire and
+// TestHandleTransfusionRequiresGrimoire cover the same real gate for the
+// other 2 spells it applies to (see spellRequiresItem).
+func TestHandleFreezeRequiresGrimoire(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("FREEZE"))
+	if !strings.Contains(got, "Grimoire") {
+		t.Errorf("Handle(FREEZE) without the Grimoire = %q, want a rejection naming the Grimoire", got)
+	}
+}
+
+func TestHandleTransfusionRequiresGrimoire(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("TRANSFUSION"))
+	if !strings.Contains(got, "Grimoire") {
+		t.Errorf("Handle(TRANSFUSION) without the Grimoire = %q, want a rejection naming the Grimoire", got)
+	}
+}
+
 func TestHandleBlastDefeatsMonster(t *testing.T) {
 	g := New()
+	withGrimoire(g)
 	g.Handle(parser.Parse("EAST")) // Secunda Porta
 	g.Handle(parser.Parse("DOOR, SILENCE"))
 	g.Handle(parser.Parse("NORTH")) // Trollwynd, which has a Monster
@@ -66,6 +117,7 @@ func TestHandleBlastDefeatsMonster(t *testing.T) {
 
 func TestHandleFreezeAwardsExperiencePoints(t *testing.T) {
 	g := New()
+	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
 	g.Handle(parser.Parse("NORTH")) // Trollwynd
 	before := g.Player.ExperiencePoints
@@ -82,6 +134,7 @@ func TestHandleFreezeAwardsExperiencePoints(t *testing.T) {
 
 func TestHandleBlastDefeatsMonsterAwardsExperiencePoints(t *testing.T) {
 	g := New()
+	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
 	g.Handle(parser.Parse("NORTH")) // Trollwynd
 	room := g.World.CurrentRoom()
@@ -103,6 +156,7 @@ func TestHandleBlastDefeatsMonsterAwardsExperiencePoints(t *testing.T) {
 
 func TestHandleFreezeDefeatsMonsterInstantly(t *testing.T) {
 	g := New()
+	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
 	g.Handle(parser.Parse("NORTH")) // Trollwynd
 
@@ -130,6 +184,7 @@ func TestBlastDamageScalesWithSkill(t *testing.T) {
 
 func TestHandleBlastCostsStamina(t *testing.T) {
 	g := New()
+	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
 	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a Monster
 	before := g.Player.Stamina
@@ -141,6 +196,7 @@ func TestHandleBlastCostsStamina(t *testing.T) {
 
 func TestHandleFreezeCostsStamina(t *testing.T) {
 	g := New()
+	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
 	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a Monster
 	before := g.Player.Stamina
@@ -152,6 +208,7 @@ func TestHandleFreezeCostsStamina(t *testing.T) {
 
 func TestHandleCombatCanKillPlayer(t *testing.T) {
 	g := New()
+	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
 	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a Monster
 	g.Player.Stamina = combatStaminaCost
@@ -183,6 +240,7 @@ func TestHandleDeadPlayerCanStillLookAndMap(t *testing.T) {
 
 func TestHandleTransfusionRestoresStamina(t *testing.T) {
 	g := New()
+	withGrimoire(g)
 	g.Player.Stamina -= 5 // take damage first; a fresh player starts at MaxStamina already
 	before := g.Player.Stamina
 	got := g.Handle(parser.Parse("TRANSFUSION"))
@@ -196,6 +254,7 @@ func TestHandleTransfusionRestoresStamina(t *testing.T) {
 
 func TestHandleTransfusionCapsAtMaxStamina(t *testing.T) {
 	g := New() // a fresh player already starts at MaxStamina
+	withGrimoire(g)
 	got := g.Handle(parser.Parse("TRANSFUSION"))
 	if g.Player.Stamina != g.Player.MaxStamina {
 		t.Errorf("Stamina after TRANSFUSION on a full-health player = %d, want it capped at MaxStamina %d", g.Player.Stamina, g.Player.MaxStamina)
