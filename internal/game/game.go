@@ -29,6 +29,24 @@ type Game struct {
 	// Room.Name == "Exit" — all 3 confirmed real Exit cells are now
 	// shipped: world.Level1Grid's G3, world.Level4Grid's G2, and
 	// world.Level2Grid's A1 (round 130).
+	//
+	// ROUND 147: the SAME official map poster's own "MAGICK AND ITS
+	// USES" footer banner (heavymap-levels1-2.jpg, read directly at
+	// full resolution for the first time this project has managed it)
+	// states plainly "TO LOCATE ALL 3 EXITS, AXIL MUST BECOME
+	// PHILOSOPHUS" - a real, sourced Grade requirement this port has
+	// never modeled. NOT gated on here: this project has only ever
+	// implemented ONE Grade promotion (Neophyte→Zelator, Secunda
+	// Porta's door, round 9) - there is no confirmed path to Practicus
+	// or Philosophus at all yet, so hard-gating Won on it would make
+	// this port's win condition currently unreachable, breaking
+	// already-shipped, tested behavior (TestLevel1ExplorationReachingExitWins
+	// and others) rather than fixing anything. describeCurrentRoom
+	// surfaces the real fact honestly as an additional note when the
+	// player's Grade is below Philosophus, WITHOUT changing whether
+	// Won actually becomes true - the same "document the real finding,
+	// don't force an unconfirmed integration" discipline already used
+	// for CAULDRON/NEST's own effects.
 	Won bool
 }
 
@@ -1348,6 +1366,9 @@ func (g *Game) describeCurrentRoom() string {
 	if room.Name == "Exit" && !g.Won {
 		g.Won = true
 		b.WriteString("You have found one of Collodon's Pile's 3 exits and escaped! YOU HAVE WON.\n")
+		if g.Player.Grade < character.Philosophus {
+			b.WriteString("(A source states Axil must first attain the rank of Philosophus to truly locate an exit — this port doesn't yet gate on Grade, since no confirmed path to that rank has been extracted.)\n")
+		}
 	}
 	if room.Level != 0 {
 		fmt.Fprintf(&b, "%s (Level %d)\n%s\n", room.Name, room.Level, room.Description)

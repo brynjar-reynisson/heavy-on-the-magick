@@ -1289,6 +1289,44 @@ func TestLevel1ExplorationReachingExitWins(t *testing.T) {
 	}
 }
 
+// TestReachingExitBelowPhilosophusStillWinsButNotesTheRealRequirement
+// covers round 147's find (the official map poster's own footer
+// banner: "TO LOCATE ALL 3 EXITS, AXIL MUST BECOME PHILOSOPHUS") -
+// Won must still become true for a default (Neophyte) player, since
+// this port has no confirmed path to Philosophus yet and shouldn't
+// silently make its own win condition unreachable, but the real,
+// sourced requirement is surfaced as an honest additional note.
+func TestReachingExitBelowPhilosophusStillWinsButNotesTheRealRequirement(t *testing.T) {
+	g := NewLevel1Exploration()
+	path := []string{"SOUTH", "SOUTH", "EAST", "EAST", "EAST", "SOUTH", "SOUTH", "SOUTH", "SOUTH", "WEST"}
+	var last string
+	for _, dir := range path {
+		last = g.Handle(parser.Parse(dir))
+	}
+	if !g.Won {
+		t.Fatalf("Game.Won = false after reaching the Exit room as a Neophyte; last Handle() output: %q", last)
+	}
+	if !strings.Contains(last, "Philosophus") {
+		t.Errorf("Handle() output on reaching Exit below Philosophus = %q, want it to note the real Grade requirement", last)
+	}
+}
+
+// TestReachingExitAsPhilosophusOmitsTheNote is a regression guard: a
+// player who already holds the Philosophus Grade (or higher) shouldn't
+// see the below-Philosophus note, since the real requirement is met.
+func TestReachingExitAsPhilosophusOmitsTheNote(t *testing.T) {
+	g := NewLevel1Exploration()
+	g.Player.Grade = character.Philosophus
+	path := []string{"SOUTH", "SOUTH", "EAST", "EAST", "EAST", "SOUTH", "SOUTH", "SOUTH", "SOUTH", "WEST"}
+	var last string
+	for _, dir := range path {
+		last = g.Handle(parser.Parse(dir))
+	}
+	if strings.Contains(last, "Philosophus") {
+		t.Errorf("Handle() output on reaching Exit as Philosophus = %q, want no Grade-requirement note", last)
+	}
+}
+
 // TestNougatDefeatsWerewolfOnDrop covers the real, sourced alternate
 // mechanic (CASA walkthrough: Werewolves "killable by walking through
 // after dropping NOUGAT" — see checkNougatWerewolf). Path to C2 (a real
