@@ -95,6 +95,23 @@ func TestCollodonsPileWolfdorpHasSword(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileMethosHasErlstone pins the round-107 addition
+// (Asmodee's confirmed Charm) - see CollodonsPile's doc comment for the
+// numbered-map-plus-zone-banner sourcing.
+func TestCollodonsPileMethosHasErlstone(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomMethos]
+	found := false
+	for _, item := range room.Items {
+		if item == "Erlstone" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Methos Items = %v, want it to include \"Erlstone\"", room.Items)
+	}
+}
+
 // TestCollodonsPileWolfdorpDoesNotHaveKey pins the round-82 correction:
 // round 81 placed "Key" in Wolfdorp's Items based on a misread
 // AI-summarized list, not the raw source text - the raw text shows the

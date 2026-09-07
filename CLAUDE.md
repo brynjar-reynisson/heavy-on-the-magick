@@ -4345,6 +4345,37 @@ resolves `"vampire"` and `monsterGlyphColor["Vampire"]` resolves the
 correct red "w" glyph, where before there was no portrait or glyph at
 all. Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 107: found Asmodee's Charm (Erlstone) at Methos — the 3rd of 4 demon Talismans now reachable in default gameplay
+
+After another Stop-hook rejection, same framing, went back to the fan-
+made numbered-map poster (`heavymap-numbered-key.jpg`) at full
+resolution — a source already mined for Wolfdorp's Sword (#65) and
+Sothic Complex's Sunflower (#7), using the same "which zone banner is
+this numbered cell inside" method. The poster's key list gives #59 as
+"Pebble (disguised Erlstone)" — Erlstone being Asmodee's confirmed
+real Charm (`magic.Demons`), previously placed nowhere in
+`CollodonsPile`. Tight-cropped the poster's Level 4 grid section and
+traced the connected corridor run from cell #34 through #62: all of
+it, including #59, sits inside one continuous cluster with only the
+"METHOS" banner label anywhere nearby — no other zone banner
+intervenes. Methos is already a real, connected, playable CollodonsPile
+room (already carrying a Vampire since round 71/106's work). Added
+`Erlstone` to its Items.
+
+Belezbar's Mantis (Level3Grid-only, per that file's own doc comment)
+remains the only one of the 4 demons' Charms still unreachable in
+default-mode play — Sword/Astarot, Sunflower/Magot, and now
+Erlstone/Asmodee are all real, findable, invocable in a normal
+CollodonsPile playthrough.
+
+Verified genuinely end-to-end, not just unit-tested: walked the real
+path (`EAST`, `DOOR, SILENCE`, `NORTH`, `NORTH`, `SOUTH-EAST`) to
+Methos via `cmd/hotm`'s actual `Handle` calls, confirmed "You see:
+Nugget, Erlstone" in the room description, `PICKUP ERLSTONE` succeeded,
+and `INVOKE ASMODEE` went from its old "no suitable Talisman" rejection
+to a real success message. Added `TestCollodonsPileMethosHasErlstone`.
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

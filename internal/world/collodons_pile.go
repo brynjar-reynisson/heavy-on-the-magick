@@ -243,6 +243,18 @@ package world
 // "MAGOT, <object>" locate ability (see game.magotLocate) reachable in
 // real gameplay for the first time, the same way Sword's placement here
 // made Astarot's teleport reachable.
+//
+// Methos's "Erlstone" (round 107): same numbered-map-plus-zone-banner
+// method again. The poster's key list gives #59 as "Pebble (disguised
+// Erlstone)", and #59 sits within the "METHOS" banner-labeled cell
+// cluster on the poster's Level 4 grid (tight-cropped and visually
+// confirmed against the whole connected corridor run from #34 through
+// #62 - no other zone banner appears anywhere in or near that cluster).
+// "Erlstone" is Asmodee's confirmed real Charm (magic.Demons) -
+// Belezbar's Mantis (see Level3Grid's doc comment) is still the only
+// one of the 4 demons' Charms with no CollodonsPile placement; this
+// makes Asmodee's invocation reachable in real default-mode gameplay
+// for the first time, the same pattern as Sword/Sunflower above.
 func CollodonsPile() *World {
 	w := New(roomMisery)
 	for _, r := range []*Room{
@@ -250,7 +262,7 @@ func CollodonsPile() *World {
 		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}},
 		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "Troll", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll"}, HasTable: true},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
-		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget"}, HasTable: true, Monster: "Vampire", MonsterHealth: 2},
+		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget", "Erlstone"}, HasTable: true, Monster: "Vampire", MonsterHealth: 2},
 		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower"}, HasTable: true},
 		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true, HasChest: true},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key", HasTable: true},
