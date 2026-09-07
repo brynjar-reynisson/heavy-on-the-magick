@@ -642,38 +642,61 @@ func (g *Game) payToll(room *world.Room) string {
 // "Saving a game will deplete your Stamina, so that a Save cannot be
 // used as an easy way of getting round difficult choices!" - see
 // saveStaminaCost. Restoring does not cost Stamina (not stated by any
-// source, and would defeat a Save's own point if it did).
+// source, and would defeat a Save's own point if it did). Round 119:
+// the manual also confirms real "Version letter" save slots (see
+// save.go's doc comment) - an optional trailing single-letter word in
+// target (e.g. "SAVE GAME B") selects one; omitted, it's the same
+// single default slot this port has always used.
 func (g *Game) options(target string) string {
 	target = strings.ToUpper(strings.TrimSpace(target))
+	version := extractVersionLetter(target)
+	versionSuffix := ""
+	if version != "" {
+		versionSuffix = fmt.Sprintf(" (version %s)", version)
+	}
 	switch {
 	case strings.Contains(target, "REALIGN"):
 		g.Player.Realign()
 		return fmt.Sprintf("Realign Status: Stamina %d, Skill %d, Luck %d.", g.Player.Stamina, g.Player.Skill, g.Player.Luck)
 	case strings.Contains(target, "SAVE") && strings.Contains(target, "AXIL"):
 		g.Player.Stamina -= saveStaminaCost
-		if err := g.SaveAxil(); err != nil {
+		if err := g.SaveAxilVersion(version); err != nil {
 			return fmt.Sprintf("Save Axil failed: %v", err)
 		}
-		return g.deathCheck("Axil saved.")
+		return g.deathCheck("Axil saved" + versionSuffix + ".")
 	case strings.Contains(target, "RESTORE") && strings.Contains(target, "AXIL"):
-		if err := g.RestoreAxil(); err != nil {
+		if err := g.RestoreAxilVersion(version); err != nil {
 			return fmt.Sprintf("Restore Axil failed: %v", err)
 		}
-		return "Axil restored."
+		return "Axil restored" + versionSuffix + "."
 	case strings.Contains(target, "SAVE"):
 		g.Player.Stamina -= saveStaminaCost
-		if err := g.SaveGame(); err != nil {
+		if err := g.SaveGameVersion(version); err != nil {
 			return fmt.Sprintf("Save Game failed: %v", err)
 		}
-		return g.deathCheck("Game saved.")
+		return g.deathCheck("Game saved" + versionSuffix + ".")
 	case strings.Contains(target, "RESTORE"):
-		if err := g.RestoreGame(); err != nil {
+		if err := g.RestoreGameVersion(version); err != nil {
 			return fmt.Sprintf("Restore Game failed: %v", err)
 		}
-		return "Game restored."
+		return "Game restored" + versionSuffix + "."
 	default:
 		return "Magick!\nSave Game / Restore Game / Save Axil / Restore Axil / Realign Status"
 	}
+}
+
+// extractVersionLetter finds a real Version-letter token (see save.go's
+// doc comment) in an OPTIONS target string: a single-letter word, none
+// of which appear among the real keywords this switch already checks
+// for (SAVE/RESTORE/GAME/AXIL/REALIGN/STATUS are all multi-letter), so
+// no explicit exclusion list is needed. Returns "" if none is present.
+func extractVersionLetter(target string) string {
+	for word := range strings.FieldsSeq(target) {
+		if len(word) == 1 && word[0] >= 'A' && word[0] <= 'Z' {
+			return word
+		}
+	}
+	return ""
 }
 
 // help reproduces the game's own real "SOME ADVICE" startup hint

@@ -4767,6 +4767,39 @@ footing). Verified via a real `Handle("SPELLS")` call. Extended
 `TestHandleSpellsListsRealSpells` to require INVOKE too. Ran the full
 `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 119: implemented the manual's real "Version letter" save slots — a confirmed mechanic this port had never modeled
+
+After another Stop-hook rejection, same framing, re-read the manual's
+"Starting Up" section (from round 110's PDF text-layer extraction) for
+anything else confirmed-but-unmodeled and found one: "When Saving or
+Restoring a game, you will be asked for a Version letter — this is to
+ensure that the right game is restored, so keep a note of Version
+letters." This is real, explicit evidence the original supports
+multiple save slots per type (Game/Axil), identified by a letter — this
+port has only ever had one fixed slot per type (round 21's original
+save system), a genuine, sourced gap, not just a missing nicety.
+
+Added `SaveGameVersion`/`RestoreGameVersion`/`SaveAxilVersion`/
+`RestoreAxilVersion` (the existing zero-arg `SaveGame`/etc. now thin
+wrappers calling these with `""`, preserving every existing save file's
+exact name and all prior behavior/tests unchanged). `options()` now
+extracts an optional single-letter word from the target string (e.g.
+`O SAVE GAME B`) via a small `extractVersionLetter` helper — safe
+without an explicit keyword-exclusion list, since none of the real
+keywords it already matches against (SAVE/RESTORE/GAME/AXIL/REALIGN/
+STATUS) are single letters. Response text names the version when one
+was given ("Game saved (version B).") and stays exactly as before when
+one wasn't.
+
+Verified thoroughly: existing exact-string tests
+(`TestHandleOptionsSaveAndRestoreGame`) still pass unchanged (default
+slot untouched), a new round-trip test confirms two different version
+letters are genuinely separate files that don't clobber each other,
+and a new `Handle`-level test confirms `O SAVE GAME B` creates
+`hotm-save-B.json` specifically (and NOT the default `hotm-save.json`).
+Updated `.gitignore` for the new versioned filenames. Ran the full
+`gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

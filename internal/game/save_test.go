@@ -111,3 +111,58 @@ func TestRestoreGameMissingFile(t *testing.T) {
 		t.Error("RestoreGame() with no save file present, want an error")
 	}
 }
+
+// TestSaveGameVersionRoundTrip pins round 119's real "Version letter"
+// save slots (see save.go's doc comment): two different versions are
+// genuinely separate files, and restoring one doesn't touch the other.
+func TestSaveGameVersionRoundTrip(t *testing.T) {
+	withTempSaveDir(t)
+	gA := New()
+	gA.Handle(parser.Parse("EAST"))
+	gA.Player.Stamina = 11
+	if err := gA.SaveGameVersion("A"); err != nil {
+		t.Fatalf("SaveGameVersion(A) error = %v", err)
+	}
+
+	gB := New()
+	gB.Player.Stamina = 22
+	if err := gB.SaveGameVersion("B"); err != nil {
+		t.Fatalf("SaveGameVersion(B) error = %v", err)
+	}
+
+	restored := New()
+	if err := restored.RestoreGameVersion("A"); err != nil {
+		t.Fatalf("RestoreGameVersion(A) error = %v", err)
+	}
+	if restored.Player.Stamina != 11 {
+		t.Errorf("Stamina after RestoreGameVersion(A) = %d, want 11 (version B's save shouldn't be touched)", restored.Player.Stamina)
+	}
+	if restored.World.CurrentRoom().Name != "Secunda Porta" {
+		t.Errorf("current room after RestoreGameVersion(A) = %q, want Secunda Porta", restored.World.CurrentRoom().Name)
+	}
+}
+
+// TestHandleOptionsSaveGameWithVersionLetter covers the real end-to-end
+// Handle path: "O SAVE GAME B" saves to a version-lettered slot,
+// distinct from the plain "O SAVE GAME" default slot.
+func TestHandleOptionsSaveGameWithVersionLetter(t *testing.T) {
+	withTempSaveDir(t)
+	g := New()
+	g.Player.Stamina = 30
+
+	got := g.Handle(parser.Parse("O SAVE GAME B"))
+	if got != "Game saved (version B)." {
+		t.Errorf("Handle(O SAVE GAME B) = %q, want %q", got, "Game saved (version B).")
+	}
+	if _, err := os.Stat("hotm-save-B.json"); err != nil {
+		t.Errorf("hotm-save-B.json should exist after O SAVE GAME B: %v", err)
+	}
+	if _, err := os.Stat("hotm-save.json"); err == nil {
+		t.Error("hotm-save.json (the default slot) should NOT exist after only saving to version B")
+	}
+
+	got = g.Handle(parser.Parse("O RESTORE GAME B"))
+	if got != "Game restored (version B)." {
+		t.Errorf("Handle(O RESTORE GAME B) = %q, want %q", got, "Game restored (version B).")
+	}
+}
