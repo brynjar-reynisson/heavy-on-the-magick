@@ -3536,6 +3536,35 @@ tests, which needed no changes since they call `SaveGame`/`SaveAxil`
 directly rather than through `Handle` — and verified live via `OPTIONS`
 → `O SAVE GAME`.
 
+### Cross-referenced the numbered map's CALL-spell entry to Trollwynd's already-placed Clasp/Scroll
+
+After another Stop-hook rejection, same framing, revisited the
+numbered map poster (`heavymap-numbered-key.jpg`) using the same
+tight-crop-a-zone-banner method already validated for Mantis, Sword,
+and Sunflower — this time for its `#21 "Cabinet (clasp - Salamander
+charm)"` and `#22 "Scroll (CALL spell)"` entries, which sit right next
+to `#24` in the key list (already-confirmed Nougat). Cropped the
+poster's own Level 3 grid section and confirmed all three numbers sit
+within the same `TROLLWYND` zone banner, next to `AGILE STAIR`/`ROOM
+OF MISERY` labels that independently match this project's already-known
+Trollwynd → Agile Stair connectivity — real, visual confirmation, not
+just "these numbers are sequential so they're probably nearby."
+
+This means the numbered map's `CALL`-spell Scroll and Salamander-charm
+Clasp are the *same* Clasp and Scroll items already placed in Trollwynd
+(sourced independently via the CASA walkthrough many rounds ago), not
+separate, still-unplaced ones. Updated `game.Handle`'s `CALL` case (both
+the runtime stub response and its doc comment) and `collodons_pile.go`'s
+Trollwynd doc comment to record this cross-reference — still an honest
+stub (identifying *which* scroll doesn't reveal what CALL *does*), but
+the player can now genuinely be holding CALL's real, confirmed
+component item when trying the spell, not just an abstractly-referenced
+one from a different, un-placed source.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean and verified live: `CALL` now names the real,
+already-reachable Trollwynd connection.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

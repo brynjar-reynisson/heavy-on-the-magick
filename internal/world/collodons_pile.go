@@ -161,6 +161,15 @@ package world
 // "killable by walking through after dropping NOUGAT" - see
 // game.checkNougatWerewolf, wired in for the first time this round.
 //
+// Trollwynd's Clasp/Scroll cross-referenced (round 87): the numbered
+// map poster's key list has #21 "Cabinet (clasp - Salamander charm)"
+// and #22 "Scroll (CALL spell)", both tight-crop-confirmed to sit
+// within the Trollwynd zone banner, right alongside #24 (Nougat,
+// already placed here). Real evidence this Clasp and this Scroll ARE
+// those exact numbered-map items, not just coincidentally-named
+// duplicates - see game.Handle's CALL doc comment for how this
+// sharpens (without fully resolving) the CALL spell's honest stub.
+//
 // A fan-made numbered map poster (see numbered_room_contents.go) provides
 // good independent cross-confirmation and one open discrepancy worth
 // noting: it independently confirms Room of Misery as the dungeon's

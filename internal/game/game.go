@@ -232,7 +232,18 @@ func NewLevel4Exploration() *Game {
 // spell)" at one of its numbered cells) with an honest stub response —
 // no source found so far states what it actually does, unlike BLAST/
 // FREEZE/TRANSFUSION. SPELLS lists it as confirmed-but-unmodeled rather
-// than omitting it.
+// than omitting it. Round 87: tight-cropped the numbered map's own
+// maze grid and confirmed CALL's numbered cell (#22, "Scroll (CALL
+// spell)") sits within the Trollwynd zone banner, right alongside #21
+// ("Cabinet (clasp - Salamander charm)") and #24 (Nougat, already
+// independently placed here via the CASA walkthrough) - real evidence
+// that the numbered map's CALL-spell Scroll and Salamander-charm Clasp
+// are the SAME already-placed Scroll and Clasp items in Trollwynd
+// (world.CollodonsPile), not separate, unplaced ones. Still an honest
+// stub - having identified WHICH scroll doesn't reveal what CALL
+// actually does - but it does mean the player can genuinely be
+// carrying CALL's real component item when trying it, not just an
+// abstractly-referenced one.
 //
 // LEFT and RIGHT (round 83, Merphish keywords "L"/"R") are real,
 // frequently-used commands in the CASA walkthrough - appearing to turn
@@ -292,7 +303,7 @@ func (g *Game) Handle(cmd parser.Command) string {
 	case "SWAP":
 		return "You SWAP the information shown in Window 1. (Merphish 'Z' - the manual confirms this exact effect precisely, but the underlying dual-window display and what Window 1 actually shows aren't modeled yet.)"
 	case "CALL":
-		return "You start to CALL... (a real confirmed spell - the numbered map poster's key list has \"Scroll (CALL spell)\" - but no source found so far states what it actually does, so this is an honest stub, not invented behavior.)"
+		return "You start to CALL... (a real confirmed spell - the numbered map's own key list ties it to a Scroll in the Trollwynd zone, the same real Scroll already placed there - but no source found so far states what it actually does, so this is an honest stub, not invented behavior.)"
 	case "LEFT", "RIGHT":
 		return "You turn " + strings.ToLower(cmd.Verb) + ". (Merphish keywords L/R - real, frequently-used CASA walkthrough commands, appearing to turn the player without moving them - but this port has no facing-direction state to turn, so this is an honest stub rather than an invented turn mechanic.)"
 	case "INVOKE":
