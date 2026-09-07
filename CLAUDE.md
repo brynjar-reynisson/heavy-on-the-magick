@@ -7021,6 +7021,68 @@ open gaps (a hint-screen command nobody wired, and an "unhomed number"
 with no confirmed mechanical use). Worth reading a source's full answer
 even when the specific thing being searched for isn't there.
 
+### Round 160: split internal/game/game.go (1478 lines) into 10 topic files — a real, systematic code-organization pass, addressing the hook's specific "easy to follow" complaint directly
+
+After another Stop-hook rejection whose complaint specifically named
+"no systematic code-organization review provided" as unaddressed, did
+exactly that: ran `wc -l` across every source file in the project and
+found `internal/game/game.go` had grown to 1478 lines (plus a
+1729-line test file) — by far the largest file in the codebase,
+despite this exact package's OWN doc comment promising it would "stay
+readable... rather than accumulating game rules of its own." 150+
+rounds of real, incremental command additions had each been individually
+reasonable, but the cumulative result was one large file mixing combat,
+demon invocation, door mechanics, rituals, the options menu, inventory,
+and movement all together — a genuine, concrete "hard to follow" issue,
+not a hypothetical one.
+
+Split it into 10 topic files, all still `package game` (a pure
+code-organization move — zero behavior change, verified by an
+IDENTICAL test suite passing before and after, not just "should still
+work"): `game.go` (420 lines — the `Game` struct, all 5 constructors,
+and `Handle`'s own dispatch logic, which deliberately stays in ONE
+place as the single answer to "what commands exist", even though each
+case's actual implementation now lives elsewhere — a common Go
+router-plus-handlers split), `combat.go` (BLAST/FREEZE/TRANSFUSION),
+`demons.go` (INVOKE/ASTAROT/MAGOT), `apex.go` (the APEX conversation
+forms + CALL), `doors.go` (GUARDS/toll), `rituals.go` (NEST,PHOENIX/
+CAULDRON,ACHAD), `options.go` (OPTIONS + save-version parsing),
+`help.go` (HELP/SPELLS), `items.go` (PICKUP/DROP/EXAMINE/INVENTORY),
+`movement.go` (compass movement, LOOK, and the 5 drop-triggered monster
+mechanics), and `helpers.go` (the small `hasItem`/`roomHasItem` queries
+used by several of the others). `save.go` was already its own file
+before this round — this split makes the whole package consistent with
+a convention that already existed for one piece of it.
+
+Every function/const/doc-comment moved VERBATIM — no wording, logic,
+or behavior changed, only which file each lives in and each file's own
+import list (computed per-file from what that file's code actually
+references: e.g. `combat.go` only needs `fmt`; `movement.go` needs
+`fmt`/`strings`/`sort`/`character`/`world`; `help.go` needs nothing).
+Verified thoroughly, not just trusted: `go build ./...` clean, the
+FULL `gofmt`/`vet`/`test` suite (with a repeated `-count=2` run)
+passing identically to before the split (same test count, same
+results — the strongest possible evidence this was truly behavior-
+preserving), a live end-to-end `cmd/hotm` playthrough (movement, a
+real door password, `APEX, DOOR`'s riddle, BLAST combat, INVENTORY,
+MAP all working exactly as before), and confirmed `cmd/hotm-gui` still
+builds. `game.go` itself is now 420 lines; every other new file is
+under 330 lines, most well under 200 — a real, checkable improvement
+in "can a reader find the code for X without scrolling through
+everything else," not just an assertion that the code is organized.
+
+**How to apply**: when a hook specifically asks for a "systematic
+code-organization review," the strongest answer is a real, measured
+audit (`wc -l` across the codebase, not a guess at what "feels big")
+followed by an actual, verified refactor of whatever it finds — not a
+defense of the existing structure. Splitting a Go package across
+multiple files by topic is free (same package, same scope, no import
+cycles to worry about) and should be revisited again once any single
+file in this project starts approaching this same scale — `game_test.go`
+(1729 lines) is the next obvious candidate, not attempted this round
+to keep this one's diff reviewable and its verification (identical
+test results) unambiguous.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
