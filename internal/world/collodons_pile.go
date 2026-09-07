@@ -112,6 +112,21 @@ package world
 // this makes it a genuine, reachable combat encounter, not just
 // recorded data.
 //
+// Morfang's Vampire (round 106): zone_monsters.go records "Morfang:
+// Vampire x3" — at the time of Methos's fix above (round 72's
+// writeup), this was deliberately left untouched, flagged as "a
+// near-miss" because Level1Grid separately ships 4 Vampires (F2/G1/G2/
+// H1), not 3, an exact-count mismatch unlike Trollwynd/Gorburg/
+// Wolfdorp's clean matches. Revisited: that earlier caution conflated
+// two different questions. The COUNT genuinely doesn't reconcile (real,
+// still-open, not resolved here) — but CollodonsPile's Room.Monster
+// field only records WHICH species is present, not how many, and both
+// independent sources agree unambiguously on that: Vampire. The count
+// mismatch has no bearing on that simpler question, so leaving Morfang
+// with no monster at all (the status quo) was needlessly conservative,
+// not actually required by the discrepancy. Same MonsterHealth=2
+// placeholder as Level1Grid's own Vampire cells (not a new number).
+//
 // HasChest placements (round 78): a fresh, more targeted CASA re-read
 // (asking specifically whether "EXAMINE X, pick up Y" is a consistent
 // pattern across the whole walkthrough, not just Wolfdorp) confirmed
@@ -239,7 +254,7 @@ func CollodonsPile() *World {
 		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower"}, HasTable: true},
 		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true, HasChest: true},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key", HasTable: true},
-		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Items: []string{"Slat"}, TollItem: "Bag", HasTable: true, HasChest: true},
+		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Monster: "Vampire", MonsterHealth: 2, Items: []string{"Slat"}, TollItem: "Bag", HasTable: true, HasChest: true},
 		{ID: roomArrows, Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{East: roomNidus, North: roomWolfdorp}, TollItem: "Slat", HasTable: true},
 		{ID: roomNidus, Name: "Nidus", Level: 1, Exits: map[Direction]RoomID{West: roomPilefoot}, Monster: "Cyclops", MonsterHealth: 3},
 		{ID: roomPilefoot, Name: "Pilefoot", Level: 1, Exits: map[Direction]RoomID{North: roomPileCollodom}, DoorPasswords: []string{"ELEVEN"}},

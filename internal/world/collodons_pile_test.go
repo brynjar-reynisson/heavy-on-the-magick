@@ -194,6 +194,20 @@ func TestCollodonsPileMethosHasVampire(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileMorfangHasVampire pins the round-106 addition:
+// zone_monsters.go's "Morfang: Vampire x3" sighting was left unapplied
+// for many rounds because its COUNT doesn't match Level1Grid's 4
+// shipped Vampires (F2/G1/G2/H1) - but CollodonsPile's single Monster
+// field only records species, not count, and both sources agree
+// unambiguously on that. See CollodonsPile's doc comment.
+func TestCollodonsPileMorfangHasVampire(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomMorfang]
+	if room.Monster != "Vampire" || room.MonsterHealth <= 0 {
+		t.Errorf("Morfang Monster = %q (health %d), want a live Vampire", room.Monster, room.MonsterHealth)
+	}
+}
+
 // TestCollodonsPileTrollwyndAndSothicComplexHaveScrollNougat pins the
 // round-63 walkthrough re-read: Nougat and a Scroll in Trollwynd, plus
 // a second, separate Scroll in Sothic Complex - resolving 2 of the 3

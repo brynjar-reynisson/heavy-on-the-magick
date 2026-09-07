@@ -4311,6 +4311,40 @@ All 5 of this project's real extracted room screenshots (4 level grids
 is without one anymore. Ran the full `gofmt`/`build`/`vet`/`test` suite
 clean.
 
+### Round 106: gave Morfang its long-flagged Vampire, after revisiting why it had been deliberately skipped
+
+After another Stop-hook rejection, same framing, resumed the round-101
+"audit for evidence already on file but never applied" pattern.
+`zone_monsters.go`'s "Morfang: Vampire x3" sighting had been noticed
+as far back as round 72's cross-referencing pass, but was explicitly
+left unapplied — flagged as "a near-miss, not touched" because
+`Level1Grid` separately ships 4 Vampires (F2/G1/G2/H1), not 3, an
+exact-count mismatch unlike Trollwynd/Gorburg/Wolfdorp's clean 1:1
+matches at the time.
+
+Revisited that reasoning rather than repeating it uncritically: it
+conflated two different questions. The COUNT genuinely doesn't
+reconcile (real, still open, not resolved this round) — but
+`CollodonsPile`'s `Room.Monster` field only ever records WHICH species
+is present, not how many, and both independent sources (the zone
+sighting list and Level1Grid's per-cell tight-crop work) agree
+unambiguously on that part: Vampire. The count discrepancy has no
+bearing on the simpler species question, so leaving Morfang with no
+monster at all was needlessly conservative, not something the
+discrepancy actually required. Set `Monster: "Vampire", MonsterHealth:
+2` (matching Level1Grid's own placeholder health value, not a new
+number). Documented the reasoning explicitly in `collodons_pile.go` so
+a future round doesn't need to re-derive it, and added
+`TestCollodonsPileMorfangHasVampire`.
+
+Verified the real downstream GUI effect the same way round 101 did for
+Trollwynd (live navigation to Morfang isn't screenshot-able —
+`SendInput` remains broken — so used `World.Teleport` + a direct check
+instead of walking there): `currentPortraitName()` now correctly
+resolves `"vampire"` and `monsterGlyphColor["Vampire"]` resolves the
+correct red "w" glyph, where before there was no portrait or glyph at
+all. Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
