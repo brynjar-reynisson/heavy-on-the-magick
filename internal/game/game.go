@@ -401,6 +401,10 @@ func (g *Game) Handle(cmd parser.Command) string {
 		return g.asmodeeDestroy(cmd.Verb)
 	}
 
+	if strings.EqualFold(cmd.Target, "BELEZBAR") && cmd.Verb != "" {
+		return g.belezbarReveal(cmd.Verb)
+	}
+
 	if strings.EqualFold(cmd.Target, "GUARDS") && cmd.Verb == "DOOR" {
 		return g.passGuards()
 	}

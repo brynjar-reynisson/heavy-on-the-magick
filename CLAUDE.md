@@ -66,9 +66,13 @@ Hydra), 4 door mechanisms (password, toll-item, Guards, Fire+Clasp —
 all now hinted at LOOK-time, round 152), a real win condition (3
 confirmed Exits, 2 concretely reachable in this port today), real
 save/restore (versioned slots), all 4 demons' real invocable abilities
-(Astarot teleports, Magot locates, Belezbar reveals, and — round 162 —
-Asmodee genuinely DESTROYS a named object, not just a warning with "no
-confirmed positive effect" as it read for many rounds), and 2
+as of round 164 (Astarot teleports, Magot locates, round 162's Asmodee
+genuinely DESTROYS a named object instead of just warning "no
+confirmed positive effect" as it read for many rounds, and round 164's
+Belezbar reveals a real, sourced disguise — though Belezbar's own
+Charm, Mantis, is only placed in `Level3Grid`, not `CollodonsPile`, so
+that specific command needs `-level3grid` to reach in a live session),
+and 2
 multi-item ritual commands (NEST,PHOENIX / CAULDRON,ACHAD) shipped as
 honest "confirmed real, effect unknown" stubs, not guessed outcomes.
 Round 162 also found real scale data worth citing honestly: Hardcore
@@ -7321,6 +7325,76 @@ to understand why any of this project's per-dataset counts don't
 directly sum to a real total — the 5-dataset architecture doesn't just
 affect ROOM coverage math, it affects every count derived from data
 duplicated across those same overlapping zones.
+
+### Round 164: Belezbar completes the set — all 4 demons now have real, functional invocable abilities, not just 3 of 4
+
+After another Stop-hook rejection, same framing, first spent real
+effort chasing a genuinely new source lead: search results named a
+"Your Sinclair Megagame" feature (issue #7, July 1986, typically a
+long in-depth guide) and Sinclair User issue 58's tips column as
+covering this game. Both turned out to be real, checked dead ends,
+not just unexplored: the Internet Archive item for Your Sinclair #7 is
+marked `is_dark: true` (access-restricted, confirmed via its own
+`/metadata/` endpoint) with no Wayback Machine snapshot of its
+full-text either; the fan-run sinclairuser.com archive's own issue-58
+and issue-51 index pages don't link a page for this game at all (only
+a couple of featured articles per issue are indexed, not full page
+contents). A real, honestly-checked negative on two more source leads,
+not silently abandoned.
+
+Pivoted to something concrete instead: re-checked all 4 confirmed
+demons' `Ability` fields against what `internal/game` actually
+implements, and found Belezbar was the ONLY one of the 4 with no
+dedicated conversation-form command at all — Astarot teleports,
+Magot locates, and (round 162) Asmodee destroys, but Belezbar's
+"Reveals the true nature of objects" had sat as bare-INVOKE listing
+text only, the exact same "confirmed real, never wired" gap round 162
+just closed for Asmodee, just never revisited for the 4th demon.
+
+Implemented `game.belezbarReveal` ("BELEZBAR, <object>"), gated by the
+same Mantis-on-the-ground convention as the other 3, checking a new
+`belezbarDisguises` map for a real, sourced "true identity" — currently
+one confirmed entry: the numbered map poster's own key list gives cell
+#59 as "Pebble (disguised Erlstone)", genuinely distinct from the
+OTHER, plain Pebbles at neighboring numbered cells (#57/#58/#60/#62/
+#63, none flagged "disguised") - exactly the kind of real unmasking
+this ability describes. An object with no confirmed disguise gets an
+honest "appears to be exactly what it seems," not a fabricated secret
+identity invented for every possible target.
+
+Verified live and found (then correctly documented, not glossed over)
+a real, pre-existing scope limit: unlike the other 3 demons' Charms
+(all placed in `CollodonsPile` itself), Belezbar's Charm (Mantis) has
+only ever been placed in `world.Level3Grid` (round 103) - already
+flagged since round 108 as "the only one of the 4 demons' Charms
+still unreachable in default-mode play." `BELEZBAR, PEBBLE` is
+therefore only reachable via `go run ./cmd/hotm -level3grid`, not the
+default game - verified that way specifically (`DROP MANTIS`
+correctly failed since Level3Grid's A1 already has Mantis sitting on
+the ground from the start, never picked up; `BELEZBAR, PEBBLE`
+correctly succeeded anyway since `roomHasItem` only cares that the
+Charm is on the ground, not how it got there — then `BELEZBAR,
+GRIMOIRE` correctly gave the honest "appears to be exactly what it
+seems" response for an object with no confirmed disguise).
+
+Added `TestHandleBelezbarRevealRequiresMantis`,
+`TestHandleBelezbarRevealsRealDisguise`, and
+`TestHandleBelezbarRevealOrdinaryObject`. Ran the full `gofmt`/
+`build`/`vet`/`test` suite (with a repeated `-count=2` run): **128
+tests passing in `internal/game`, 0 failing** (125 from before this
+round + 3 new).
+
+**How to apply**: when one round closes a "confirmed but unsurfaced"
+gap for one item in a set of 4 (Asmodee, round 162), it's worth
+immediately re-checking the OTHER 3 for the same class of gap rather
+than assuming they're already complete just because 3 of 4 already had
+something — Belezbar's own gap had been sitting there the whole time,
+simply never re-examined once the other 3 were already done. A
+dead-end source lead (an inaccessible/restricted archive item, an
+index page with no relevant link) is worth checking definitively (via
+the item's own metadata, a Wayback Machine lookup) rather than
+guessing it might work with more retries — a confirmed "no" is more
+useful than an ambiguous non-attempt.
 
 ## Open next steps
 

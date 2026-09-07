@@ -196,3 +196,55 @@ func (g *Game) asmodeeDestroy(object string) string {
 	}
 	return fmt.Sprintf("You invoke %s, %s! %s finds no such object to destroy.", asmodeeName, asmodeeTitle, asmodeeName)
 }
+
+// belezbarDisguises maps a real, sourced "disguised" item name to its
+// true identity. Currently one confirmed entry: the fan-made numbered
+// map poster's own key list (internal/world.NumberedRoomContents)
+// gives entry #59 as "Pebble (disguised Erlstone)" - genuinely distinct
+// from the OTHER, plain Pebbles at neighboring numbered cells (#57/#58/
+// #60/#62/#63, none of which carry a "disguised" qualifier) - exactly
+// the kind of real, confirmed unmasking Belezbar's Ability ("Reveals
+// the true nature of objects") describes. Erlstone itself is already
+// placed directly (not disguised) at Methos (round 107) - that
+// placement is unaffected; this map exists for a room that might one
+// day place the disguised "Pebble" form specifically, the same "real
+// mechanic, not yet reachable in shipped data" pattern already used
+// for TollItem/Fire/Guards/SwapItem before their own first placements.
+var belezbarDisguises = map[string]string{
+	"Pebble": "Erlstone",
+}
+
+// belezbarReveal handles the conversation-form command "BELEZBAR,
+// <object>" (round 164) - the last of the 4 confirmed demons to get a
+// real, functional ability wired up (Astarot teleports, Magot locates,
+// Asmodee destroys - see their own doc comments). No source gives a
+// literal "BELEZBAR, X" example, but the same general "name, object"
+// grammar and Charm-gating convention already established for the
+// other 3 applies directly. Checks belezbarDisguises for a real,
+// sourced disguise; anything else gets an honest "appears to be
+// exactly what it seems" - not a fabricated secret identity for every
+// object, only the one genuinely confirmed case.
+//
+// Unlike Astarot/Magot/Asmodee's Charms (Sword/Sunflower/Erlstone, all
+// placed in world.CollodonsPile itself), Belezbar's Charm (Mantis) is
+// ONLY placed in world.Level3Grid (round 103) - a real, pre-existing
+// scope limit this project has flagged since round 108 ("the only one
+// of the 4 demons' Charms still unreachable in default-mode play"),
+// not something this round changes. So this command is only reachable
+// in a real playthrough via `go run ./cmd/hotm -level3grid`, not the
+// default game.New() - verified live that way, not in default mode.
+func (g *Game) belezbarReveal(object string) string {
+	const belezbarName, belezbarTitle, belezbarCharm = "Belezbar", "the Master of Flies", "Mantis"
+	if !g.roomHasItem(belezbarCharm) {
+		if g.hasItem(belezbarCharm) {
+			return fmt.Sprintf("You are carrying the %s, but that isn't enough - place it on the ground and stand back before you invoke %s.", belezbarCharm, belezbarName)
+		}
+		return fmt.Sprintf("You call out to %s, %s... but you have no suitable Talisman (a %s).", belezbarName, belezbarTitle, belezbarCharm)
+	}
+	for disguised, real := range belezbarDisguises {
+		if strings.EqualFold(disguised, object) {
+			return fmt.Sprintf("You invoke %s, %s! The %s reveals its true nature - it is really a %s!", belezbarName, belezbarTitle, disguised, real)
+		}
+	}
+	return fmt.Sprintf("You invoke %s, %s! The %s appears to be exactly what it seems.", belezbarName, belezbarTitle, object)
+}

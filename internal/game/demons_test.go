@@ -254,3 +254,41 @@ func TestHandleAsmodeeDestroyUnknownObject(t *testing.T) {
 		t.Errorf("Handle(ASMODEE, EXCALIBUR) = %q, want an honest not-found response", got)
 	}
 }
+
+// TestHandleBelezbarRevealRequiresMantis covers round 164's real
+// ability (completing all 4 demons - Astarot/Magot/Asmodee already had
+// one) - the same Charm-on-the-ground gating as the other 3.
+func TestHandleBelezbarRevealRequiresMantis(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("BELEZBAR, PEBBLE"))
+	if !strings.Contains(got, "no suitable Talisman") {
+		t.Errorf("Handle(BELEZBAR, PEBBLE) with no Mantis carried = %q, want a Talisman rejection", got)
+	}
+}
+
+// TestHandleBelezbarRevealsRealDisguise covers the one confirmed,
+// sourced disguise (numbered map poster #59: "Pebble (disguised
+// Erlstone)") - see belezbarDisguises's doc comment.
+func TestHandleBelezbarRevealsRealDisguise(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Mantis")
+	got := g.Handle(parser.Parse("BELEZBAR, PEBBLE"))
+	if strings.Contains(got, "no suitable Talisman") {
+		t.Errorf("Handle(BELEZBAR, PEBBLE) with Mantis on the ground = %q, want the reveal to succeed", got)
+	}
+	if !strings.Contains(got, "Pebble") || !strings.Contains(got, "Erlstone") {
+		t.Errorf("Handle(BELEZBAR, PEBBLE) = %q, want it to reveal the real disguise (Erlstone)", got)
+	}
+}
+
+// TestHandleBelezbarRevealOrdinaryObject covers the honest negative:
+// an object with no confirmed disguise appears to be exactly what it
+// seems, not a fabricated secret identity.
+func TestHandleBelezbarRevealOrdinaryObject(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Mantis")
+	got := g.Handle(parser.Parse("BELEZBAR, GRIMOIRE"))
+	if !strings.Contains(got, "exactly what it seems") {
+		t.Errorf("Handle(BELEZBAR, GRIMOIRE) with no confirmed disguise = %q, want an honest ordinary-object response", got)
+	}
+}
