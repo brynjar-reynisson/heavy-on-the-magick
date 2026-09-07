@@ -58,6 +58,12 @@ func TestWolfdorpSampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, WolfdorpSample(), "WolfdorpSample()")
 }
 
+// TestNidusSampleDecodesToRealArt mirrors
+// TestCorridorSampleDecodesToRealArt for round 113's Nidus-zone sample.
+func TestNidusSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, NidusSample(), "NidusSample()")
+}
+
 func assertRealArt(t *testing.T, img image.Image, label string) {
 	t.Helper()
 	bounds := img.Bounds()

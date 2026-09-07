@@ -236,3 +236,29 @@ func WolfdorpSample() image.Image {
 	}
 	return img
 }
+
+// assets/nidus_sample.png (round 113) is a second zone-level-confidence
+// sample, same standard as WolfdorpSample above — heavymap-grid-
+// clean.gif's own colored zone boundary shows "Nidus" as a green area
+// spanning roughly row E-H, columns 6-8, with no single cell singled
+// out as "the" Nidus room. Cell F6 was picked as a representative,
+// unremarkable cell within that zone (no monster/item marker at this
+// position in the clean map), located in the atlas via the same row/
+// column arithmetic as every other sample (row F, column 6),
+// pixel-verified — shows a distinctive two-archway room with a
+// stalagmite formation, visually distinct from every other sample
+// already shipped. Shown honestly as "representative Nidus-zone art,"
+// not exact-cell precision.
+//
+//go:embed assets/nidus_sample.png
+var nidusSamplePNG []byte
+
+// NidusSample decodes the embedded representative Nidus-zone
+// screenshot. Panics on failure, matching CorridorSample() above.
+func NidusSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(nidusSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded nidus_sample.png: " + err.Error())
+	}
+	return img
+}

@@ -4572,6 +4572,32 @@ simpler/cheaper alternative, not a stand-in for an unknown mechanism.
 
 Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 113: a 5th CollodonsPile room gets real art — Nidus, at the same honest zone-level confidence as Wolfdorp
+
+After another Stop-hook rejection, same framing, extended round 109's
+zone-level-confidence pattern to a second big zone. `heavymap-grid-
+clean.gif`'s own colored boundaries show "Nidus" as a green area
+spanning roughly rows E-H, columns 6-8 — like Wolfdorp, no single cell
+is "the" Nidus room. Picked cell F6 (row F, matching the already-
+established row-F y-calibration reused across every Level 1 sample so
+far; column 6, extending the established ~586.5px column-width
+arithmetic) as a representative, unmarked cell within the zone —
+pixel-verified, showing a distinctive two-archway room with a
+stalagmite formation, visually distinct from every other sample
+already shipped. Documented with the same explicit "representative
+zone art, not exact-cell precision" honesty caveat as Wolfdorp's.
+
+Added `graphics.NidusSample()` (identical pattern to `WolfdorpSample()`,
+own test) and one map entry in `cmd/hotm-gui`'s default-mode room-art
+map (round 108's generalized mechanism made this trivial). Verified via
+a direct `NewGUI` + `World.Teleport` check that Nidus resolves its art
+correctly.
+
+**5 of CollodonsPile's real rooms now show real extracted art** (Room
+of Misery, Room of Stings, Room of Arrows — exact-cell; Wolfdorp,
+Nidus — zone-level), on top of all 4 level grids' starting cells. Ran
+the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
