@@ -143,6 +143,14 @@ type Room struct {
 	// every room visited, so other rooms may well have one too, but
 	// only these are actually confirmed; not assumed for the rest.
 	HasTable bool
+
+	// HasChest is the same kind of real, sourced fixture as HasTable, for
+	// a second distinct container the CASA walkthrough confirms: "EXAMINE
+	// CHEST" appears before picking up Garlic in Wolfdorp and Slat in
+	// Morfang (round 78) - a real, separate phrase from "EXAMINE TABLE",
+	// not a synonym for it. Same honesty convention as HasTable: only set
+	// for these 2 specifically confirmed rooms, not assumed elsewhere.
+	HasChest bool
 }
 
 // clone returns a deep copy of r, safe to mutate independently of the

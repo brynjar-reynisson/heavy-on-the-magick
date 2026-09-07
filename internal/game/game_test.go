@@ -318,6 +318,45 @@ func TestHandleExamineTable(t *testing.T) {
 	}
 }
 
+// walkToWolfdorp navigates a fresh Game from Room of Misery to Wolfdorp
+// via real moves - the shared setup TestHandleDropPaysRealToll already
+// uses, split out so other Wolfdorp-specific tests (like the HasChest
+// ones below) don't have to repeat it.
+func walkToWolfdorp(t *testing.T) *Game {
+	t.Helper()
+	g := New()
+	g.Handle(parser.Parse("EAST"))          // Secunda Porta
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd
+	g.Handle(parser.Parse("SOUTH"))         // Sothic Complex
+	g.Handle(parser.Parse("SOUTH"))         // Wolfdorp
+	if room := g.World.CurrentRoom(); room == nil || room.Name != "Wolfdorp" {
+		t.Fatalf("test setup bug: expected to be in Wolfdorp, got %+v", room)
+	}
+	return g
+}
+
+// TestHandleLookMentionsChest covers the real HasChest fixture (round
+// 78, see world.Room.HasChest's doc comment) being surfaced in LOOK
+// itself, not just discoverable by blindly guessing "EXAMINE CHEST".
+func TestHandleLookMentionsChest(t *testing.T) {
+	g := walkToWolfdorp(t)
+	got := g.Handle(parser.Parse("LOOK"))
+	if !strings.Contains(got, "chest") {
+		t.Errorf("Handle(LOOK) in Wolfdorp = %q, want it to mention the real chest", got)
+	}
+}
+
+// TestHandleExamineChest covers the real, sourced HasChest fixture - the
+// CASA walkthrough uses "EXAMINE CHEST" before picking up Garlic here.
+func TestHandleExamineChest(t *testing.T) {
+	g := walkToWolfdorp(t)
+	got := g.Handle(parser.Parse("X CHEST"))
+	if !strings.Contains(got, "chest") {
+		t.Errorf("Handle(X CHEST) in Wolfdorp = %q, want it to acknowledge the real chest", got)
+	}
+}
+
 func TestHandleExamineWithTargetNotHereSaysSo(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("EXAMINE SWORD"))

@@ -723,6 +723,9 @@ func (g *Game) examine(target string) string {
 		if room.HasTable && strings.EqualFold(target, "TABLE") {
 			return "A plain table."
 		}
+		if room.HasChest && strings.EqualFold(target, "CHEST") {
+			return "A wooden chest."
+		}
 		if room.Monster != "" && room.MonsterHealth > 0 && strings.EqualFold(room.Monster, target) {
 			return fmt.Sprintf("You see a %s.", room.Monster)
 		}
@@ -802,6 +805,9 @@ func (g *Game) describeCurrentRoom() string {
 	fmt.Fprintf(&b, "%s\n%s\n", room.Name, room.Description)
 	if room.HasTable {
 		b.WriteString("There is a table here.\n")
+	}
+	if room.HasChest {
+		b.WriteString("There is a chest here.\n")
 	}
 	if len(room.Items) > 0 {
 		fmt.Fprintf(&b, "You see: %s\n", strings.Join(room.Items, ", "))

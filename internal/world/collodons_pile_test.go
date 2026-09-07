@@ -147,6 +147,20 @@ func TestCollodonsPileHasTablePlacements(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileHasChestPlacements pins the 2 real rooms where the
+// CASA walkthrough confirms "EXAMINE CHEST" (see world.Room.HasChest's
+// doc comment) - a distinct container from HasTable's "EXAMINE TABLE".
+func TestCollodonsPileHasChestPlacements(t *testing.T) {
+	w := CollodonsPile()
+	want := []RoomID{roomWolfdorp, roomMorfang}
+	for _, id := range want {
+		room := w.Rooms[id]
+		if room == nil || !room.HasChest {
+			t.Errorf("room %q HasChest = %v, want true", room.Name, room != nil && room.HasChest)
+		}
+	}
+}
+
 // TestCollodonsPileMethosHasVampire pins the round-71 addition: Methos
 // is a real, connected, reachable room, and zone_monsters.go's
 // independently-sourced "Methos: Wraith x1" sighting - cross-validated

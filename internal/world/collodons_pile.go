@@ -103,6 +103,17 @@ package world
 // this makes it a genuine, reachable combat encounter, not just
 // recorded data.
 //
+// HasChest placements (round 78): a fresh, more targeted CASA re-read
+// (asking specifically whether "EXAMINE X, pick up Y" is a consistent
+// pattern across the whole walkthrough, not just Wolfdorp) confirmed
+// "EXAMINE CHEST" is a real, distinct container phrase from "EXAMINE
+// TABLE" - used before "Pick up GARLIC" in Wolfdorp and "Pick up SLAT"
+// in Morfang specifically (every other EXAMINE-before-pickup instance
+// in the walkthrough uses TABLE, already modeled). Added
+// world.Room.HasChest, wired into examine() and describeCurrentRoom()
+// the same way HasTable already is - same honest "only these 2
+// specifically confirmed rooms" convention, not assumed elsewhere.
+//
 // TollItem placements (round 64): the same fresh, more detailed CASA
 // walkthrough re-read found the real drop-to-open-door mechanic (see
 // world.Room.TollItem's doc comment) recurring at 3 more rooms, each
@@ -185,9 +196,9 @@ func CollodonsPile() *World {
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget"}, HasTable: true, Monster: "Vampire", MonsterHealth: 2},
 		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower"}, HasTable: true},
-		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true},
+		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true, HasChest: true},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key", HasTable: true},
-		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Items: []string{"Slat"}, TollItem: "Bag", HasTable: true},
+		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Items: []string{"Slat"}, TollItem: "Bag", HasTable: true, HasChest: true},
 		{ID: roomArrows, Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{East: roomNidus, North: roomWolfdorp}, TollItem: "Slat", HasTable: true},
 		{ID: roomNidus, Name: "Nidus", Level: 1, Exits: map[Direction]RoomID{West: roomPilefoot}, Monster: "Cyclops", MonsterHealth: 3},
 		{ID: roomPilefoot, Name: "Pilefoot", Level: 1, Exits: map[Direction]RoomID{North: roomPileCollodom}, DoorPasswords: []string{"ELEVEN"}},

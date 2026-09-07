@@ -3222,6 +3222,38 @@ Grimoire in Room of Misery, `MAGOT, SUNFLOWER` correctly reported
 already carrying it (with the casing fix confirmed on screen), and
 `MAGOT, NUGGET` correctly located the Nugget in Methos.
 
+### Found and modeled a second real container fixture: HasChest
+
+After another Stop-hook rejection, same framing, first checked (and
+correctly abandoned) a folklorically tempting but unsourced idea: now
+that "Wraith" is confirmed to really be "Vampire" (round 74), does the
+already-real Garlic in Wolfdorp ward it off, the same way Nougat wards
+off Werewolves? Re-fetched the CASA walkthrough specifically asking
+about Garlic - a clean negative, no stated monster interaction at all.
+Correctly did NOT force this despite the thematic appeal; folklore
+plausibility isn't a source.
+
+That fetch surfaced a real, different, previously-uncaptured fact
+though: Garlic is picked up via `"EXAMINE CHEST, Pick up GARLIC"`, not
+just lying in the open. A follow-up fetch asked whether examining a
+container before pickup is a consistent pattern throughout the whole
+walkthrough (not just this once) - it is, but almost every instance
+uses `"EXAMINE TABLE"` (already modeled as `HasTable`). Exactly 2 real
+rooms use the distinct phrase `"EXAMINE CHEST"` instead: Wolfdorp
+(Garlic) and Morfang (Slat) - both already-real, already-shipped
+CollodonsPile rooms.
+
+Added `world.Room.HasChest`, following `HasTable`'s exact precedent:
+set for these 2 specifically confirmed rooms only, wired into both
+`examine()` (`"EXAMINE CHEST"` → `"A wooden chest."`) and
+`describeCurrentRoom()` (`LOOK` now also says `"There is a chest
+here."`). Added `TestCollodonsPileHasChestPlacements`,
+`TestHandleLookMentionsChest`, and `TestHandleExamineChest` (plus a
+shared `walkToWolfdorp` test helper, since Wolfdorp isn't the starting
+room), ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified live: `LOOK`/`EXAMINE CHEST` in
+Wolfdorp both correctly acknowledge the real chest.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
