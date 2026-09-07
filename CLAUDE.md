@@ -3697,6 +3697,44 @@ same honest caveat this project has always applied to sound work — but
 the decoding logic itself is now precisely pinned down by a
 concrete, reproducible test, not just "sounds about right."
 
+### Two checked leads: one real cross-validation, one honest open question
+
+After another Stop-hook rejection, same framing, did a fresh systematic
+read through the full 316-word `parser.Vocabulary` list (not scanned
+end-to-end in a while) specifically looking for confirmed words not yet
+connected to anything else this project knows. Found two worth acting
+on:
+
+- **`PHOENIX`** is a real, confirmed vocabulary word, and
+  `numbered_room_contents.go`'s `#96` entry is literally `"Nest of
+  Phoenix"` — real, independent cross-confirmation that this numbered-map
+  entry describes actual in-game content, the same kind of validation
+  already recorded for `#14`'s Snake/Hydra and `#59`'s disguised
+  Erlstone. Documented in the file's own doc comment.
+- **`MAGUS`** is also a real, confirmed vocabulary word — and the real
+  Hermetic Order of the Golden Dawn (the system `character.Grade`
+  already borrows 9 confirmed rank names from) has a `Magus` grade
+  between `Magister Templi` and `Ipsissimus`, exactly where this port's
+  enum currently has a gap. Tried to confirm it directly using last
+  round's new technique: parsed all 4 of this repo's `.z80` memory
+  snapshots (`hotm.z80`, `hotm-live.z80`, `hotm-unpacked.z80`,
+  `hotm-hint.z80`) and searched each for the literal ASCII bytes
+  `"MAGUS"` — not found in any of them, and neither were the ALREADY-
+  confirmed grade strings (`NEOPHYTE`, `ZELATOR`, `IPSISSIMUS`), which
+  rules out treating this as real evidence against `Magus` — it just
+  means these particular static snapshots don't hold plain-ASCII text
+  for ANY grade name (real, useful negative data point for the still-
+  unsolved custom text-encoding mystery — see "Open next steps" below —
+  not proof one way or the other about `Magus` specifically). Documented
+  as an explicit open question in `character.Grade`'s doc comment,
+  matching the existing "don't assume `Theoricus` is present" discipline
+  — correctly NOT added without confirmation.
+
+No shipped behavior change this round (both are doc-only), but this is
+real, verified research: one confirmed cross-validation recorded, one
+plausible-but-unconfirmed hypothesis explicitly flagged rather than
+either silently dropped or guessed into the code.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

@@ -16,6 +16,21 @@ import (
 // "Theoricus" grade between Zelator and Practicus, but that string has not
 // been confirmed in the game's data — do not assume it's present until it
 // turns up in the disassembly.
+//
+// OPEN QUESTION (round 91): the real Golden Dawn system also has a
+// "Magus" grade between Magister Templi and Ipsissimus - and "MAGUS" IS
+// a real, confirmed word in the game's own extracted 316-word parser
+// vocabulary (parser.Vocabulary). That alone doesn't confirm it's a
+// displayed Grade string though (the vocabulary table is what the
+// parser recognizes as INPUT, a different data source than the RAM
+// string dump that confirmed the other 9 grade names as OUTPUT text).
+// Checked directly: searched all 4 of this repo's .z80 memory snapshots
+// for the literal ASCII bytes "MAGUS" - not found in any of them. This
+// doesn't disprove it (the game's own text uses a custom, not-yet-fully-
+// decoded print engine/encoding - see CLAUDE.md's disassembly notes -
+// so a real string could exist without matching a plain-ASCII search),
+// but it's not enough to confirm the grade either. Left unresolved and
+// NOT added - same "don't assume it's present" discipline as Theoricus.
 type Grade int
 
 const (

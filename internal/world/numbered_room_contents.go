@@ -28,6 +28,10 @@ type NumberedRoomContent struct {
 // mechanics confirmed elsewhere too: #14's "Snake" wards Hydras and #59's
 // "disguised Erlstone" is Asmodee's confirmed Charm (see
 // internal/magic.Demons) — both good independent cross-confirmations.
+// #96's "Nest of Phoenix" gets the same treatment (round 91): "PHOENIX"
+// is independently a real, confirmed word in the game's own extracted
+// 316-word parser vocabulary (parser.Vocabulary) — real evidence this
+// entry describes actual in-game content, not just fan-map flavor text.
 var NumberedRoomContents = []NumberedRoomContent{
 	{1, "Grimoire"},
 	{2, "Poison-smeared book"},
