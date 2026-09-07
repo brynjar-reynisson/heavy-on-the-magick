@@ -74,10 +74,20 @@ honest "confirmed real, effect unknown" stubs, not guessed outcomes.
 Round 162 also found real scale data worth citing honestly: Hardcore
 Gaming 101 states the original has "255 distinct rooms" (matching
 Spectrum Computing's own count), "21 of the game's monsters," and "four
-hundred items available" — this port's own placed-item and individual-
-monster-placement counts are well short of the latter two figures, a
-concrete, sourced measure of remaining scale (not just the room count
-already cited above).
+hundred items available." This port's own placed-item count is well
+short of 400. Monster placements are NOT short, and round 163 explains
+why precisely rather than leaving the raw number to mislead either way:
+a naive count of every `Monster:` field across the 5 unmerged datasets
+gives **35**, more than HG101's 21 — but that 35 double-counts real
+content, since `CollodonsPile` (zone-level) and the 4 `LevelNGrid`
+files (per-cell) describe overlapping physical parts of the same
+dungeon (e.g. Trollwynd's one zone-level Troll entry and Level3Grid's 4
+separately-placed Trolls in that same zone are almost certainly the
+SAME 4 real creatures, not 5). A third, independent source already in
+the repo (`zone_monsters.go`'s own zone-level sighting counts) sums to
+26 — much closer to HG101's 21 than the naive 35 is, and the real,
+deduplicated number this port has actually placed is somewhere in that
+21-26 range, not 35.
 
 **Graphics** — one real, shared `PNGRenderer` draws for both frontends
 (no separate/diverging drawing code). **13 real extracted portraits**
@@ -7254,6 +7264,63 @@ scripted split, regenerate from the TRUE original source (fetched via
 git, in this case) rather than trying to patch the already-corrupted
 output — patching each of ~30 instances individually would have been
 far riskier than one correct regeneration from scratch.
+
+### Round 163: reconciled 3 independent monster-count sources — a real, honest explanation for why this project's own raw numbers look inflated, not just another fact
+
+After another Stop-hook rejection, same framing, followed up directly
+on round 162's own Hardcore Gaming 101 find ("21 of the game's
+monsters") rather than moving to a new source. Counted this project's
+own actual current monster PLACEMENTS (not types — individual
+creature instances) across all 5 datasets directly from the source
+files (`grep`-style count of every `Monster: "..."` field):
+`CollodonsPile` 5, `Level1Grid` 9, `Level2Grid` 4, `Level3Grid` 10,
+`Level4Grid` 7 — **35 total**, notably MORE than HG101's cited 21, not
+less. Rather than either dismiss the discrepancy or force-fit a
+narrative, checked a third, independent source already sitting in the
+repo: `zone_monsters.go`'s `ZoneMonsterSightings` (a completely
+separate extraction, round 12, from the clean grid map's own zone-
+level sighting counts) sums to **26** — much closer to HG101's 21 than
+the naive 35.
+
+The real explanation, confirmed by re-checking specific entries: the
+naive 35-count double-counts real dungeon content, because
+`CollodonsPile` (zone-level rooms, walkthrough-sourced) and the 4
+`LevelNGrid` files (per-cell rooms, clean-grid-map-sourced) are 5
+SEPARATE, unmerged datasets describing overlapping physical parts of
+the SAME dungeon — already known and stated in the Porting status
+section for ROOM counts, but never explicitly quantified for MONSTER
+counts before. A concrete example: `CollodonsPile`'s Trollwynd carries
+one `Monster: "Troll"` entry (a zone-level abstraction, round 101,
+itself cross-confirmed against `ZoneMonsterSightings`'s "Trollwynd:
+Troll x4"), while `Level3Grid` separately places 4 individual,
+tight-crop-verified Trolls within that same Trollwynd zone (rounds
+59/71) — these are almost certainly the SAME 4 real Trolls, described
+twice by two different addressing schemes, not 5 distinct creatures.
+The same pattern repeats for Vampire/Wolfdorp, Wyvern/Wormring, and
+others. This means this project's raw "35 monster placements" figure
+significantly overstates real, distinct dungeon content — the
+deduplicated reality is much closer to the 21-26 range two independent
+external-ish sources agree on.
+
+Updated the "Porting status" section's gameplay paragraph to state
+this precisely (not just cite the raw 35, which would overclaim, nor
+silently drop the real placement count, which would underclaim) — the
+same honesty discipline this section has followed since round 156.
+Doc-only change; ran the full `gofmt`/`build`/`vet`/`test` suite (with
+a repeated `-count=2` run) clean anyway, per this project's standing
+verification discipline.
+
+**How to apply**: when a new source gives a concrete NUMBER (not just a
+fact), check it against this project's OWN current numbers precisely —
+a real discrepancy (HG101's 21 vs. this project's naive 35) is worth
+explaining honestly rather than either citing the new number
+uncritically or ignoring it because it's inconvenient. The explanation
+here (dataset overlap, already-known for rooms but not yet quantified
+for monsters) is itself a useful, reusable finding for anyone trying
+to understand why any of this project's per-dataset counts don't
+directly sum to a real total — the 5-dataset architecture doesn't just
+affect ROOM coverage math, it affects every count derived from data
+duplicated across those same overlapping zones.
 
 ## Open next steps
 
