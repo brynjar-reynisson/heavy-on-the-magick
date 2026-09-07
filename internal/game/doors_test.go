@@ -31,6 +31,51 @@ func TestPassGuardsWithNoGuardsPresent(t *testing.T) {
 	}
 }
 
+// TestPassWaterClearsRealObstacle covers round 169's real, sourced
+// command "WATER, FALL" (CRASH 31's Signpost column: "To get past the
+// water say 'Water, fall'") - see world.Room.Water and passWater's doc
+// comments.
+func TestPassWaterClearsRealObstacle(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Water = true
+	got := g.Handle(parser.Parse("WATER, FALL"))
+	if !strings.Contains(got, "lets you pass") {
+		t.Errorf("Handle(WATER, FALL) with real water present = %q, want it to let the player pass", got)
+	}
+	if g.World.CurrentRoom().Water {
+		t.Error("Water should be cleared after a successful WATER, FALL")
+	}
+}
+
+func TestPassWaterWithNoWaterPresent(t *testing.T) {
+	g := New() // Room of Misery has no Water
+	got := g.Handle(parser.Parse("WATER, FALL"))
+	if !strings.Contains(got, "no water") {
+		t.Errorf("Handle(WATER, FALL) with no water present = %q, want it to say there is none", got)
+	}
+}
+
+// TestLevel3GridWaterHazard covers the real, exact-cell placement (H4,
+// already independently confirmed as literally named "Water") end to
+// end via a direct Teleport - H4 is currently isolated (no Exits), the
+// same honest "real but not live-walkthrough-reachable" scope several
+// other isolated named cells in this project have.
+func TestLevel3GridWaterHazard(t *testing.T) {
+	g := NewLevel3Exploration()
+	id, ok := g.World.FindRoomByName("Water")
+	if !ok {
+		t.Fatal("test setup bug: Level3Grid has no room named Water")
+	}
+	g.World.Teleport(id)
+	if !g.World.CurrentRoom().Water {
+		t.Fatalf("test setup bug: expected a real Water hazard at %q, got %+v", "Water", g.World.CurrentRoom())
+	}
+	got := g.Handle(parser.Parse("WATER, FALL"))
+	if !strings.Contains(got, "lets you pass") {
+		t.Errorf("Handle(WATER, FALL) at the real Water cell = %q, want it to succeed", got)
+	}
+}
+
 func TestHandleDoorPasswordCorrect(t *testing.T) {
 	g := New()
 	g.Handle(parser.Parse("EAST")) // move to Secunda Porta, which has a door password

@@ -418,6 +418,10 @@ func (g *Game) Handle(cmd parser.Command) string {
 		return g.passGuards()
 	}
 
+	if strings.EqualFold(cmd.Target, "WATER") && strings.EqualFold(cmd.Verb, "FALL") {
+		return g.passWater()
+	}
+
 	if strings.EqualFold(cmd.Target, "NEST") && strings.EqualFold(cmd.Verb, "PHOENIX") {
 		return g.nestPhoenix()
 	}

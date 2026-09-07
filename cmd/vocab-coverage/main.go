@@ -16,18 +16,23 @@
 // not a hand-maintained mirror list that could silently drift out of
 // sync with game.go's actual switch cases.
 //
-// KNOWN BLIND SPOT, honestly documented rather than silently wrong: 14
+// KNOWN BLIND SPOT, honestly documented rather than silently wrong: 16
 // real vocabulary words (see targetPositionWords below) only work in a
 // specific TARGET-VERB pairing — some (APEX, ASTAROT, MAGOT, ASMODEE,
-// BELEZBAR, GUARDS, DOOR, NEST, CAULDRON) are recognized as cmd.Target
-// paired with a specific companion verb; others (TALK, SPEAK, THANKS,
-// PHOENIX, ACHAD) are the reverse — recognized as cmd.Verb only paired
-// with a specific companion Target. This tool only calls Handle with
-// each word alone as cmd.Verb (empty Target), the dominant pattern for
-// the other 31 modeled words, so it can't detect these 14 through that
-// single check. Rather than either miscount them as "unimplemented" or
-// build fragile per-word position-pairing logic to chase every
-// combination, they're explicitly excluded and listed separately.
+// BELEZBAR, GUARDS, DOOR, NEST, CAULDRON, WATER) are recognized as
+// cmd.Target paired with a specific companion verb; others (TALK,
+// SPEAK, THANKS, PHOENIX, ACHAD, FALL) are the reverse — recognized as
+// cmd.Verb only paired with a specific companion Target. This tool
+// only calls Handle with each word alone as cmd.Verb (empty Target),
+// the dominant pattern for the other 32 modeled words, so it can't
+// detect these 16 through that single check. Rather than either
+// miscount them as "unimplemented" or build fragile per-word
+// position-pairing logic to chase every combination, they're
+// explicitly excluded and listed separately.
+//
+// ROUND 169: WATER/FALL (game.passWater) added proactively alongside
+// the new command itself, applying the round-140/165 lesson before it
+// could recur a third time rather than after.
 //
 // ROUND 165 FIX (the same undercounting class round 155 already fixed
 // once for a different cause): ASMODEE and BELEZBAR gained real
@@ -85,6 +90,8 @@ var targetPositionWords = map[string]string{
 	"ACHAD":    "recognized as cmd.Verb, only when paired with cmd.Target CAULDRON (round 139)",
 	"ASMODEE":  "recognized as cmd.Target, paired with any non-empty verb (an object name to destroy, round 162)",
 	"BELEZBAR": "recognized as cmd.Target, paired with any non-empty verb (an object name to reveal, round 164)",
+	"WATER":    "recognized as cmd.Target, paired with verb FALL (round 169)",
+	"FALL":     "recognized as cmd.Verb, only when paired with cmd.Target WATER (round 169)",
 }
 
 func uniqueSorted(words []string) []string {

@@ -48,15 +48,19 @@ world — see "Open next steps" for why a literal merge isn't safe yet
 (a real, sourced connectivity conflict, not just unstarted work).
 
 **Gameplay / commands** — of the game's real, extracted 313-word
-vocabulary, **46 words have modeled `Handle` behavior** (32 as a bare
-verb + 14 in a specific TARGET-VERB pairing — the TARGET-VERB count
+vocabulary, **48 words have modeled `Handle` behavior** (32 as a bare
+verb + 16 in a specific TARGET-VERB pairing — the TARGET-VERB count
 rose from 12 to 14 as of round 165, a real MEASUREMENT correction
 (`ASMODEE`/`BELEZBAR` already had real dispatch from rounds 162/164,
-just weren't yet excluded from `cmd/vocab-coverage`'s own list); the
-bare-verb count separately rose from 31 to 32 in round 166, genuinely
-NEW implementation — `PLACE` wired as a real DROP synonym, directly
-grounded in World of Spectrum's own confirmed instruction text ("Place
-Ye the talisman on the ground"), not just another guessed synonym) —
+just weren't yet excluded from `cmd/vocab-coverage`'s own list), then
+14→16 in round 169, genuinely NEW: `"WATER, FALL"` (a real command
+found in CRASH magazine issue 31's Signpost column, distinct from
+issue 29 already mined in rounds 128/129), clearing a real Water
+hazard at `Level3Grid`'s already-confirmed H4 cell. The bare-verb
+count separately rose from 31 to 32 in round 166, also genuinely NEW —
+`PLACE` wired as a real DROP synonym, directly grounded in World of
+Spectrum's own confirmed instruction text ("Place Ye the talisman on
+the ground"), not just another guessed synonym) —
 the rest fall
 through to an honest "recognized, not modeled" stub. That sounds low
 (~14%) read as "313 unimplemented verbs," but repeated audits (rounds
@@ -7594,6 +7598,66 @@ anywhere is worth doing in the same pass — a doc-comment fix and a
 dead-code removal often travel together, the same discovery path this
 round took from "the comment is wrong" to "and also, the thing it's
 describing isn't used by anything."
+
+### Round 169: found a genuinely new CRASH magazine page (issue 31, not 29), shipped a real new hazard mechanic — "WATER, FALL"
+
+After another Stop-hook rejection, same framing, chased 3 fresh source
+leads first: GameFAQs (no submitted FAQ exists for this game — checked
+directly, not assumed), GiantBomb's wiki guide page (a genuine stub,
+"Locations None Concepts None Objects None" — real, checked, not a
+fetch failure), and a YouTube walkthrough video's description (JS-
+rendered, genuinely unfetchable this way — a real technical limit, not
+forced past). Three honest negatives, not silently abandoned.
+
+The productive lead: searching for more CRASH magazine coverage beyond
+issue 29's review (already mined in rounds 128/129) surfaced issue
+31's own "Signpost" adventure-tips column — a genuinely different page
+this project had never fetched. Verbatim quotes confirmed 2 real
+things: a precise refinement of the already-shipped Nougat/Nugget
+mechanic ("get the nougat (level 3) and go and swop it for the nugget
+(level 4)" — confirms which LEVEL each item is on, not yet modeled at
+that precision but not contradicting anything already shipped), and a
+genuinely new mechanic never found before: **"To get past the water
+say 'Water, fall'."**
+
+Checked whether a real "Water" location already existed to attach this
+to — it did: `Level3Grid`'s H4 cell has been real, shipped, tight-crop-
+verified data since an earlier round, literally named "Water." An
+exact, unambiguous match, not a guess at which room this refers to.
+Added `world.Room.Water` (mirroring `Guards`' exact shape — a spoken-
+command-cleared obstacle, not an item-gated one like `Fire`) and
+`game.passWater` (`"WATER, FALL"`), set `Water: true` on the confirmed
+H4 cell. Proactively added `WATER`/`FALL` to `cmd/vocab-coverage`'s
+`targetPositionWords` in the SAME round the command shipped, applying
+the round-140/165 lesson before it could recur a third time rather
+than catching it later.
+
+Caught a real test-assertion mistake before it shipped, not after:
+the first version's response text ("The water falls away, letting you
+pass") didn't match my own test's substring check ("let you pass") —
+a genuine subject-verb agreement mismatch (singular "water" needs
+"lets," not the plural "let" `passGuards` correctly uses for "guards").
+Fixed the wording to "lets you pass" and the test to match, re-ran the
+full suite clean. Added `TestPassWaterClearsRealObstacle`,
+`TestPassWaterWithNoWaterPresent`, and `TestLevel3GridWaterHazard`
+(the real H4 cell end-to-end via a direct Teleport — isolated, no
+Exits, so verified via unit test not a live walkthrough, the same
+honest scope every other isolated named cell in this project has had
+before its first connectivity). Ran the full `gofmt`/`build`/`vet`/
+`test` suite (with a repeated `-count=2` run) clean, and verified live
+via a throwaway debug test: `LOOK` at the real H4 cell shows "Water
+(Level 3)", and `WATER, FALL` correctly clears it. Total modeled
+commands: **48/313** — genuinely higher via new implementation, not a
+recount.
+
+**How to apply**: a source already partially mined (CRASH 29) can have
+sibling pages never checked (CRASH 31's own Signpost column, a
+different issue's own regular feature) — worth searching for MORE
+coverage from the same publication, not just re-reading the one page
+already found. When a new mechanic's own room name is confirmed
+elsewhere in this project's existing data (H4 is already real, named
+"Water"), that's a strong, low-risk placement — check for an exact
+name match before assuming a new fact has nowhere to attach to.
 
 ## Open next steps
 

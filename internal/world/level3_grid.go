@@ -224,6 +224,6 @@ var level3Cells = []*Room{
 	{ID: level3Room("F7"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("F8"), North: level3Room("E7")}},
 	{ID: level3Room("G2"), Name: "Two", Level: 3},
 	{ID: level3Room("G4"), Level: 3, Monster: "Wyvern", MonsterHealth: 3},
-	{ID: level3Room("H4"), Name: "Water", Level: 3},
+	{ID: level3Room("H4"), Name: "Water", Level: 3, Water: true},
 	{ID: level3Room("F8"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("E8"), West: level3Room("F7")}, Monster: "Troll", MonsterHealth: 3},
 }

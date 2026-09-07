@@ -195,6 +195,21 @@ type Room struct {
 	// feature, not a one-off.
 	Fire bool
 
+	// Water is a real, sourced hazard obstacle (round 169) - distinct
+	// from Fire (which blocks passage into a neighboring room until the
+	// player has the Clasp; Water instead needs a specific SPOKEN
+	// command to clear, the same shape as Guards, not an item). Source:
+	// CRASH magazine issue 31's "Signpost" adventure column (a reader's
+	// tip, crashonline.org.uk/31/signpost.htm — genuinely new source,
+	// found while re-checking CRASH for more Heavy on the Magick
+	// coverage beyond issue 29's review already used for rounds
+	// 128/129): "To get past the water say 'Water, fall'." Level3Grid's
+	// H4 cell is already real, sourced, tight-crop-verified as literally
+	// named "Water" (round 105-ish) - an exact, unambiguous match, not
+	// a guess at which room this refers to. See game.passWater for the
+	// real "WATER, FALL" command this gates.
+	Water bool
+
 	// HasTable is true for a real, sourced room fixture: the CASA
 	// walkthrough repeatedly uses "EXAMINE TABLE" as a command in
 	// specific named rooms (Room of Misery, Trollwynd, Sothic Complex,

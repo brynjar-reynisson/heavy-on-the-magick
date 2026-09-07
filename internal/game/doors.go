@@ -23,6 +23,23 @@ func (g *Game) passGuards() string {
 	return "The guards step aside and let you pass."
 }
 
+// passWater handles the confirmed real command "WATER, FALL" (round
+// 169; source: CRASH magazine issue 31's "Signpost" adventure column,
+// crashonline.org.uk/31/signpost.htm - "To get past the water say
+// 'Water, fall'"). The same conversation-form-obstacle shape as
+// passGuards (a spoken command, not a carried item like Fire/Clasp),
+// clearing a real Water hazard - see world.Room.Water's doc comment
+// for the exact-cell sourcing (Level3Grid's H4, already independently
+// confirmed as literally named "Water").
+func (g *Game) passWater() string {
+	room := g.World.CurrentRoom()
+	if room == nil || !room.Water {
+		return "There is no water here to command."
+	}
+	room.Water = false
+	return "The water falls away and lets you pass."
+}
+
 // payToll handles a real, distinct door mechanic (see world.Room.TollItem's
 // doc comment): unlike a typed DoorPasswords password, a Toll door
 // requires actually carrying and spending the named item (the confirmed
