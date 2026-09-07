@@ -274,11 +274,26 @@ package world
 // one of the 4 demons' Charms with no CollodonsPile placement; this
 // makes Asmodee's invocation reachable in real default-mode gameplay
 // for the first time, the same pattern as Sword/Sunflower above.
+//
+// Secunda Porta's "Sign" (round 122): a DIFFERENT kind of source this
+// time - not the numbered map, but the manual's own opening narrative
+// (round 110's PDF text extraction). Right after describing Axil
+// finding the Grimoire and leaving the starting room, it says: "In the
+// next room was a Sign . . ." CollodonsPile's own confirmed walkthrough
+// path (see above) already establishes Secunda Porta as the exact next
+// room from Room of Misery (East exit) - so this narrative line is a
+// real, sourced description of Secunda Porta specifically, not generic
+// flavor. "Sign" is confirmed real vocabulary (parser.Vocabulary; also
+// one of the manual's own "Merphish object names"). Deliberately NOT
+// linked to any specific numbered-map Sign entry (e.g. #6 "Leo, Key of
+// Nickel") - which exact Sign this is (if any specific zodiac one)
+// isn't confirmed, so only the bare fact of a Sign being present is
+// added, not a guessed Zodiac/metal-key association.
 func CollodonsPile() *World {
 	w := New(roomMisery)
 	for _, r := range []*Room{
 		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta}, Items: []string{"Grimoire", "Poison-smeared book"}, HasTable: true},
-		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}},
+		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}, Items: []string{"Sign"}},
 		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "Troll", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll"}, HasTable: true},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget", "Erlstone"}, HasTable: true, Monster: "Vampire", MonsterHealth: 2},

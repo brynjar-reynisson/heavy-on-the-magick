@@ -4867,6 +4867,39 @@ Verified via a real `Handle("INVENTORY")` call at a fresh game start:
 
 Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 122: gave Secunda Porta a real Sign, sourced from the manual's own narrative once more
+
+After another Stop-hook rejection, same framing, continued round 121's
+"mine the manual's opening narrative, not just its mechanics sections"
+approach and found one more concrete fact right at the end of that
+same passage: immediately after Axil finds the Grimoire and leaves the
+starting room, the manual states "In the next room was a Sign . . ."
+`CollodonsPile`'s own already-confirmed walkthrough path establishes
+Secunda Porta as the EXACT next room from Room of Misery (its one real
+exit, East) — so this isn't generic flavor text, it's a real, sourced
+description of a specific, already-playable room. "Sign" is confirmed
+real vocabulary (also one of the manual's own "Merphish object names").
+
+Added `Items: []string{"Sign"}` to Secunda Porta, deliberately NOT
+linked to any specific numbered-map Sign entry (e.g. #6 "Leo, Key of
+Nickel") — which exact Sign, if any zodiac-specific one, isn't
+confirmed, so only the bare fact of a Sign being present was added,
+consistent with this project's discipline against fabricating
+precision a source doesn't give.
+
+Verified via a real `Handle` sequence (`New()` → `EAST` → `LOOK`):
+
+```
+Secunda Porta (Level 2)
+(room description not yet extracted from the original game)
+You see: Sign
+Exits: North
+```
+
+Added `TestCollodonsPileSecundaPortaHasSign`; checked no existing test
+assumed Secunda Porta had no items (none did). Ran the full
+`gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

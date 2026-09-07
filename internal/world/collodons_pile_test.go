@@ -211,6 +211,25 @@ func TestCollodonsPileWolfdorpHasWerewolf(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileSecundaPortaHasSign pins round 122: the manual's own
+// opening narrative ("In the next room was a Sign . . .") describes the
+// room right after Room of Misery, which CollodonsPile's own confirmed
+// walkthrough path already establishes as Secunda Porta. See
+// CollodonsPile's doc comment.
+func TestCollodonsPileSecundaPortaHasSign(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomSecundaPorta]
+	found := false
+	for _, item := range room.Items {
+		if item == "Sign" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Secunda Porta Items = %v, want it to include \"Sign\"", room.Items)
+	}
+}
+
 // TestCollodonsPileMethosHasVampire pins the round-71 addition: Methos
 // is a real, connected, reachable room, and zone_monsters.go's
 // independently-sourced "Methos: Wraith x1" sighting - cross-validated
