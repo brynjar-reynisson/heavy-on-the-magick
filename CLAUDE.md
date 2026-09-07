@@ -6309,6 +6309,67 @@ moved from "actively yielding new facts" to "already fully mined" and
 resist manufacturing a placement from weaker evidence (visual
 proximity) just to keep the round's "shipped code" streak going.
 
+### Round 149: found the poster's own OTHER half had never been read at full resolution either — LevelThreeItems and LevelFourItems, ported for the first time
+
+After another Stop-hook rejection, same framing, checked whether the
+same "never actually read at full resolution" gap round 147/148 found
+for `heavymap-levels1-2.jpg` also applied to its sibling file,
+`heavymap-levels3-4-poster.jpg` (Level 3/4's half of the same official
+Gargoyle Games poster). It did — and unlike Level One/Two (already
+fully ported to `LevelOneItems`/`LevelTwoItems` since round 10-12),
+**Level Three and Level Four had never had their own item lists
+extracted from this poster at all**, a real, previously-unnoticed gap
+in an already-owned source.
+
+Read both grids carefully at full resolution and added
+`LevelThreeItems`/`LevelFourItems`, following the EXACT same honest
+convention `LevelOneItems`/`LevelTwoItems` already established
+(item-to-level association only, no fabricated grid position or
+connectivity, transcribed as read, not deduplicated). Several real
+cross-confirmations turned up along the way:
+
+- **"Spell-Transfusion"** (Level Three) matches the already-confirmed
+  real TRANSFUSION spell and the numbered map's own #29 "Scroll
+  (TRANSFUSION spell)."
+- **"Scroll Cauldron"** (Level Three) independently corroborates the
+  numbered map's #50 "Cauldron of cold iron (scroll inside)" from a
+  completely different source.
+- **"Rabak"** (Level Four) matches the already-placed "Doubt of Rabak"
+  special room (`level4_grid.go`'s D3) — added
+  `TestLevelFourItemsCrossConfirmRabak`, mirroring the existing Pile
+  Collodom cross-confirmation test.
+- **Level Four's own "Skull"/"Head Bone"/"Iron Key"..."Thigh Bone"/
+  "Ulna Head" cluster** independently corroborates round 139's
+  CAULDRON, ACHAD ritual ingredients (Ulna, Thigh, Skull) all
+  appearing together on this same level.
+- **"+ One Magick Grade"** (Level Three) is a SECOND real "+1 Grade"
+  location, distinct from Level Two's own (round 84's original find) —
+  confirms this isn't a one-off marker, though neither is tied to a
+  specific room yet.
+
+Also caught and fixed 2 real transcription errors in the ALREADY-
+SHIPPED `LevelTwoItems`, now correctable with this round's higher
+resolution: "Clasp (Tire)" was really "Clasp (Fire)" (matching the
+already-confirmed Clasp/Fire mechanic), and "One Magick Grail" was
+really "One Magick Grade" (matching Level Three's own version of the
+same marker, now visible for the first time).
+
+Extended `TestLevelItemsNonEmptyAndTagged` to cover both new lists.
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean.
+
+**How to apply**: when one half of a paired source turns out to have
+unread content (round 147/148's poster), always check whether the
+OTHER half has the same gap rather than assuming it was already fully
+mined just because it looks similar — here, the sibling file hadn't
+even had its basic item list extracted at all, a bigger gap than
+either half of the first poster had. Re-reading an old source at
+higher resolution is also a legitimate way to catch and fix real
+transcription errors from early rounds (round 12's original pass
+predates most of this project's now-standard "measure, don't eyeball"
+discipline) — don't assume old data is settled just because it already
+shipped.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
