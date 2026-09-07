@@ -97,11 +97,10 @@ var StartupMelody = []byte{
 // shared speaker output bit (E's period from StartupMelody's current
 // note, L's from SecondaryMelody's) — not simple alternation and not
 // true multi-channel mixing, closer to a beat-frequency/interference
-// pattern. MixNotes's sample-averaging remains this port's own
-// simplification of that (reproducing the exact bit-interleave is a
-// separate, not-yet-attempted task), but it's now a documented
-// simplification of a KNOWN real mechanism, not a guess at an unknown
-// one.
+// pattern. Round 112 implemented that exact mechanism
+// (audio.RenderXORInterleaved); audio.MixNotes's sample-averaging
+// remains available too, as a simpler/cheaper approximation, not
+// because the real mechanism is still unknown.
 var SecondaryMelody = []byte{
 	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
 	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,

@@ -112,20 +112,25 @@ func NewGUI(g *game.Game, roomArt map[string]image.Image) *GUI {
 }
 
 // playStartupMelody plays the real, extracted audio.StartupMelody
-// MIXED with audio.SecondaryMelody (round 99 — previously StartupMelody
-// alone, round 93). The disassembly (see SecondaryMelody's doc comment)
-// found the real Z80 sound routine reads both note streams together on
-// every call, via two independently-advancing pointers — the most
-// direct reading of that fact is the original plays them AT THE SAME
-// TIME, not one requiring a separate manual keypress to ever be heard
-// (SecondaryMelody's B-key binding, still available below, only ever
-// exercised it in isolation). audio.MixNotes's doc comment is explicit
-// this is an honest best-effort approximation (sample averaging), not
-// a proven-faithful reproduction of the real single-bit-speaker
-// combining trick. Fire-and-forget, same as playBlip - doesn't block
-// Update()/gameplay while it plays.
+// combined with audio.SecondaryMelody (round 99 — previously
+// StartupMelody alone, round 93). The disassembly (see SecondaryMelody's
+// doc comment) found the real Z80 sound routine reads both note streams
+// together on every call, via two independently-advancing pointers —
+// the most direct reading of that fact is the original plays them AT
+// THE SAME TIME, not one requiring a separate manual keypress to ever
+// be heard (SecondaryMelody's B-key binding, still available below,
+// only ever exercised it in isolation).
+//
+// Round 112: uses audio.RenderXORInterleaved, not round 99's
+// audio.MixNotes — round 111 traced the real single-bit-speaker
+// combining mechanism from the disassembly (bit-level XOR interleaving
+// of two independently-clocked toggle counters, see
+// tStatesPerPeriodUnit's doc comment), and RenderXORInterleaved
+// actually reproduces it, rather than MixNotes's simpler sample-
+// averaging stand-in. Fire-and-forget, same as playBlip - doesn't
+// block Update()/gameplay while it plays.
 func (gui *GUI) playStartupMelody() {
-	samples := hotmaudio.MixNotes(hotmaudio.StartupMelody, hotmaudio.SecondaryMelody, 0.15, hotmaudio.SampleRate)
+	samples := hotmaudio.RenderXORInterleaved(hotmaudio.StartupMelody, hotmaudio.SecondaryMelody, 0.15, hotmaudio.SampleRate)
 	pcm := hotmaudio.ToStereo16(samples)
 	player := gui.audioCtx.NewPlayerFromBytes(pcm)
 	player.Play()

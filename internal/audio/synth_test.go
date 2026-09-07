@@ -151,6 +151,122 @@ func TestMixNotesPadsShorterStream(t *testing.T) {
 	}
 }
 
+// TestXORTickTogglesFirstIterationCancels pins the real traced
+// behavior (see xorTickToggles's doc comment): both counters start at
+// 1 every tick, so the very first iteration always wraps BOTH of them
+// simultaneously - two toggles that cancel out, producing no audible
+// edge, even though a real period is always eventually reached.
+func TestXORTickTogglesFirstIterationCancels(t *testing.T) {
+	toggles := xorTickToggles(5, 7, 96)
+	if len(toggles) != 0 {
+		t.Errorf("xorTickToggles(5, 7, 96) = %v, want no toggles (both counters wrap on iteration 1 and cancel)", toggles)
+	}
+}
+
+// TestXORTickTogglesSinglePeriod hand-verifies the exact T-state
+// offsets of every toggle for a single active counter (periodB=0,
+// silence): iteration 1 wraps E (starts at 1) and reloads it to
+// periodA=5, producing one toggle at t=96; the next wrap is 5
+// iterations later (5*96=480 T-states after that), at t=576.
+func TestXORTickTogglesSinglePeriod(t *testing.T) {
+	toggles := xorTickToggles(5, 0, 600)
+	want := []float64{96, 576}
+	if len(toggles) != len(want) {
+		t.Fatalf("xorTickToggles(5, 0, 600) = %v, want %v", toggles, want)
+	}
+	for i := range want {
+		if toggles[i] != want[i] {
+			t.Errorf("xorTickToggles(5, 0, 600)[%d] = %v, want %v", i, toggles[i], want[i])
+		}
+	}
+}
+
+// TestXORTickTogglesBothSilent covers periodA=periodB=0 (neither
+// stream has a valid note this tick): no counter ever wraps, so no
+// toggles occur at all - real silence, not just a near-DC low tone.
+func TestXORTickTogglesBothSilent(t *testing.T) {
+	toggles := xorTickToggles(0, 0, 1000)
+	if len(toggles) != 0 {
+		t.Errorf("xorTickToggles(0, 0, 1000) = %v, want no toggles", toggles)
+	}
+}
+
+func TestTickPeriodPastEndIsSilence(t *testing.T) {
+	if got := tickPeriod([]byte{5}, 1); got != 0 {
+		t.Errorf("tickPeriod([]byte{5}, 1) = %d, want 0 (past the end - silence)", got)
+	}
+}
+
+func TestTickPeriodMatchesPitchTable(t *testing.T) {
+	got := tickPeriod([]byte{0}, 0)
+	want := int(PitchTable[NoteIndex(0)])
+	if got != want {
+		t.Errorf("tickPeriod([]byte{0}, 0) = %d, want %d (PitchTable[NoteIndex(0)])", got, want)
+	}
+}
+
+// TestTogglesToSamplesHoldsLevelBetweenToggles covers the basic PCM
+// conversion: the level should stay constant between toggle events and
+// flip exactly at each one.
+func TestTogglesToSamplesHoldsLevelBetweenToggles(t *testing.T) {
+	// 1 sample = cpuHz/sampleRate T-states; pick round numbers so each
+	// sample corresponds to exactly 100 T-states.
+	const sr = 35000 // cpuHz(3.5e6)/sr = 100 T-states per sample
+	samples := togglesToSamples([]float64{250, 550}, 1000, sr)
+	// sample i covers T-state i*100; toggle at 250 falls between
+	// samples 2 (200T) and 3 (300T) -> flips starting sample 3; toggle
+	// at 550 flips starting sample 6 (600T).
+	want := []float32{1, 1, 1, -1, -1, -1, 1, 1, 1, 1}
+	if len(samples) != len(want) {
+		t.Fatalf("len(samples) = %d, want %d", len(samples), len(want))
+	}
+	for i := range want {
+		if samples[i] != want[i] {
+			t.Errorf("samples[%d] = %v, want %v (full: %v)", i, samples[i], want[i], samples)
+		}
+	}
+}
+
+// TestRenderXORInterleavedSilentWhenNoValidNotes covers total silence
+// (both streams past their end / no valid notes anywhere): the output
+// should be constant (no toggles ever occur), not an error or garbage.
+func TestRenderXORInterleavedSilentWhenNoValidNotes(t *testing.T) {
+	samples := RenderXORInterleaved([]byte{41}, []byte{41}, 0.01, SampleRate) // 41 = PitchTableTerminator position, invalid
+	if len(samples) == 0 {
+		t.Fatal("RenderXORInterleaved with no valid notes produced no samples")
+	}
+	for i, s := range samples {
+		if s != 1 {
+			t.Fatalf("samples[%d] = %v, want a constant 1 (no toggles - both streams silent)", i, s)
+		}
+	}
+}
+
+// TestRenderXORInterleavedProducesAudibleOutput covers the real,
+// shipped melodies together: confirms real toggles actually occur (not
+// silence) and the output is real length (matching StartupMelody's
+// total tick count, the longer of the two once SecondaryMelody's own
+// silence-padding is accounted for isn't relevant here since
+// StartupMelody is shorter - SecondaryMelody is the longer stream).
+func TestRenderXORInterleavedProducesAudibleOutput(t *testing.T) {
+	samples := RenderXORInterleaved(StartupMelody, SecondaryMelody, 0.15, SampleRate)
+	wantLen := int(float64(len(SecondaryMelody)) * 0.15 * float64(SampleRate))
+	if samples == nil || len(samples) < wantLen-SampleRate || len(samples) > wantLen+SampleRate {
+		t.Errorf("len(samples) = %d, want approximately %d (SecondaryMelody's %d ticks * 0.15s * %d Hz)", len(samples), wantLen, len(SecondaryMelody), SampleRate)
+	}
+	allSame := true
+	first := samples[0]
+	for _, s := range samples {
+		if s != first {
+			allSame = false
+			break
+		}
+	}
+	if allSame {
+		t.Error("RenderXORInterleaved(StartupMelody, SecondaryMelody, ...) produced constant output - want real audible toggling")
+	}
+}
+
 func TestWriteWAVProducesValidHeader(t *testing.T) {
 	samples := SquareWave(440, 0.001, SampleRate)
 	var buf bytes.Buffer

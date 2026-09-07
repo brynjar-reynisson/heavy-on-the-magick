@@ -33,10 +33,9 @@ const cpuHz = 3_500_000.0
 // bit-level XOR interleaving of two independently-clocked toggle
 // counters on one shared speaker bit — closer to a beat-frequency/
 // interference pattern than either "true 2-channel mixing" or
-// MixNotes's sample-averaging approximation (see MixNotes's doc
-// comment — that simplification still stands; this finding explains
-// WHY it's a simplification, but reproducing the real bit-interleave
-// exactly is a separate, not-yet-attempted task).
+// MixNotes's sample-averaging approximation. Round 112 implemented
+// this exact mechanism directly — see RenderXORInterleaved/
+// xorTickToggles below, MixNotes's honest-approximation sibling.
 //
 // Cycle count for the DOMINANT path (a "no-wrap" iteration — the most
 // common case for typical PitchTable values, since they're mostly
@@ -133,6 +132,120 @@ func RenderNotes(notes []byte, noteDurationSec float64, sampleRate int) []float3
 	return out
 }
 
+// xorTickToggles reproduces the beeper loop's real bit-level dual-
+// counter toggle mechanism (see tStatesPerPeriodUnit's doc comment) for
+// ONE melody tick lasting tStates T-states, given the tick's two
+// current PitchTable period values (0 means that stream has no valid
+// note this tick — its counter never wraps, so it contributes no
+// toggles). Returns the T-state offset, from the start of this tick,
+// of every real speaker-bit toggle.
+//
+// Traced from the disassembly (round 111/112): both counters (E for
+// the first stream, L for the second) are freshly set to 1 at the
+// start of EVERY tick (`POP DE`/the second `CALL 64649` both leave the
+// low byte at 1, right before the loop at 64733 begins) — NOT carried
+// over from the previous tick. This means the very first loop
+// iteration of every tick always wraps BOTH counters simultaneously,
+// which cancels out (`toggled = !toggled` applied twice) and produces
+// no audible edge — but does reload both counters to their real
+// periods (periodA, periodB) for the rest of the tick. Each
+// tStatesPerIteration-T-state step after that decrements both
+// counters, toggling (and reloading) independently whichever one
+// reaches zero — literal bit-level XOR interleaving on one shared
+// speaker line, not alternation or additive mixing.
+func xorTickToggles(periodA, periodB int, tStates float64) []float64 {
+	const tStatesPerIteration = 96.0
+	eCount, lCount := 1, 1
+	var toggles []float64
+	for t := tStatesPerIteration; t <= tStates; t += tStatesPerIteration {
+		toggled := false
+		if periodA > 0 {
+			eCount--
+			if eCount <= 0 {
+				toggled = !toggled
+				eCount = periodA
+			}
+		}
+		if periodB > 0 {
+			lCount--
+			if lCount <= 0 {
+				toggled = !toggled
+				lCount = periodB
+			}
+		}
+		if toggled {
+			toggles = append(toggles, t)
+		}
+	}
+	return toggles
+}
+
+// tickPeriod looks up notes[i]'s real PitchTable period value the same
+// way RenderNotes does (via NoteIndex), or 0 (silence — see
+// xorTickToggles) if i is past the end of notes or the note decodes
+// outside PitchTable's valid range.
+func tickPeriod(notes []byte, i int) int {
+	if i >= len(notes) {
+		return 0
+	}
+	idx := NoteIndex(notes[i])
+	if idx < 0 || idx >= len(PitchTable) {
+		return 0
+	}
+	return int(PitchTable[idx])
+}
+
+// togglesToSamples renders a sequence of speaker-bit toggle times
+// (absolute T-state offsets from the start of playback, strictly
+// increasing) into a square-wave PCM buffer covering totalTStates
+// T-states of real Z80 time. Starts at level +1, matching SquareWave's
+// convention.
+func togglesToSamples(toggleTStates []float64, totalTStates float64, sampleRate int) []float32 {
+	n := int(totalTStates / cpuHz * float64(sampleRate))
+	out := make([]float32, n)
+	level := float32(1)
+	ti := 0
+	for i := range out {
+		sampleTState := float64(i) / float64(sampleRate) * cpuHz
+		for ti < len(toggleTStates) && toggleTStates[ti] <= sampleTState {
+			level = -level
+			ti++
+		}
+		out[i] = level
+	}
+	return out
+}
+
+// RenderXORInterleaved renders two note streams (see RenderNotes)
+// together using the REAL traced bit-level combining mechanism
+// (xorTickToggles), rather than MixNotes's sample-averaging
+// approximation — round 112's follow-up to round 111's tracing work,
+// closing the gap between "the mechanism is documented" and "it's
+// actually reproduced." Each tick's period pair comes from a and b's
+// current bytes (tickPeriod); the shorter stream contributes silence
+// (period 0) for any tick past its own end, same convention as
+// MixNotes's padding. Still not a claim of bit-EXACT hardware
+// accuracy: tStatesPerIteration (96, from xorTickToggles) is itself
+// the dominant-path approximation documented on tStatesPerPeriodUnit,
+// and the exact per-tick iteration COUNT (real registers B and C,
+// still untraced) is derived from noteDurationSec the same way every
+// other render in this package already does, not extracted.
+func RenderXORInterleaved(a, b []byte, noteDurationSec float64, sampleRate int) []float32 {
+	n := max(len(a), len(b))
+	tStatesPerTick := noteDurationSec * cpuHz
+	var allToggles []float64
+	cumT := 0.0
+	for i := range n {
+		periodA := tickPeriod(a, i)
+		periodB := tickPeriod(b, i)
+		for _, tg := range xorTickToggles(periodA, periodB, tStatesPerTick) {
+			allToggles = append(allToggles, cumT+tg)
+		}
+		cumT += tStatesPerTick
+	}
+	return togglesToSamples(allToggles, cumT, sampleRate)
+}
+
 // MixNotes renders two note streams (see RenderNotes) and combines them
 // into one PCM buffer by averaging samples — round 98's Stop-hook
 // feedback specifically flagged SecondaryMelody as "not integrated into
@@ -151,13 +264,14 @@ func RenderNotes(notes []byte, noteDurationSec float64, sampleRate int) []float3
 // output bit — not literal additive mixing (physically impossible for
 // a 1-bit toggle, as already suspected) and not simple alternation
 // either, closer to a beat-frequency/interference pattern between the
-// two streams' current pitches. Averaging here is still an honest,
-// simple stand-in (reproducing the exact bit-interleave in the PCM
-// renderer is a separate, not-yet-attempted task) — but now a
-// documented simplification of a KNOWN mechanism, not a guess at an
-// unknown one. The shorter stream is silence-padded to the longer
-// one's length so both play to completion (StartupMelody and
-// SecondaryMelody are different lengths).
+// two streams' current pitches. Round 112 implemented that exact
+// mechanism as RenderXORInterleaved — this averaging-based function
+// remains a simpler, cheaper approximation kept for comparison/
+// fallback use, not because the real mechanism is still unknown. The
+// shorter stream is silence-padded to the longer one's length so both
+// play to completion (StartupMelody and SecondaryMelody are different
+// lengths) — RenderXORInterleaved handles that the same way, via
+// tickPeriod treating a past-the-end index as silence.
 func MixNotes(a, b []byte, noteDurationSec float64, sampleRate int) []float32 {
 	sa := RenderNotes(a, noteDurationSec, sampleRate)
 	sb := RenderNotes(b, noteDurationSec, sampleRate)

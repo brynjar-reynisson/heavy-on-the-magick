@@ -4531,6 +4531,47 @@ unaffected either way. Ran the full `gofmt`/`build`/`vet`/`test` suite
 clean — no test hardcoded the old absolute-frequency value, so nothing
 broke.
 
+### Round 112: implemented the real traced XOR-interleave mechanism, closing round 111's "documented but not reproduced" gap
+
+After another Stop-hook rejection that specifically distinguished
+"improved precision of an existing approximation" (round 111) from
+"completion" — noting `MixNotes` was still sample-averaging, not a
+bit-exact reproduction — closed exactly that gap. Round 111 traced
+that the real Z80 loop toggles two independently-clocked counters (one
+per note stream's current pitch) and only flips the speaker bit when
+one wraps; this round actually implements that mechanism instead of
+leaving it as documentation.
+
+Added `xorTickToggles` (the low-level, directly-testable core: given
+two PitchTable period values and a tick's T-state duration, returns
+the exact T-state offset of every real toggle) — re-derived from the
+disassembly that BOTH counters start at 1 at the beginning of every
+tick (not carried over from the previous tick, as first assumed), so
+the very first loop iteration of each tick always double-wraps and
+cancels (no audible edge) before settling into each counter's real
+period for the rest of the tick. `tickPeriod` (silence past a stream's
+end, same convention as `MixNotes`), `togglesToSamples` (converts an
+absolute toggle-time list into held-level PCM), and
+`RenderXORInterleaved` (ties it together for two full streams) round
+out the implementation.
+
+Verified thoroughly: `xorTickToggles`'s exact toggle T-state offsets
+are hand-derived and pinned in tests (e.g. period 5 → toggles at
+T-states 96 and 576, matching a hand trace exactly, confirmed on
+independent re-derivation before trusting it); `togglesToSamples`'s
+sample-level flips are hand-verified for a small case; the real
+`StartupMelody`/`SecondaryMelody` pair confirmed to actually produce
+audible (non-constant) output. Wired into `cmd/hotm-gui`'s actual
+startup call (replacing `MixNotes`) and `cmd/render-melody`'s new
+`-track xor` option (now the tool's default). Verified live via a
+throwaway build (renders/plays normally, no crash) and confirmed the
+`-track xor`/`-track mixed` WAV outputs match in size/duration
+(differing only in HOW the streams combine, as expected). `MixNotes`
+itself is unchanged and still available — now honestly described as a
+simpler/cheaper alternative, not a stand-in for an unknown mechanism.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
