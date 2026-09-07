@@ -229,21 +229,23 @@ func NewLevel4Exploration() *Game {
 //
 // CALL is a real, confirmed 4th spell (parser.Vocabulary has the word;
 // the numbered map poster's key list independently has "Scroll (CALL
-// spell)" at one of its numbered cells) with an honest stub response —
-// no source found so far states what it actually does, unlike BLAST/
-// FREEZE/TRANSFUSION. SPELLS lists it as confirmed-but-unmodeled rather
-// than omitting it. Round 87: tight-cropped the numbered map's own
-// maze grid and confirmed CALL's numbered cell (#22, "Scroll (CALL
-// spell)") sits within the Trollwynd zone banner, right alongside #21
-// ("Cabinet (clasp - Salamander charm)") and #24 (Nougat, already
-// independently placed here via the CASA walkthrough) - real evidence
-// that the numbered map's CALL-spell Scroll and Salamander-charm Clasp
-// are the SAME already-placed Scroll and Clasp items in Trollwynd
-// (world.CollodonsPile), not separate, unplaced ones. Still an honest
-// stub - having identified WHICH scroll doesn't reveal what CALL
-// actually does - but it does mean the player can genuinely be
-// carrying CALL's real component item when trying it, not just an
-// abstractly-referenced one.
+// spell)" at one of its numbered cells). Round 87: tight-cropped the
+// numbered map's own maze grid and confirmed CALL's numbered cell
+// (#22, "Scroll (CALL spell)") sits within the Trollwynd zone banner,
+// right alongside #21 ("Cabinet (clasp - Salamander charm)") and #24
+// (Nougat, already independently placed here via the CASA walkthrough)
+// - real evidence that the numbered map's CALL-spell Scroll and
+// Salamander-charm Clasp are the SAME already-placed Scroll and Clasp
+// items in Trollwynd (world.CollodonsPile), not separate, unplaced
+// ones. Round 125: CALL's actual EFFECT is now confirmed too, by a
+// direct first-hand account of playing the game (The CRPG Addict's
+// 2016 blog post) - "CALL... allows you to summon an annoying NPC...
+// You can CALL him once you get the spell scroll" - "him" being Apex,
+// confirmed by the same post's next line about needing "APEX, THANKS"
+// to banish him again (see game.call). This was the single most-
+// repeated "confirmed real spell, effect unknown" gap in the project,
+// open since round 87 - now genuinely resolved, not just better-
+// sourced.
 //
 // LEFT and RIGHT (round 83, Merphish keywords "L"/"R") are real,
 // frequently-used commands in the CASA walkthrough - appearing to turn
@@ -303,7 +305,7 @@ func (g *Game) Handle(cmd parser.Command) string {
 	case "SWAP":
 		return "You SWAP the information shown in Window 1. (Merphish 'Z' - the manual confirms this exact effect precisely, but the underlying dual-window display and what Window 1 actually shows aren't modeled yet.)"
 	case "CALL":
-		return "You start to CALL... (a real confirmed spell - the numbered map's own key list ties it to a Scroll in the Trollwynd zone, the same real Scroll already placed there - but no source found so far states what it actually does, so this is an honest stub, not invented behavior.)"
+		return g.call()
 	case "LEFT", "RIGHT":
 		return "You turn " + strings.ToLower(cmd.Verb) + ". (Merphish keywords L/R - real, frequently-used CASA walkthrough commands, appearing to turn the player without moving them - but this port has no facing-direction state to turn, so this is an honest stub rather than an invented turn mechanic.)"
 	case "INVOKE":
@@ -375,11 +377,15 @@ const combatStaminaCost = 5
 // saveStaminaCost is charged on every successful Save Game/Save Axil -
 // a real, sourced mechanic (round 86): the manual states plainly "Saving
 // a game will deplete your Stamina, so that a Save cannot be used as an
-// easy way of getting round difficult choices!" No exact amount is
-// given, so this is an honest placeholder, deliberately smaller than
-// combatStaminaCost to match the manual's own relative framing
-// ("Combat will reduce your Stamina a lot, most other actions will
-// reduce it a little").
+// easy way of getting round difficult choices!" No exact amount was
+// given by the manual, so this started as an honest placeholder,
+// deliberately smaller than combatStaminaCost to match the manual's own
+// relative framing ("Combat will reduce your Stamina a lot, most other
+// actions will reduce it a little") — round 125 found the EXACT real
+// number from a direct first-hand playthrough account (The CRPG
+// Addict's 2016 blog post): "You also lose 1 stamina point every time
+// you save" — this already-placeholder value of 1 turns out to be
+// exactly right, not a guess anymore.
 const saveStaminaCost = 1
 
 // transfusion handles TRANSFUSION. Confirmed real effect (restores
@@ -516,6 +522,26 @@ func (g *Game) invoke(target string) string {
 // hint text.
 func (g *Game) talkToApex() string {
 	return "Apex the Ogre eyes you warily, then grunts. He might share what he knows, if you treat him with respect."
+}
+
+// call handles the CALL spell (round 125) — confirmed for the first
+// time by a direct first-hand account of actually playing the game
+// (The CRPG Addict's 2016 blog post on "Heavy on the Magick"): "Later,
+// you find some additional spells, including... CALL, which allows
+// you to summon an annoying NPC... You can CALL him once you get the
+// spell scroll". "Him" is Apex — the same post's next sentence
+// describes needing "APEX, THANKS" to banish him again, the exact
+// real dismiss phrase this port already had wired since the HELP
+// round. This closes the single most-repeated "confirmed real spell,
+// effect unknown" gap in the whole project (open since round 87).
+// Requires the Scroll, matching the numbered map's own key list tying
+// CALL to a Scroll in the Trollwynd zone (already real, placed data) —
+// consistent with the new source's "once you get the spell scroll".
+func (g *Game) call() string {
+	if !g.hasItem("Scroll") {
+		return "You don't have the spell Scroll needed to CALL."
+	}
+	return "You CALL out... " + g.talkToApex()
 }
 
 // "APEX, THANKS" (handled inline in Handle) is the hint screen's own
@@ -757,7 +783,7 @@ Finally, if in a panic, BLAST without an object!`
 // in the listing since they're genuinely real spells, just not
 // re-labeled as part of the manual's core "Spells:" trio.
 func (g *Game) spells() string {
-	return "Known spells: INVOKE (summon a demon), BLAST (combat), FREEZE (combat), TRANSFUSION (restore Stamina), CALL (confirmed real, effect unknown)."
+	return "Known spells: INVOKE (summon a demon), BLAST (combat), FREEZE (combat), TRANSFUSION (restore Stamina), CALL (summon Apex, needs the Scroll)."
 }
 
 // inventory lists the player's carried items. "INVENTORY" is a real,

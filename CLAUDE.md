@@ -4965,6 +4965,55 @@ Verified via real `Handle` calls: `Handle("O 2")` returns exactly
 response. Added `TestHandleOptionsNumericSlots`. Ran the full
 `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 125: CALL's effect finally confirmed — a genuinely NEW source, not another angle on an old one
+
+After another Stop-hook rejection, same framing, tried something this
+project hadn't done in many, many rounds: a live web search for OTHER
+sources beyond the manual/CASA walkthrough/numbered map this project
+has re-mined repeatedly. Found "The CRPG Addict" — a real, detailed
+2016 blog post documenting an actual first-hand playthrough of this
+exact game. Fetched it directly and asked for verbatim quotes (not a
+summary — this project's own round-82 lesson about summarized answers
+being less trustworthy than direct quotes), and it delivered the
+single most-repeated open item in this whole project: **CALL summons
+Apex.** Verbatim: "Later, you find some additional spells, including
+TRANSFUSION, which swaps experience for stamina, and CALL, which
+allows you to summon an annoying NPC... You can CALL him once you get
+the spell scroll, but most of the time, he just showed up unbidden and
+generally stood in my way until I said 'APEX, THANKS' to banish him."
+"Him" being Apex is confirmed by that same sentence naming the exact
+real dismiss phrase this port has had wired since the HELP round
+("APEX, THANKS") — a strong, independent cross-check that this really
+is describing Apex, not some other NPC.
+
+This closes a gap that has been open, honestly labeled as an
+unresolved stub, since round 87 — nearly 40 rounds. Implemented
+`game.call()`: requires the Scroll (already real, sourced, placed data
+in Trollwynd since round 63/87 — consistent with the new source's
+"once you get the spell scroll"), and on success calls the same
+`talkToApex()` used by the real "APEX, TALK" conversation form.
+Updated `SPELLS`'s listing and `Handle`'s doc comment accordingly.
+
+The same blog post also gave a bonus, independent confirmation: "You
+also lose 1 stamina point every time you save" — `saveStaminaCost`
+had been an honest placeholder of exactly 1 since round 86; this
+upgrades it from "reasonable guess" to "confirmed correct," no code
+change needed, just an honesty upgrade in the doc comment.
+
+Verified thoroughly: rewrote the old `TestHandleCallIsRecognizedStub`
+into `TestHandleCallWithoutScrollFails` (honest failure, not a free
+summon) and `TestHandleCallWithScrollSummonsApex`, plus a full real
+`Handle` sequence walking to Trollwynd, picking up the real Scroll,
+and casting CALL for real:
+
+```
+CALL (no scroll): You don't have the spell Scroll needed to CALL.
+PICKUP SCROLL: You pick up the Scroll.
+CALL (with scroll): You CALL out... Apex the Ogre eyes you warily, then grunts...
+```
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

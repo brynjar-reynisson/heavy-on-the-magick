@@ -594,15 +594,29 @@ func TestHandleSpellsListsRealSpells(t *testing.T) {
 	}
 }
 
-// TestHandleCallIsRecognizedStub covers the real, confirmed 4th spell
-// (see Handle's doc comment for the two-source sourcing) - recognized,
-// not lumped in with "I don't understand that word", but honestly not
-// yet modeled since no source states its effect.
-func TestHandleCallIsRecognizedStub(t *testing.T) {
+// TestHandleCallWithoutScrollFails covers round 125's real, confirmed
+// effect for CALL (see Handle's doc comment for the sourcing - The
+// CRPG Addict's direct playthrough account): without the Scroll, it
+// honestly fails rather than summoning Apex for free.
+func TestHandleCallWithoutScrollFails(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("CALL"))
 	if strings.Contains(got, "don't understand") {
 		t.Errorf("Handle(CALL) = %q, want it recognized as a real spell, not an unknown word", got)
+	}
+	if strings.Contains(got, "Apex") {
+		t.Errorf("Handle(CALL) without the Scroll = %q, want it to fail, not summon Apex", got)
+	}
+}
+
+// TestHandleCallWithScrollSummonsApex covers CALL's real confirmed
+// effect end-to-end: with the Scroll carried, it summons Apex.
+func TestHandleCallWithScrollSummonsApex(t *testing.T) {
+	g := New()
+	g.Player.Items = append(g.Player.Items, "Scroll")
+	got := g.Handle(parser.Parse("CALL"))
+	if !strings.Contains(got, "Apex") {
+		t.Errorf("Handle(CALL) with the Scroll carried = %q, want it to summon Apex", got)
 	}
 }
 
