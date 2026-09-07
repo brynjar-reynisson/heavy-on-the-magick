@@ -3962,6 +3962,61 @@ just a successful compile:
 Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
 `-count=2` run) clean.
 
+### Extracted Level 1's corridor screenshot too, and made cmd/hotm-gui's corridor-art support level-generic
+
+After another Stop-hook rejection, whose specific complaint included
+"one corridor sample screenshot was just extracted but only displays in
+`-level2grid` mode", answered it directly: went back to
+`heavymap-speccy-screenshots.png` and extracted a second real room
+screenshot — Level 1's own cell A1 (top-left quadrant of the atlas,
+confirmed via its own printed "Level 1" heading, not assumed from
+position). Located precisely the same way as round 96 (find the
+atlas's own printed row "A"/column "1" labels via progressive
+cropping, then pixel-scan for the room's actual magenta/black boundary
+— not darkness-gap scanning): column 1 starts x≈571, row A content
+starts y≈484, matching Level 2's row-A y≈490 almost exactly (a good
+consistency check that both quadrants share one row-grid layout).
+Ported as `graphics.Level1CorridorSample()`, tested the same way as
+`CorridorSample()`.
+
+Rather than bolt on a second special-cased bool (repeating round 97's
+`showCorridorArt` shape), generalized `cmd/hotm-gui`'s wiring: `NewGUI`
+now takes an `image.Image` (nil = no art for this level) instead of a
+level2-specific bool, and `selectGame()` returns the right sample
+(`Level1CorridorSample()`, `CorridorSample()`, or `nil`) per flag —
+extending to a 3rd/4th level later is now a one-line addition, not a
+struct-shape change. This is directly the kind of "easy to extend"
+work the standing goal explicitly asks for, not just more content.
+
+**Live verification caught something worth recording, but it was a
+tooling mistake, not a game bug**: the first `-level1grid` screenshot
+appeared to show neither the corridor art NOR the Ghost portrait that
+should have covered for it (Level 1's A1, unlike Level 2's, has a real
+monster — `Monster: "Ghost"` — so the design correctly prioritizes the
+monster's portrait over corridor art there). Before concluding
+anything was broken, wrote a quick throwaway unit test constructing a
+real `NewGUI`-equivalent `GUI` (portraits map populated the same way
+`NewGUI` does) and called `currentPortraitName()` directly — confirmed
+it correctly returns `("ghost", true)`, so the *logic* was right.
+Re-examined the screenshot capture itself and found the actual bug:
+this round's PowerShell script had dropped the
+`SetProcessDpiAwarenessContext` call CLAUDE.md has documented as
+required (this display's 1.25x DPI scale) since round 75 — re-adding
+it changed the captured window size from a wrong 526×422 to the
+correct 658×527, and the re-captured screenshot showed the Ghost
+portrait rendering exactly where expected. A real lesson re-confirmed,
+not a new one: always re-check a documented environment quirk before
+trusting a screenshot that looks wrong, rather than assuming the code
+regressed.
+
+Also re-verified default (no-flags) mode still renders correctly after
+the `NewGUI` signature's second real change in two rounds (`bool` →
+`image.Image` this time) — same DPI-correct screenshot method, title/
+room/stats/HUD all correct, no corridor art shown (as expected for
+`nil`).
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

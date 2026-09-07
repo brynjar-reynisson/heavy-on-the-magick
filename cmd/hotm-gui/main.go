@@ -12,6 +12,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"image"
 	"image/color"
 	"log"
 	"strings"
@@ -67,14 +68,13 @@ var keyDirections = map[ebiten.Key]world.Direction{
 }
 
 type GUI struct {
-	g               *game.Game
-	log             []string
-	audioCtx        *ebitenaudio.Context
-	hud             *ebiten.Image // confirmed rune glyphs, rendered once via graphics.PNGRenderer
-	portraits       map[string]*ebiten.Image
-	startRoomID     world.RoomID
-	showCorridorArt bool          // true only in -level2grid mode, see drawCorridorSample
-	corridorSample  *ebiten.Image // real extracted Level2Grid-A1 screenshot, see graphics.CorridorSample
+	g              *game.Game
+	log            []string
+	audioCtx       *ebitenaudio.Context
+	hud            *ebiten.Image // confirmed rune glyphs, rendered once via graphics.PNGRenderer
+	portraits      map[string]*ebiten.Image
+	startRoomID    world.RoomID
+	corridorSample *ebiten.Image // real extracted room screenshot for the active level's A1 cell, if one exists yet (nil otherwise) - see drawCorridorSample
 }
 
 // NewGUI builds a live GUI session around g. Round 97: previously always
@@ -84,18 +84,18 @@ type GUI struct {
 // frontends. Passing the constructed *game.Game in (rather than
 // building it internally) lets main's -levelNgrid flags select which
 // world to play, the same way cmd/hotm's flags already do.
-// showCorridorArt is true only for -level2grid, the one mode with a
-// real extracted room screenshot (round 96's CorridorSample, Level2Grid's
-// own confirmed A1 starting cell) to show.
-func NewGUI(g *game.Game, showCorridorArt bool) *GUI {
+// corridorArt is the real extracted room screenshot for whichever level
+// is active, or nil for levels with no extraction yet (round 96/98's
+// CorridorSample/Level1CorridorSample, currently the only two) — see
+// selectGame.
+func NewGUI(g *game.Game, corridorArt image.Image) *GUI {
 	gui := &GUI{
-		g:               g,
-		audioCtx:        ebitenaudio.NewContext(hotmaudio.SampleRate),
-		startRoomID:     g.World.Current,
-		showCorridorArt: showCorridorArt,
+		g:           g,
+		audioCtx:    ebitenaudio.NewContext(hotmaudio.SampleRate),
+		startRoomID: g.World.Current,
 	}
-	if showCorridorArt {
-		gui.corridorSample = ebiten.NewImageFromImage(graphics.CorridorSample())
+	if corridorArt != nil {
+		gui.corridorSample = ebiten.NewImageFromImage(corridorArt)
 	}
 	gui.appendLog(describeRoom(gui.g))
 	gui.hud = buildHUD()
@@ -505,17 +505,19 @@ func (gui *GUI) drawPortrait(screen *ebiten.Image) {
 	screen.DrawImage(img, op)
 }
 
-// drawCorridorSample shows the real extracted Level2Grid-A1 room
-// screenshot (round 96's graphics.CorridorSample, round 97 GUI wiring)
-// while the player is still AT that real starting room in -level2grid
-// mode — the first time this port shows actual extracted room-scene
-// art (as opposed to a demon/monster/NPC portrait) during live
-// gameplay. Scaled down to fit the corner (the source screenshot,
-// 516x300, is wider than this GUI's whole 512px screen at native size)
-// and skipped whenever a portrait is already showing there, to avoid
-// the two overlapping.
+// drawCorridorSample shows the real extracted room screenshot for the
+// active level's A1 cell (round 96/98's CorridorSample/
+// Level1CorridorSample, round 97 GUI wiring) while the player is still
+// AT that real starting room — the first time this port shows actual
+// extracted room-scene art (as opposed to a demon/monster/NPC portrait)
+// during live gameplay. Scaled down to fit the corner (the source
+// screenshots are wider than this GUI's whole 512px screen at native
+// size) and skipped whenever a portrait is already showing there, to
+// avoid the two overlapping. gui.corridorSample is nil for levels with
+// no extraction yet (3 and 4, as of round 98), in which case this is a
+// no-op.
 func (gui *GUI) drawCorridorSample(screen *ebiten.Image) {
-	if !gui.showCorridorArt || gui.g.World.Current != gui.startRoomID {
+	if gui.corridorSample == nil || gui.g.World.Current != gui.startRoomID {
 		return
 	}
 	if _, ok := gui.currentPortraitName(); ok {
@@ -638,8 +640,10 @@ func (gui *GUI) Layout(outsideWidth, outsideHeight int) (int, int) {
 // cmd/hotm's text frontend already has (round 97 gave this GUI the same
 // selection, previously CollodonsPile-only) - returns the constructed
 // *game.Game plus a title suffix describing the mode, for the window
-// title/log so it's clear which world is active.
-func selectGame() (g *game.Game, modeTitle string, showCorridorArt bool) {
+// title/log so it's clear which world is active, plus the real
+// extracted A1-cell room screenshot for that level if one exists yet
+// (round 98: Level 1 and 2 both do now; 3 and 4 don't, so nil there).
+func selectGame() (g *game.Game, modeTitle string, corridorArt image.Image) {
 	level1Grid := flag.Bool("level1grid", false, "play the extracted Level 1 grid (64 real cells) instead of CollodonsPile")
 	level2Grid := flag.Bool("level2grid", false, "play the extracted Level 2 grid (50 real, fully-connected cells) instead of CollodonsPile")
 	level3Grid := flag.Bool("level3grid", false, "play the extracted Level 3 grid (47 real cells: 41 fully-connected plus 6 isolated rooms) instead of CollodonsPile")
@@ -648,23 +652,23 @@ func selectGame() (g *game.Game, modeTitle string, showCorridorArt bool) {
 
 	switch {
 	case *level1Grid:
-		return game.NewLevel1Exploration(), " (Level 1 grid)", false
+		return game.NewLevel1Exploration(), " (Level 1 grid)", graphics.Level1CorridorSample()
 	case *level2Grid:
-		return game.NewLevel2Exploration(), " (Level 2 grid)", true
+		return game.NewLevel2Exploration(), " (Level 2 grid)", graphics.CorridorSample()
 	case *level3Grid:
-		return game.NewLevel3Exploration(), " (Level 3 grid)", false
+		return game.NewLevel3Exploration(), " (Level 3 grid)", nil
 	case *level4Grid:
-		return game.NewLevel4Exploration(), " (Level 4 grid)", false
+		return game.NewLevel4Exploration(), " (Level 4 grid)", nil
 	default:
-		return game.New(), "", false
+		return game.New(), "", nil
 	}
 }
 
 func main() {
-	g, modeTitle, showCorridorArt := selectGame()
+	g, modeTitle, corridorArt := selectGame()
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Heavy on the Magick — Go port (live)" + modeTitle)
-	if err := ebiten.RunGame(NewGUI(g, showCorridorArt)); err != nil {
+	if err := ebiten.RunGame(NewGUI(g, corridorArt)); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("bye")

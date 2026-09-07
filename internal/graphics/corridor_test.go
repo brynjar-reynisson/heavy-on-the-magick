@@ -1,17 +1,30 @@
 package graphics
 
-import "testing"
+import (
+	"image"
+	"testing"
+)
 
 // TestCorridorSampleDecodesToRealArt pins the embedded real room
 // screenshot (see corridor.go's doc comment for sourcing) actually
 // decoding to plausible, non-trivial art — not a corrupt or placeholder
 // image.
 func TestCorridorSampleDecodesToRealArt(t *testing.T) {
-	img := CorridorSample()
+	assertRealArt(t, CorridorSample(), "CorridorSample()")
+}
+
+// TestLevel1CorridorSampleDecodesToRealArt mirrors
+// TestCorridorSampleDecodesToRealArt for round 98's Level 1 equivalent.
+func TestLevel1CorridorSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, Level1CorridorSample(), "Level1CorridorSample()")
+}
+
+func assertRealArt(t *testing.T, img image.Image, label string) {
+	t.Helper()
 	bounds := img.Bounds()
 	w, h := bounds.Dx(), bounds.Dy()
 	if w < 100 || h < 50 {
-		t.Errorf("CorridorSample() size = %dx%d, want a real room-scene-sized image (at least 100x50)", w, h)
+		t.Errorf("%s size = %dx%d, want a real room-scene-sized image (at least 100x50)", label, w, h)
 	}
 
 	first := img.At(bounds.Min.X, bounds.Min.Y)
@@ -25,6 +38,6 @@ func TestCorridorSampleDecodesToRealArt(t *testing.T) {
 		}
 	}
 	if allSame {
-		t.Error("CorridorSample() is a single flat color - want real varied room art")
+		t.Errorf("%s is a single flat color - want real varied room art", label)
 	}
 }
