@@ -7,7 +7,7 @@ package world
 // into a distinct RoomID range via level4Room. 17 of the 27 form one
 // fully connected component reachable from the start room; the other 10
 // (Scales/D2, Doubt of Rabak/D3, a Wyvern/E5, The Crypt/F1, Exit/G2,
-// Pride/G4, plus 3 more Wyverns at A1/A3/A5 and a Wraith at A6 - see
+// Pride/G4, plus 3 more Wyverns at A1/A3/A5 and a Vampire at A6 - see
 // "ROUND 72" below) are real, deliberately isolated special rooms/
 // monsters - see the "ROUND 58"/"ROUND 68"/"ROUND 72" sections below.
 //
@@ -22,7 +22,7 @@ package world
 // the source poster - and a divider histogram confirmed the same 8
 // row-boundary positions apply here too. Direct tight-crop confirmation:
 // the true row A (y=327-353) shows real, distinctly labeled content
-// (A4, A6, A7, A8, plus 3 Werewolf icons and a Wraith) that the old
+// (A4, A6, A7, A8, plus 3 Werewolf icons and a Vampire) that the old
 // 7-row data never included at all - it isn't blank space. Every cell
 // this file already had was therefore really one row further down than
 // its old label said (old "A" was actually the map's real row B, etc.):
@@ -98,20 +98,22 @@ package world
 // A1, A3, A5 (blue "w", identical glyph shape to the wyvern legend entry)
 // - together with E5 that's 4 total, an exact match for "Wormring:
 // Wyvern x4", real cross-validation of both this map reading and that
-// independent source. Also found a real Wraith at A6 (red "w" - wraith
-// and wyvern share the same lowercase glyph shape per the map's own
-// legend, distinguished only by color, same as the established wraith/
-// medusa color-sharing case) - A6 sits in the yellow "Methos" zone
-// (columns 6-8 of row A), independently corroborating last round's
-// zone_monsters.go-sourced Wraith placement in CollodonsPile's Methos
-// room from a completely different source (this map's own icon data,
-// not the zone-sighting list). A candidate at B6 (small red blob) tight-
-// crop-verified as the "up level" arrow icon, not a monster - correctly
-// excluded, same false-positive pattern seen throughout this project's
-// icon scans. A2 and A4 were also checked and are plain cells (A4 shows
-// only its own coordinate label). All 4 new finds added as isolated
-// cells (no Exits), same convention as every other special room/monster
-// in this file - connectivity for row A wasn't extracted.
+// independent source. Also found a real Vampire at A6 (red "w" - the
+// creature this project called "Wraith" until round 74, see Level1Grid's
+// doc comment for the rename - and wyvern share the same lowercase
+// glyph shape per the map's own legend, distinguished only by color,
+// same as the established vampire/medusa color-sharing case) - A6 sits
+// in the yellow "Methos" zone (columns 6-8 of row A), independently
+// corroborating last round's zone_monsters.go-sourced Vampire placement
+// in CollodonsPile's Methos room from a completely different source
+// (this map's own icon data, not the zone-sighting list). A candidate at
+// B6 (small red blob) tight-crop-verified as the "up level" arrow icon,
+// not a monster - correctly excluded, same false-positive pattern seen
+// throughout this project's icon scans. A2 and A4 were also checked and
+// are plain cells (A4 shows only its own coordinate label). All 4 new
+// finds added as isolated cells (no Exits), same convention as every
+// other special room/monster in this file - connectivity for row A
+// wasn't extracted.
 //
 // Item icon placements were NOT extracted for this file (real
 // follow-up work, same as Levels 1-3), and room descriptions use the
@@ -181,9 +183,9 @@ var level4Cells = []*Room{
 
 	// 4 more real, tight-crop-verified finds in row A (see this file's
 	// "round 72" doc update): 3 Wyverns completing the Wormring zone's
-	// confirmed count of 4, plus a Wraith in the Methos zone.
+	// confirmed count of 4, plus a Vampire in the Methos zone.
 	{ID: level4Room("A1"), Level: 4, Monster: "Wyvern", MonsterHealth: 3},
 	{ID: level4Room("A3"), Level: 4, Monster: "Wyvern", MonsterHealth: 3},
 	{ID: level4Room("A5"), Level: 4, Monster: "Wyvern", MonsterHealth: 3},
-	{ID: level4Room("A6"), Level: 4, Monster: "Wraith", MonsterHealth: 2},
+	{ID: level4Room("A6"), Level: 4, Monster: "Vampire", MonsterHealth: 2},
 }

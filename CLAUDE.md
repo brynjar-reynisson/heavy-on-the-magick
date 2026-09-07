@@ -3028,8 +3028,91 @@ Sword in Wolfdorp, walked away to Room of Stings, then
 Wolfdorp — the first real fast-travel mechanic in this port, built
 entirely from facts that had been on file for many rounds already.
 
+### Found a major new source (real in-game screenshots), corrected "Wraith" to "Vampire" project-wide
+
+After another Stop-hook rejection, same framing, first shipped a small
+real fix: wired `"APEX, THANKS"`, the hint screen's own confirmed
+dismiss phrase (`"To dismiss say \"APEX, THANKS\""`, quoted since the
+HELP round but never actually handled) to a real response.
+
+Then, following the "check whether other walkthroughs add rooms"
+open-next-step, re-fetched the CASA walkthrough once more asking
+specifically for any room name outside the already-extracted 13 — a
+clean negative (this source only ever traces those 13 zone-level
+rooms, confirmed again). A web search for other resources turned up a
+genuinely new one this project had never checked: **maps.speccy.cz's
+"Speccy Screenshot Maps"** — a 10056×5493 composite image
+(`heavymap-speccy-screenshots.png`, now saved in this repo, credited to
+its creator Hippy Smith) built from REAL captured screenshots of the
+actual running 1986 game, not a hand-drawn or computer-redrawn fan map
+like every other source used so far. Confirmed genuine on inspection:
+individual tiles show real ZX Spectrum in-game corridor scenes with the
+actual "©1986 Gargoyle Games" copyright screen, a real spell-casting
+UI screen, and — most valuably — a full "Demons & monsters" portrait
+gallery: detailed pixel-art portraits with the game's own real on-screen
+name printed under each one, for all 4 demons, Apex the Ogre, and all 8
+monster types.
+
+Cross-checking that gallery against this project's existing monster
+roster found 7 of 8 exact matches (Troll, Ghost, Slug, Cyclops, Medusa,
+Werewolf, Wyvern) but a real discrepancy on the 8th: the gallery's
+portrait is labeled **"VAMPIRE"**, not "Wraith". This project's "Wraith"
+name traces back to heavymap-grid-clean.gif's own hand-typed legend
+gloss ("w wraith") — a fan's plain-English label for an icon, not a
+captured screen. A real captured creature-portrait screen naming the
+same creature is more authoritative than a fan's own gloss on an icon,
+the same reasoning already applied to prior corrections (Nidus/Midus,
+Sothic/Solthic). Checked for a possible false alarm first: "WRAITH" IS
+a real word in the game's own extracted 316-word vocabulary — but so is
+"VAMPIRE", and only one has a matching portrait, which settles it. Also
+re-checked the CASA walkthrough for either word directly: a clean
+negative for both, no help either way but no contradiction either.
+
+Renamed "Wraith" to "Vampire" everywhere in the codebase — all 6
+existing placements (Level1Grid's F2/G1/G2/H1, Level2Grid's A5,
+Level4Grid's A6, CollodonsPile's Methos), `zone_monsters.go`'s sighting
+data, `cmd/hotm-gui`'s `monsterGlyphColor` map, and every doc comment
+and test referencing the old name — while explicitly leaving
+"Wraithvale" (an unrelated zone/place name, independently confirmed via
+the map's own colored zone labeling) untouched. Along the way, also
+wrote up a real finding from the previous round that had gone
+undocumented: Level2Grid's A5 sits within the visually-confirmed
+"Wraithvale" zone, exactly matching zone_monsters.go's "Wraithvale:
+Wraith x1" sighting — closing that round's other open discrepancy.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified live: `go run ./cmd/hotm`, walked to
+Methos, and `BLAST`ed the Vampire — "The Vampire is destroyed!"
+
+This new atlas is a significant, not-yet-fully-exploited source for
+future rounds: real per-cell in-game screenshots could in principle
+give ground-truth connectivity (superseding the pixel-guessed border
+detection used for Levels 1-4) and real pixel-art assets (demon/NPC/
+monster portraits, corridor wall styles) for a genuinely more faithful
+`internal/graphics` renderer — noted in "Open next steps" below.
+
 ## Open next steps
 
+- **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
+  Screenshot Maps", credited to Hippy Smith) is a 10056×5493 composite
+  of REAL in-game screenshots for all 4 levels, plus a full demon/
+  monster/NPC portrait gallery with real on-screen names — a
+  fundamentally different (and more authoritative) kind of source than
+  every hand-drawn/computer-redrawn fan map used so far. Only lightly
+  explored this round (the portrait gallery, which resolved the Wraith/
+  Vampire naming question). Real, high-value follow-up work: (1) each
+  individual room tile is a genuine captured screenshot of that exact
+  room's real in-game graphics — extracting these directly (wall
+  textures, door icons, item icons, the real corridor rendering style)
+  could make `internal/graphics`/`cmd/hotm-gui` meaningfully more
+  faithful than today's plain colored-letter icons; (2) the composite
+  shows real connecting lines/arrows between rooms — if precisely
+  readable, this could give ground-truth connectivity for Level 4's
+  still-unextracted rows and Level 1's disconnected fragment, superseding
+  the pixel-guessed border-detection method; (3) cross-check the
+  individual room screenshots against already-shipped monster/item
+  placements for further validation or corrections, the same way the
+  Wraith/Vampire and Nidus/Sothic corrections were found.
 - **Level 1's connectivity has been extracted AND is playable**
   (`internal/world/level1_grid.go` + `game.NewLevel1Exploration()`,
   reachable via `go run ./cmd/hotm -level1grid` — 64 real per-cell rooms,

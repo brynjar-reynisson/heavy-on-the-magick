@@ -54,7 +54,7 @@ package world
 // with what's already confirmed real elsewhere in this project. Not
 // confirmed fact, just a plausible explanation for a genuine finding.
 //
-// Monster placements (Ghost/Werewolf/Wraith/Cyclops) come from the same
+// Monster placements (Ghost/Werewolf/Vampire/Cyclops) come from the same
 // map's icon legend, read precisely against an overlaid coordinate grid
 // (not eyeballed) - see CLAUDE.md. MonsterHealth values are placeholders
 // (same honesty caveat as CollodonsPile's), not extracted exact values.
@@ -69,6 +69,27 @@ package world
 // and cell labels are independently re-verified correct via A7/A8/F3/H5
 // spot checks) - just these 2 monster icons' column got mis-read at
 // original extraction time. Fixed once found.
+//
+// CORRECTION (round 74): "Wraith" renamed to "Vampire" everywhere in
+// this project. heavymap-grid-clean.gif's own hand-annotated legend
+// (used for every monster placement so far) glossed its red "w" icon as
+// "wraith" in plain English, but a second, independent source - a
+// composite of REAL in-game screenshots (maps.speccy.cz's "Speccy
+// Screenshot Maps" atlas, created by Hippy Smith from actual captured
+// gameplay, not hand-drawn) - includes a full "Demons & monsters"
+// portrait gallery with the game's own real on-screen creature name
+// printed under each portrait. That gallery lists exactly 8 monster
+// types; 7 (Troll, Ghost, Slug, Cyclops, Medusa, Werewolf, Wyvern) are
+// exact matches for this project's existing roster, and the 8th is
+// labeled "VAMPIRE", not "Wraith" - strong evidence this project's
+// "Wraith" name came from an approximate fan gloss on the OTHER map's
+// legend, not the game's actual name for the creature. (The word
+// "WRAITH" does independently appear in the game's real extracted
+// 316-word vocabulary too, but so does "VAMPIRE" - both are real
+// recognized words; only one has a matching creature portrait, which is
+// the deciding evidence here.) Not a new 9th monster - a name correction
+// for the same red "w"-icon creature already placed at Level1Grid's F2/
+// G1/G2/H1, Level2Grid's A5, Level4Grid's A6, and CollodonsPile's Methos.
 //
 // "Guards" icons (at D4 and D7, unchanged by the above - they were
 // correctly placed originally) are modeled as world.Room.Guards, not
@@ -185,22 +206,22 @@ var level1Cells = []*Room{
 	{ID: level1Room("E7"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("E8"), South: level1Room("F7"), West: level1Room("E6")}},
 	{ID: level1Room("E8"), Level: 1, Exits: map[Direction]RoomID{South: level1Room("F8"), West: level1Room("E7")}},
 	{ID: level1Room("F1"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("F2"), North: level1Room("E1"), South: level1Room("G1")}},
-	{ID: level1Room("F2"), Level: 1, Exits: map[Direction]RoomID{North: level1Room("E2"), South: level1Room("G2"), West: level1Room("F1")}, Monster: "Wraith", MonsterHealth: 2},
+	{ID: level1Room("F2"), Level: 1, Exits: map[Direction]RoomID{North: level1Room("E2"), South: level1Room("G2"), West: level1Room("F1")}, Monster: "Vampire", MonsterHealth: 2},
 	{ID: level1Room("F3"), Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: level1Room("E3"), East: level1Room("F4"), South: level1Room("G3")}},
 	{ID: level1Room("F4"), Level: 1, Exits: map[Direction]RoomID{North: level1Room("E4"), South: level1Room("G4"), West: level1Room("F3")}},
 	{ID: level1Room("F5"), Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{North: level1Room("E5")}},
 	{ID: level1Room("F6"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("F7"), North: level1Room("E6"), South: level1Room("G6")}},
 	{ID: level1Room("F7"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("F8"), North: level1Room("E7"), South: level1Room("G7"), West: level1Room("F6")}},
 	{ID: level1Room("F8"), Level: 1, Exits: map[Direction]RoomID{North: level1Room("E8"), South: level1Room("G8"), West: level1Room("F7")}},
-	{ID: level1Room("G1"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("G2"), North: level1Room("F1"), South: level1Room("H1")}, Monster: "Wraith", MonsterHealth: 2},
-	{ID: level1Room("G2"), Level: 1, Exits: map[Direction]RoomID{North: level1Room("F2"), South: level1Room("H2"), West: level1Room("G1")}, Monster: "Wraith", MonsterHealth: 2},
+	{ID: level1Room("G1"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("G2"), North: level1Room("F1"), South: level1Room("H1")}, Monster: "Vampire", MonsterHealth: 2},
+	{ID: level1Room("G2"), Level: 1, Exits: map[Direction]RoomID{North: level1Room("F2"), South: level1Room("H2"), West: level1Room("G1")}, Monster: "Vampire", MonsterHealth: 2},
 	{ID: level1Room("G3"), Name: "Exit", Level: 1, Exits: map[Direction]RoomID{North: level1Room("F3"), East: level1Room("G4")}},
 	{ID: level1Room("G4"), Level: 1, Exits: map[Direction]RoomID{North: level1Room("F4"), West: level1Room("G3")}},
 	{ID: level1Room("G5"), Level: 1},
 	{ID: level1Room("G6"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("G7"), North: level1Room("F6"), South: level1Room("H6")}},
 	{ID: level1Room("G7"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("G8"), North: level1Room("F7"), South: level1Room("H7"), West: level1Room("G6")}},
 	{ID: level1Room("G8"), Level: 1, Exits: map[Direction]RoomID{North: level1Room("F8"), South: level1Room("H8"), West: level1Room("G7")}},
-	{ID: level1Room("H1"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("H2"), North: level1Room("G1")}, Monster: "Wraith", MonsterHealth: 2},
+	{ID: level1Room("H1"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("H2"), North: level1Room("G1")}, Monster: "Vampire", MonsterHealth: 2},
 	{ID: level1Room("H2"), Level: 1, Exits: map[Direction]RoomID{North: level1Room("G2"), West: level1Room("H1")}},
 	{ID: level1Room("H3"), Level: 1, Exits: map[Direction]RoomID{East: level1Room("H4")}},
 	{ID: level1Room("H4"), Level: 1, Exits: map[Direction]RoomID{West: level1Room("H3")}},

@@ -102,7 +102,7 @@ func TestLevel2GridExitsAreReciprocal(t *testing.T) {
 // legend, not eyeballed from the full grid view.
 func TestLevel2GridHasVerifiedMonsters(t *testing.T) {
 	w := Level2Grid()
-	want := map[string]string{"A5": "Wraith", "C2": "Slug", "H6": "Ghost"}
+	want := map[string]string{"A5": "Vampire", "C2": "Slug", "H6": "Ghost"}
 	for code, monster := range want {
 		room := w.Rooms[level2Room(code)]
 		if room == nil {

@@ -129,16 +129,17 @@ func TestCollodonsPileHasTablePlacements(t *testing.T) {
 	}
 }
 
-// TestCollodonsPileMethosHasWraith pins the round-71 addition: Methos
+// TestCollodonsPileMethosHasVampire pins the round-71 addition: Methos
 // is a real, connected, reachable room, and zone_monsters.go's
 // independently-sourced "Methos: Wraith x1" sighting - cross-validated
 // against other exact matches in that same list - is the first monster
-// this room has had (see CollodonsPile's doc comment).
-func TestCollodonsPileMethosHasWraith(t *testing.T) {
+// this room has had (see CollodonsPile's doc comment). Renamed from
+// "Wraith" to "Vampire" in round 74 (see Level1Grid's doc comment).
+func TestCollodonsPileMethosHasVampire(t *testing.T) {
 	w := CollodonsPile()
 	room := w.Rooms[roomMethos]
-	if room.Monster != "Wraith" || room.MonsterHealth <= 0 {
-		t.Errorf("Methos Monster = %q (health %d), want a live Wraith", room.Monster, room.MonsterHealth)
+	if room.Monster != "Vampire" || room.MonsterHealth <= 0 {
+		t.Errorf("Methos Monster = %q (health %d), want a live Vampire", room.Monster, room.MonsterHealth)
 	}
 }
 

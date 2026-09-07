@@ -15,7 +15,7 @@ import (
 func TestMonsterGlyphColorMatchesLegend(t *testing.T) {
 	want := map[string]string{
 		"Troll": "t", "Cyclops": "c", "Ghost": "g", "Slug": "s",
-		"Wraith": "w", "Medusa": "m", "Werewolf": "w", "Wyvern": "w",
+		"Vampire": "w", "Medusa": "m", "Werewolf": "w", "Wyvern": "w",
 	}
 	for name, letter := range want {
 		gc, ok := monsterGlyphColor[name]
@@ -27,10 +27,10 @@ func TestMonsterGlyphColorMatchesLegend(t *testing.T) {
 			t.Errorf("monsterGlyphColor[%q].letter = %q, want %q", name, gc.letter, letter)
 		}
 	}
-	// Wraith and Medusa share one exact color per the legend (only the
+	// Vampire and Medusa share one exact color per the legend (only the
 	// letter distinguishes them); Troll and Cyclops likewise.
-	if monsterGlyphColor["Wraith"].c != monsterGlyphColor["Medusa"].c {
-		t.Error("Wraith and Medusa should share the same confirmed color")
+	if monsterGlyphColor["Vampire"].c != monsterGlyphColor["Medusa"].c {
+		t.Error("Vampire and Medusa should share the same confirmed color")
 	}
 	if monsterGlyphColor["Troll"].c != monsterGlyphColor["Cyclops"].c {
 		t.Error("Troll and Cyclops should share the same confirmed color")

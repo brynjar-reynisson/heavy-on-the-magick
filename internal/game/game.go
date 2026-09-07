@@ -96,7 +96,7 @@ func NewLevel3Exploration() *Game {
 // the game's 4 levels to get this treatment: a 17-cell fully-connected
 // component plus 10 real, deliberately isolated special rooms/monsters
 // (Scales, Doubt of Rabak, a Wyvern, The Crypt, Exit, Pride, plus 3 more
-// Wyverns and a Wraith in row A — see Level4Grid's doc comment). Level
+// Wyverns and a Vampire in row A — see Level4Grid's doc comment). Level
 // 4's calibration had a Level3Grid-style off-by-one-row bug (since
 // corrected by relabeling, not re-extracting), and
 // its real connectivity for the newly-confirmed rows above the 17-cell
@@ -299,6 +299,10 @@ func (g *Game) Handle(cmd parser.Command) string {
 		return g.talkToApex()
 	}
 
+	if strings.EqualFold(cmd.Target, "APEX") && cmd.Verb == "THANKS" {
+		return "You thank Apex. He grunts and returns to his business."
+	}
+
 	if strings.EqualFold(cmd.Target, "ASTAROT") && cmd.Verb != "" {
 		return g.astarotTeleport(cmd.Verb)
 	}
@@ -447,6 +451,11 @@ func (g *Game) invoke(target string) string {
 func (g *Game) talkToApex() string {
 	return "Apex the Ogre eyes you warily, then grunts. He might share what he knows, if you treat him with respect."
 }
+
+// "APEX, THANKS" (handled inline in Handle) is the hint screen's own
+// confirmed real dismiss phrase — "To dismiss say \"APEX, THANKS\"" (see
+// game.help's verbatim text) — quoted in this project since the HELP
+// round but never wired to anything until now.
 
 // astarotTeleport handles the confirmed real conversation-form command
 // "ASTAROT, <location>" - the in-game hint screen's own literal example

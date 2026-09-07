@@ -322,6 +322,11 @@ func (gui *GUI) Draw(screen *ebiten.Image) {
 // see ../../CLAUDE.md's Level 1-3 monster-scan rounds). This is the
 // first time this port has drawn a monster as anything but plain text -
 // a real, sourced graphics improvement, not an invented sprite.
+//
+// "Wraith" renamed to "Vampire" in round 74 (see Level1Grid's doc
+// comment) - the map's own legend glossed this red "w" icon "wraith",
+// but a second, more authoritative source (a real in-game creature-
+// portrait screenshot) confirms the actual name is "Vampire".
 var monsterGlyphColor = map[string]struct {
 	letter string
 	c      color.RGBA
@@ -330,7 +335,7 @@ var monsterGlyphColor = map[string]struct {
 	"Cyclops":  {"c", color.RGBA{132, 132, 0, 255}},
 	"Ghost":    {"g", color.RGBA{0, 255, 0, 255}},
 	"Slug":     {"s", color.RGBA{0, 132, 0, 255}},
-	"Wraith":   {"w", color.RGBA{255, 0, 0, 255}},
+	"Vampire":  {"w", color.RGBA{255, 0, 0, 255}},
 	"Medusa":   {"m", color.RGBA{255, 0, 0, 255}},
 	"Werewolf": {"w", color.RGBA{255, 0, 255, 255}},
 	"Wyvern":   {"w", color.RGBA{0, 132, 255, 255}},
@@ -338,7 +343,7 @@ var monsterGlyphColor = map[string]struct {
 
 // drawMonster renders the current room's real Monster (if any and still
 // alive) as its confirmed letter+color icon, next to the HUD row -
-// previously only ever shown as plain log text ("You see: a Wraith").
+// previously only ever shown as plain log text ("You see: a Vampire").
 // Monster names not in monsterGlyphColor (e.g. CollodonsPile's generic
 // "monster") fall back to a plain white "?", honestly signaling an
 // unconfirmed icon rather than guessing one.

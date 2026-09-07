@@ -12,9 +12,11 @@ func TestLevel4GridHas27Cells(t *testing.T) {
 // tight-crop-verified Wyverns at A1/A3/A5, which together with the
 // already-shipped E5 exactly match zone_monsters.go's "Wormring: Wyvern
 // x4" sighting - real cross-validation between this map's icon data and
-// that independent source. Also pins the real Wraith found at A6
+// that independent source. Also pins the real Vampire found at A6
 // (Methos zone), corroborating the prior round's CollodonsPile Methos
-// Wraith placement from a completely different source.
+// Vampire placement from a completely different source. ("Vampire" is
+// the round-74 rename of what this project called "Wraith" - see
+// Level1Grid's doc comment.)
 func TestLevel4GridWormringWyverns(t *testing.T) {
 	w := Level4Grid()
 	wyverns := []string{"A1", "A3", "A5", "E5"}
@@ -25,8 +27,8 @@ func TestLevel4GridWormringWyverns(t *testing.T) {
 		}
 	}
 	a6 := w.Rooms[level4Room("A6")]
-	if a6 == nil || a6.Monster != "Wraith" || a6.MonsterHealth <= 0 {
-		t.Errorf("room A6 = %+v, want an isolated cell with a live Wraith", a6)
+	if a6 == nil || a6.Monster != "Vampire" || a6.MonsterHealth <= 0 {
+		t.Errorf("room A6 = %+v, want an isolated cell with a live Vampire", a6)
 	}
 }
 

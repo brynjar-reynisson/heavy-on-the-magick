@@ -94,6 +94,17 @@ func TestHandleInvokeSucceedsWithCharm(t *testing.T) {
 	}
 }
 
+// TestHandleApexThanksDismisses pins the hint screen's own confirmed
+// dismiss phrase ("To dismiss say \"APEX, THANKS\"" — see game.help's
+// verbatim text), wired for real for the first time this round.
+func TestHandleApexThanksDismisses(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("APEX, THANKS"))
+	if !strings.Contains(got, "thank Apex") {
+		t.Errorf("Handle(APEX, THANKS) = %q, want a real dismiss response", got)
+	}
+}
+
 func TestHandleAstarotTeleportRequiresSword(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("ASTAROT, WOLFDORP"))

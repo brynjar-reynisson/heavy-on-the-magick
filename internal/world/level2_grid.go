@@ -62,7 +62,7 @@ package world
 // individually re-verified to the current standard, so not included.
 //   - Item icon placements: NOT extracted for this file (real follow-up
 //     work, not guessed). 3 monster placements WERE added in a later
-//     round (Wraith at A5, Slug at C2, Ghost at H6) - each individually
+//     round (Vampire at A5, Slug at C2, Ghost at H6) - each individually
 //     verified with a tight per-cell crop against the icon legend, not
 //     eyeballed from the full grid view (the same lesson the Room of
 //     Claws mistake taught earlier). A pixel-fraction color scan (an
@@ -84,12 +84,24 @@ package world
 // Added here even though Icthys itself is isolated (same honest
 // convention as the rest of this file's isolated named cells).
 //
+// A5's monster (round 74): visually confirmed this cell sits within the
+// cyan-colored "Wraithvale" zone (see known_room_names.go) on the source
+// map - the real zone name behind the already-shipped placement here,
+// exactly matching zone_monsters.go's "Wraithvale: Wraith x1" sighting
+// (recorded before this file's own monster scan ever ran). Also renamed
+// "Wraith" to "Vampire" project-wide this round - see Level1Grid's doc
+// comment for the full reasoning (a second, more authoritative
+// screenshot-based source's real in-game creature-portrait legend uses
+// "VAMPIRE", not "Wraith"). "Wraithvale" itself is an unrelated zone/
+// place name (confirmed independently via the map's own colored zone
+// labeling), not affected by the creature-name correction.
+//
 // Guards: a later round re-derived this file's own row/column pixel
 // calibration directly (validated against A6/A8's own printed labels,
 // plus the "AGILE STAIR" box - real, at B8 here, not A7/A8 like
 // Level1Grid/Level3Grid) and ran the same monster-color scan used for
 // Level 3 across all 64 cells. It exactly reproduced the 3 already-
-// shipped monsters (Wraith@A5, Slug@C2, Ghost@H6 all matched precisely -
+// shipped monsters (Vampire@A5, Slug@C2, Ghost@H6 all matched precisely -
 // good further validation this file's calibration has no Level1Grid-
 // style bug), and turned up 5 more candidates. Tight-crop-verified each:
 // B1, C8, and D8 are real Guards icons within the 50-cell main
@@ -139,7 +151,7 @@ var level2Cells = []*Room{
 	{ID: level2Room("A2"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A3"), South: level2Room("B2"), West: level2Room("A1")}},
 	{ID: level2Room("A3"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A4"), South: level2Room("B3"), West: level2Room("A2")}},
 	{ID: level2Room("A4"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A5"), South: level2Room("B4"), West: level2Room("A3")}},
-	{ID: level2Room("A5"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A6"), South: level2Room("B5"), West: level2Room("A4")}, Monster: "Wraith", MonsterHealth: 2},
+	{ID: level2Room("A5"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A6"), South: level2Room("B5"), West: level2Room("A4")}, Monster: "Vampire", MonsterHealth: 2},
 	{ID: level2Room("A6"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A7"), South: level2Room("B6"), West: level2Room("A5")}},
 	{ID: level2Room("A7"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A8"), South: level2Room("B7"), West: level2Room("A6")}},
 	{ID: level2Room("A8"), Level: 2, Exits: map[Direction]RoomID{West: level2Room("A7")}},
