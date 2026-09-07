@@ -51,21 +51,36 @@ func RenderASCIIMap(w *World) string {
 
 // roomMarker is a real, at-a-glance indicator of what's actually in a
 // room right now — "!" for a living Monster (real per-room data, see
-// CollodonsPile/Level1Grid's doc comments for sourcing), "#" for a real,
-// un-cleared Guards obstacle (world.Room.Guards — see its doc comment),
-// "*" for one or more Items, or a blank if none of those. A defeated
-// Monster (MonsterHealth <= 0) or a passed Guards obstacle no longer
-// marks the room, so the map reflects real, changing state as the
-// player clears it, not just static room contents. Only one character
-// is shown even if a room has more than one of these (the fixed-width
-// grid layout has no room for more) — Monster takes priority as the
-// most immediately dangerous, then Guards, then Items.
+// CollodonsPile/Level1Grid's doc comments for sourcing), "F" for a real,
+// un-cleared Fire hazard (world.Room.Fire — see its doc comment), "#"
+// for a real, un-cleared Guards obstacle (world.Room.Guards), "D" for a
+// real locked door (DoorPasswords/TollItem — see game.describeCurrentRoom's
+// round 152 LOOK-time hint, which this mirrors), "*" for one or more
+// Items, or a blank if none of those. A defeated Monster
+// (MonsterHealth <= 0), a Clasp-cleared Fire, or a passed Guards
+// obstacle no longer marks the room, so the map reflects real, changing
+// state as the player clears it, not just static room contents. Fire
+// isn't cleared by the Clasp here the way it is in describeCurrentRoom's
+// hint - the map has no player-state parameter to check against, so it
+// shows the room's own real Fire flag unconditionally, an honest,
+// simpler reading for a static map view. Only one character is shown
+// even if a room has more than one of these (the fixed-width grid
+// layout has no room for more) — Monster takes priority as the most
+// immediately dangerous, then Fire (the only one of the remaining three
+// that actually blocks movement), then Guards, then a locked door, then
+// Items.
 func roomMarker(r *Room) string {
 	if r.Monster != "" && r.MonsterHealth > 0 {
 		return "!"
 	}
+	if r.Fire {
+		return "F"
+	}
 	if r.Guards {
 		return "#"
+	}
+	if len(r.DoorPasswords) > 0 || r.TollItem != "" {
+		return "D"
 	}
 	if len(r.Items) > 0 {
 		return "*"

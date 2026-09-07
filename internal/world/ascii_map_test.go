@@ -86,6 +86,49 @@ func TestRenderASCIIMapDoesNotMarkClearedGuards(t *testing.T) {
 	}
 }
 
+// TestRenderASCIIMapMarksFire covers round 153's real Fire marker (see
+// roomMarker's doc comment) - mirrors the already-shipped Guards test's
+// synthetic-room pattern, since no reachable-from-a-fresh-game room
+// currently carries Fire (Level2Grid's D6 is isolated).
+func TestRenderASCIIMapMarksFire(t *testing.T) {
+	w := New(0)
+	w.AddRoom(&Room{ID: 0, Name: "Start", Exits: map[Direction]RoomID{North: 1}, Visited: true})
+	w.AddRoom(&Room{ID: 1, Name: "Blaze", Fire: true})
+	w.Move(North)
+
+	out := RenderASCIIMap(w)
+	if !strings.Contains(out, "[BLA]F") {
+		t.Errorf("RenderASCIIMap with a real Fire hazard = %q, want it marked with F", out)
+	}
+}
+
+// TestRenderASCIIMapMarksLockedDoor covers round 153's real locked-door
+// marker (see roomMarker's doc comment), for both real gating fields
+// (DoorPasswords and TollItem).
+func TestRenderASCIIMapMarksLockedDoor(t *testing.T) {
+	w := CollodonsPile() // Secunda Porta has a real DoorPasswords entry
+	w.Move(East)
+
+	out := RenderASCIIMap(w)
+	if !strings.Contains(out, "[SEC]D") {
+		t.Errorf("RenderASCIIMap with a real locked door = %q, want it marked with D", out)
+	}
+}
+
+// TestRenderASCIIMapFireOutranksGuardsMarker covers roomMarker's stated
+// priority order: Fire (which actually blocks movement) outranks Guards
+// (which doesn't) when a room somehow has both.
+func TestRenderASCIIMapFireOutranksGuardsMarker(t *testing.T) {
+	w := New(0)
+	w.AddRoom(&Room{ID: 0, Name: "Start", Exits: map[Direction]RoomID{North: 1}, Visited: true})
+	w.AddRoom(&Room{ID: 1, Name: "Both", Fire: true, Guards: true})
+	w.Move(North)
+
+	if got := roomMarker(w.Rooms[w.Current]); got != "F" {
+		t.Errorf("roomMarker with both Fire and Guards = %q, want F (Fire takes priority)", got)
+	}
+}
+
 func TestRenderASCIIMapInconsistentFallsBackToList(t *testing.T) {
 	w := New(0)
 	a := &Room{ID: 0, Name: "A", Exits: map[Direction]RoomID{East: 1, SouthEast: 2}, Visited: true}

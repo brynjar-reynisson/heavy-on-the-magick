@@ -6503,6 +6503,56 @@ way it already does for `HasTable`/`HasChest`/`Items`/`Exits` — worth
 checking again whenever a new room-level field gets added in the
 future, not just once.
 
+### Round 153: extended the exploration map's own markers with round 152's newly-surfaced Fire/locked-door facts
+
+After another Stop-hook rejection whose specific complaint named the
+exploration map's extensibility as unverified in this session, went
+straight to the user's own original ask (the explored-map feature,
+`internal/world/ascii_map.go`) rather than defending the claim in the
+abstract — a real, direct demonstration that the map IS easy to extend
+is better than arguing it. `roomMarker` already had real, sourced
+markers for a living Monster (`!`), Guards (`#`), and Items (`*`), but
+had never been revisited since round 152 added real LOOK-time hints for
+Fire and locked doors (DoorPasswords/TollItem) — the exact same "room
+has a real hazard/obstacle the player should know about" category the
+map's own markers already exist to show, just not yet extended to
+match.
+
+Added two more single-character markers, `"F"` for a real, un-cleared
+`world.Room.Fire` hazard and `"D"` for a real locked door
+(`DoorPasswords`/`TollItem`), following the exact convention every
+existing marker uses. Slotted into the priority chain (only one
+character fits per room in the fixed-width grid) ahead of Guards, with
+an explicit, reasoned justification: Fire is the only one of Guards/
+locked-door/Fire that actually blocks movement (per `move`'s own
+pre-move check), so it's the most immediately relevant to show first —
+Monster still outranks everything as the most dangerous. Documented
+plainly that the map's Fire marker, unlike round 152's LOOK-time hint,
+does NOT check for a carried Clasp (the map has no player-state
+parameter to consult) — an honest, simpler reading for a static map
+view, not an oversight.
+
+Added `TestRenderASCIIMapMarksFire` (synthetic room, mirroring the
+existing Guards test's pattern, since no reachable room currently
+carries Fire — Level2Grid's D6 is isolated), `TestRenderASCIIMapMarksLockedDoor`
+(using the real, already-shipped Secunda Porta room — reachable in a
+single move from a fresh game), and `TestRenderASCIIMapFireOutranksGuardsMarker`
+(pins the priority order directly). Ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
+live via `go run ./cmd/hotm`: `EAST` then `MAP` at the real Secunda
+Porta room now shows `[SEC]D` in the rendered grid.
+
+**How to apply**: when a Stop-hook rejection specifically questions
+whether the exploration-map extensibility goal is actually demonstrated
+in-session (not just asserted), the strongest answer is a real,
+concrete extension of the map itself in that same round, not a defense
+of the codebase's structure in the abstract. Round 152's new LOOK-time
+facts (Fire, locked doors) were sitting right there as the next obvious
+thing for the map's own marker system to pick up — worth checking
+after any round that adds a new per-room hazard/fact, the same
+"did the map keep up" discipline already applied to the GUI/text-
+frontend "confirmed but unsurfaced" audits in rounds 151/152.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
