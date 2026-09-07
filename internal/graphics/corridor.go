@@ -63,3 +63,27 @@ func Level1CorridorSample() image.Image {
 	}
 	return img
 }
+
+// assets/level3_corridor_sample.png is Level 3's own real room
+// screenshot (round 103), extracted the same way as Level 1/2's above —
+// this atlas's Level 3 quadrant sits bottom-left (confirmed via its own
+// printed "Level 3" heading), with column 1 starting at x≈574 (matching
+// Level 1's x≈571 almost exactly — the same shared column-grid layout
+// carries down to this quadrant too, a good consistency check) and row
+// A's content starting at y≈3026. This is Level 3's own confirmed real
+// starting room (level3_grid.go: `w := New(level3Room("A1"))`), showing
+// a distinctive altar/table-and-cauldron scene, unlike Level 1 and 2's
+// plain corridor samples.
+//
+//go:embed assets/level3_corridor_sample.png
+var level3CorridorSamplePNG []byte
+
+// Level3CorridorSample decodes the embedded real Level3Grid-A1 room
+// screenshot. Panics on failure, matching CorridorSample() above.
+func Level3CorridorSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(level3CorridorSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded level3_corridor_sample.png: " + err.Error())
+	}
+	return img
+}

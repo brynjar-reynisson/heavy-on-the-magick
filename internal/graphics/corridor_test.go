@@ -19,6 +19,12 @@ func TestLevel1CorridorSampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, Level1CorridorSample(), "Level1CorridorSample()")
 }
 
+// TestLevel3CorridorSampleDecodesToRealArt mirrors
+// TestCorridorSampleDecodesToRealArt for round 103's Level 3 equivalent.
+func TestLevel3CorridorSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, Level3CorridorSample(), "Level3CorridorSample()")
+}
+
 func assertRealArt(t *testing.T, img image.Image, label string) {
 	t.Helper()
 	bounds := img.Bounds()

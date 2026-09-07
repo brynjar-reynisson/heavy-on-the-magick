@@ -4197,6 +4197,38 @@ generic-response classification, a regression pin on known-implemented
 words, and a check that every excluded blind-spot word really is real
 vocabulary). Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 103: extracted Level 3's corridor screenshot too — 3 of 4 levels now have real room art live in cmd/hotm-gui
+
+After another Stop-hook rejection repeating the "2 corridor screenshots
+... only in their respective level-grid modes" framing, extended the
+same proven method (rounds 96/98) to a 3rd level. Level 3's quadrant
+sits bottom-left in `heavymap-speccy-screenshots.png` (confirmed via
+its own printed "Level 3" heading). Column 1 starts at x≈574 — matching
+Level 1's x≈571 almost exactly, a good cross-quadrant consistency
+check — and row A's content starts at y≈3026. Tight-cropped cell A1
+(520×300px): a distinctive altar/table-and-cauldron scene, visually
+different from Level 1/2's plain corridors — real, varied extracted
+content, not a repeat of the same art. This is Level3Grid's own
+already-confirmed real starting room (`level3_grid.go`: `w :=
+New(level3Room("A1"))`).
+
+Added `graphics.Level3CorridorSample()` (identical pattern to
+`CorridorSample()`/`Level1CorridorSample()`, own test). Wiring into
+`cmd/hotm-gui` needed just one line in `selectGame()`'s switch, thanks
+to round 98's generalization from a level2-specific bool to a plain
+`image.Image` — exactly the "easy to extend" payoff that refactor was
+for. Verified live via a throwaway `-level3grid` build: title read "...
+(Level 3 grid)", room correctly "A1", and — unlike Level 1's A1 (which
+has a live monster that correctly takes precedence per the existing
+rule) — Level 3's A1 has no monster (just an Item, "Mantis"), so the
+corridor art rendered cleanly and unobstructed, the way Level 2's did
+in round 97.
+
+3 of 4 levels now show real extracted room art in live gameplay; only
+Level 4 doesn't yet (a real, scoped, obvious next step were this
+pattern to continue). Ran the full `gofmt`/`build`/`vet`/`test` suite
+clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
