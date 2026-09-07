@@ -28,11 +28,6 @@ func TestHandleInvokeSucceedsWithCharm(t *testing.T) {
 // round 131's correction: merely CARRYING the Charm isn't enough, and
 // gets a distinct, honest hint (not the furnace-room punishment, which
 // is reserved for not having the Charm at all).
-
-// TestHandleInvokeCarriedNotDroppedCharmFails pins the other half of
-// round 131's correction: merely CARRYING the Charm isn't enough, and
-// gets a distinct, honest hint (not the furnace-room punishment, which
-// is reserved for not having the Charm at all).
 func TestHandleInvokeCarriedNotDroppedCharmFails(t *testing.T) {
 	g := New()
 	g.Player.Items = append(g.Player.Items, "Sunflower")
@@ -52,14 +47,6 @@ func TestHandleInvokeCarriedNotDroppedCharmFails(t *testing.T) {
 // reject the command, it actually teleports the player to the real
 // Furnace Room. Verifies both the message and the actual World state
 // change, not just text.
-
-// TestHandleInvokeWithoutCharmTeleportsToFurnaceRoom pins round 126's
-// real, sourced punishment mechanic (The CRPG Addict's first-hand
-// playthrough account, the same source round 125 used to resolve
-// CALL's effect): invoking a demon without its Charm doesn't just
-// reject the command, it actually teleports the player to the real
-// Furnace Room. Verifies both the message and the actual World state
-// change, not just text.
 func TestHandleInvokeWithoutCharmTeleportsToFurnaceRoom(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("I MAGOT")) // no Sunflower carried
@@ -71,10 +58,6 @@ func TestHandleInvokeWithoutCharmTeleportsToFurnaceRoom(t *testing.T) {
 	}
 }
 
-// TestHandleApexThanksDismisses pins the hint screen's own confirmed
-// dismiss phrase ("To dismiss say \"APEX, THANKS\"" — see game.help's
-// verbatim text), wired for real for the first time this round.
-
 func TestHandleAstarotTeleportRequiresSword(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("ASTAROT, WOLFDORP"))
@@ -82,11 +65,6 @@ func TestHandleAstarotTeleportRequiresSword(t *testing.T) {
 		t.Errorf("Handle(ASTAROT, WOLFDORP) with no Sword carried = %q, want a Talisman rejection", got)
 	}
 }
-
-// TestHandleAstarotTeleportSucceeds pins the real, hint-screen-confirmed
-// example command ("ASTAROT, WOLFDORP" — see parser.Parse's package doc
-// comment) actually teleporting the player, once they carry Astarot's
-// confirmed Charm (Sword).
 
 // TestHandleAstarotTeleportSucceeds pins the real, hint-screen-confirmed
 // example command ("ASTAROT, WOLFDORP" — see parser.Parse's package doc
@@ -132,12 +110,6 @@ func TestHandleMagotLocateRequiresSunflower(t *testing.T) {
 // real item's real room, once the player carries Magot's confirmed
 // Charm (Sunflower). Grimoire is a real, already-shipped item in Room
 // of Misery.
-
-// TestHandleMagotLocateFindsRealItem pins the natural-inference "MAGOT,
-// <object>" grammar (see magotLocate's doc comment) actually finding a
-// real item's real room, once the player carries Magot's confirmed
-// Charm (Sunflower). Grimoire is a real, already-shipped item in Room
-// of Misery.
 func TestHandleMagotLocateFindsRealItem(t *testing.T) {
 	g := New()
 	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sunflower")
@@ -175,11 +147,6 @@ func TestHandleMagotLocateUnknownObject(t *testing.T) {
 	}
 }
 
-// TestHandleNestPhoenixRequiresRealNest covers round 136's real,
-// sourced ritual command (see game.nestPhoenix's doc comment): saying
-// "NEST, PHOENIX" anywhere that isn't really named "Nest of Phoenix"
-// is an honest rejection, not a fabricated success.
-
 func TestHandleInvokeWithNoTargetListsDemons(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("INVOKE"))
@@ -193,10 +160,6 @@ func TestHandleInvokeWithNoTargetListsDemons(t *testing.T) {
 // TestHandleInvokeWithNoTargetShowsCorrespondences pins round 114:
 // magic.Demon.Correspondences (extracted round 110, previously unused
 // anywhere in-game) is now shown in the bare INVOKE listing.
-
-// TestHandleInvokeWithNoTargetShowsCorrespondences pins round 114:
-// magic.Demon.Correspondences (extracted round 110, previously unused
-// anywhere in-game) is now shown in the bare INVOKE listing.
 func TestHandleInvokeWithNoTargetShowsCorrespondences(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("INVOKE"))
@@ -204,12 +167,6 @@ func TestHandleInvokeWithNoTargetShowsCorrespondences(t *testing.T) {
 		t.Errorf("Handle(INVOKE) = %q, want it to include demon Correspondences (e.g. Astarot's gem, Tourmaline)", got)
 	}
 }
-
-// TestHandleInvokeWithNoTargetShowsNumberSignAspect pins round 115:
-// magic.Demon's Number/Sign/Aspect fields - real manual facts present
-// since this project's first magic.Demons commit but never referenced
-// by internal/game at all until now - are shown in the bare INVOKE
-// listing too.
 
 // TestHandleInvokeWithNoTargetShowsNumberSignAspect pins round 115:
 // magic.Demon's Number/Sign/Aspect fields - real manual facts present
@@ -239,5 +196,61 @@ func TestHandleInvokeUnknownDemon(t *testing.T) {
 	got := g.Handle(parser.Parse("INVOKE MOTHRA"))
 	if got != "There is no demon by that name." {
 		t.Errorf("Handle(INVOKE MOTHRA) = %q, want the no-such-demon response", got)
+	}
+}
+
+// TestHandleAsmodeeDestroyRequiresErlstone covers round 162's real,
+// sourced ability (Hardcore Gaming 101: "Asmodee destroys any object
+// you ask of him") - the same Charm-on-the-ground gating already
+// established for Astarot/Magot.
+func TestHandleAsmodeeDestroyRequiresErlstone(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("ASMODEE, GRIMOIRE"))
+	if !strings.Contains(got, "no suitable Talisman") {
+		t.Errorf("Handle(ASMODEE, GRIMOIRE) with no Erlstone carried = %q, want a Talisman rejection", got)
+	}
+}
+
+// TestHandleAsmodeeDestroysCarriedItem covers destroying an item the
+// player is currently carrying.
+func TestHandleAsmodeeDestroysCarriedItem(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Erlstone")
+	g.Handle(parser.Parse("PICKUP GRIMOIRE"))
+	got := g.Handle(parser.Parse("ASMODEE, GRIMOIRE"))
+	if strings.Contains(got, "no suitable Talisman") {
+		t.Errorf("Handle(ASMODEE, GRIMOIRE) with Erlstone on the ground = %q, want the destroy to succeed", got)
+	}
+	if !strings.Contains(got, "Grimoire") || !strings.Contains(got, "crumbles") {
+		t.Errorf("Handle(ASMODEE, GRIMOIRE) = %q, want it to confirm the Grimoire was destroyed", got)
+	}
+	if g.hasItem("Grimoire") {
+		t.Error("Grimoire should be gone from the player's inventory after Asmodee destroys it")
+	}
+}
+
+// TestHandleAsmodeeDestroysRoomItem covers destroying an item lying in
+// a room (not carried), mirroring magotLocate's own search order.
+func TestHandleAsmodeeDestroysRoomItem(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Erlstone")
+	got := g.Handle(parser.Parse("ASMODEE, GRIMOIRE"))
+	if !strings.Contains(got, "Grimoire") || !strings.Contains(got, "crumbles") {
+		t.Errorf("Handle(ASMODEE, GRIMOIRE) with the Grimoire in the room = %q, want it destroyed", got)
+	}
+	room := g.World.CurrentRoom()
+	for _, item := range room.Items {
+		if item == "Grimoire" {
+			t.Errorf("room Items after Asmodee destroys the Grimoire = %v, want it gone", room.Items)
+		}
+	}
+}
+
+func TestHandleAsmodeeDestroyUnknownObject(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Erlstone")
+	got := g.Handle(parser.Parse("ASMODEE, EXCALIBUR"))
+	if !strings.Contains(got, "no such object") {
+		t.Errorf("Handle(ASMODEE, EXCALIBUR) = %q, want an honest not-found response", got)
 	}
 }

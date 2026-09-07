@@ -65,9 +65,19 @@ Nugget→Werewolf, Garlic→Vampire, Pellet→Slug, Slat→Cyclops, Snake→
 Hydra), 4 door mechanisms (password, toll-item, Guards, Fire+Clasp —
 all now hinted at LOOK-time, round 152), a real win condition (3
 confirmed Exits, 2 concretely reachable in this port today), real
-save/restore (versioned slots), and 2 multi-item ritual commands
-(NEST,PHOENIX / CAULDRON,ACHAD) shipped as honest "confirmed real,
-effect unknown" stubs, not guessed outcomes.
+save/restore (versioned slots), all 4 demons' real invocable abilities
+(Astarot teleports, Magot locates, Belezbar reveals, and — round 162 —
+Asmodee genuinely DESTROYS a named object, not just a warning with "no
+confirmed positive effect" as it read for many rounds), and 2
+multi-item ritual commands (NEST,PHOENIX / CAULDRON,ACHAD) shipped as
+honest "confirmed real, effect unknown" stubs, not guessed outcomes.
+Round 162 also found real scale data worth citing honestly: Hardcore
+Gaming 101 states the original has "255 distinct rooms" (matching
+Spectrum Computing's own count), "21 of the game's monsters," and "four
+hundred items available" — this port's own placed-item and individual-
+monster-placement counts are well short of the latter two figures, a
+concrete, sourced measure of remaining scale (not just the room count
+already cited above).
 
 **Graphics** — one real, shared `PNGRenderer` draws for both frontends
 (no separate/diverging drawing code). **13 real extracted portraits**
@@ -7143,6 +7153,107 @@ matches 1:1 by convention — grep the actual generated output for
 literal package-qualified references (`world.`, `character.`) to catch
 tests that construct synthetic data directly and need imports a same-
 titled production file might not.
+
+### Round 162: caught and fixed a real bug round 161 itself introduced (duplicated doc comments across every split test file), then shipped a genuinely new demon ability — Asmodee actually destroys things now
+
+Two distinct threads this round, after another Stop-hook rejection with
+the same framing.
+
+**Thread 1 — a graphics attempt correctly abandoned, not forced.**
+Re-attempted Secunda Porta's room art (round 144's earlier failed
+attempt) with a cleaner starting point: the clean grid map
+(`heavymap-grid-clean.gif`) actually shows Secunda Porta as a single,
+precisely-located magenta cell (row B, column 8 on Level 2's grid,
+directly beside the already-placed Agile Stair/Morfang zones) —
+clearer than round 144 realized. But deriving that cell's real position
+in the SCREENSHOT atlas (a different image, `heavymap-speccy-
+screenshots.png`) via the already-established row/column arithmetic
+kept landing on content that pixel-density scanning couldn't cleanly
+separate into distinct row bands for this specific column — repeated
+attempts at 2 different y-offsets both produced ambiguous or
+Agile-Stair-like results. Consistent with round 144's own conclusion,
+did NOT force a placement past what the evidence actually supports;
+this remains a real, documented open item, not silently dropped.
+
+**Thread 2 — while investigating a possible new demon ability, caught a
+real bug in round 161's OWN work.** A targeted fetch of Hardcore Gaming
+101's article on this game (a source never used before) surfaced 2 new
+real facts: the game has "255 distinct rooms" with "21 of the game's
+monsters" and "four hundred items available" (real scale data, useful
+context for the Porting status section but not independently
+actionable), AND — the significant one — a real, previously-unmodeled
+ability: **"Asmodee destroys any object you ask of him."** Asmodee's
+`Ability` field had sat as just a warning for many rounds ("Warning: be
+careful with Asmodee... no confirmed positive effect") — this 4th,
+genuinely different source gives a real, positive, functional ability
+after all, fitting his "Great Destroyer" title far better. Implemented
+`game.asmodeeDestroy` (`"ASMODEE, <object>"`), the same Charm-gating
+(Erlstone on the ground) and search-then-remove logic as Astarot/
+Magot's own commands, and updated `magic.Demons`'s Ability text and doc
+comment to record the correction plainly (the old caution is kept
+alongside the new real ability, not discarded — a destructive power IS
+a real reason to be careful with it).
+
+While wiring this up and re-reading the existing demon tests for style,
+noticed something wrong in `demons_test.go`
+(`TestHandleMagotLocateFindsRealItem`'s doc comment appeared TWICE in a
+row, immediately before the func). Checked whether this predated round
+161's `game_test.go` split (`git show 99a9374:internal/game/
+game_test.go` — the pre-split commit) — it did NOT; the duplication was
+a real bug introduced by round 161's own split script. A systematic
+scan of all 10 newly-split files for the same pattern found it was
+**widespread — roughly 30 duplicated comment blocks across 8 of the 10
+files**, not an isolated slip. Root cause: the script computed each
+function's body as `lines[lead:next_func_start]`, where `next_func_start`
+pointed at the literal `func` keyword of the FOLLOWING function — but
+that range also silently swept up the following function's own leading
+comment block (which sits between the two), and the "strip trailing
+blanks" step didn't catch trailing COMMENT lines, only blank ones. Every
+function whose block happened to end right where the next one's real
+doc comment began got that comment appended as unwanted trailing
+content, while the next function ALSO correctly captured it as its own
+leading comment via its own backward walk — hence the duplicate.
+
+Fixed properly, not patched around: rewrote the split to first compute
+EVERY function's own `lead` (the true start of its own leading comment,
+via the same backward walk), THEN set each function's block range to
+`[lead[i], lead[i+1])` — i.e., up to where the NEXT function's own lead
+starts, never past it. Re-ran against the true pre-161 original
+(restored via `git show 99a9374:...`, not the already-corrupted round
+161 file) and added 2 real verification passes before trusting the
+output: (1) a self-check inside the script itself, confirming no
+block's body contains any OTHER block's leading-comment first line
+(0 problems found, vs. many when checked against the OLD round-161
+files); (2) a full multiset-of-non-blank-lines comparison between the
+original 1729-line file and the concatenated content of all 10
+regenerated files — **exact match, 1571 non-blank lines on both sides,
+zero missing, zero extra**. This is a stronger verification than round
+161 originally did (which checked pass/fail counts and gofmt/vet/build,
+all of which stayed clean even WITH the duplicate comments, since a
+duplicated comment doesn't break compilation — exactly why the bug
+shipped unnoticed the first time).
+
+Re-added the Asmodee tests (`TestHandleAsmodeeDestroyRequiresErlstone`,
+`TestHandleAsmodeeDestroysCarriedItem`, `TestHandleAsmodeeDestroysRoomItem`,
+`TestHandleAsmodeeDestroyUnknownObject`) to the corrected
+`demons_test.go`. Ran the full `gofmt`/`build`/`vet`/`test` suite (with
+a repeated `-count=2` run): **125 tests passing in `internal/game`, 0
+failing** (121 from before this round + 4 new). Verified live via
+`go run ./cmd/hotm`: walked the real path to Methos, picked up the real
+Erlstone, dropped it, and `ASMODEE, GRIMOIRE` genuinely destroyed the
+carried Grimoire — the first time Asmodee's invocation has ever done
+anything concrete in this port, not just fail for a missing Talisman.
+
+**How to apply**: a scripted refactor's own verification needs to check
+the ACTUAL CONTENT is preserved exactly (a line-multiset diff against
+the true original, or an even stronger structural check), not just
+"does it compile and do the same tests still pass" — a duplicated
+COMMENT is invisible to both of those checks, since Go comments don't
+affect compilation or runtime behavior at all. When re-doing a flawed
+scripted split, regenerate from the TRUE original source (fetched via
+git, in this case) rather than trying to patch the already-corrupted
+output — patching each of ~30 instances individually would have been
+far riskier than one correct regeneration from scratch.
 
 ## Open next steps
 

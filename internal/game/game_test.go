@@ -44,10 +44,6 @@ func walkToWolfdorp(t *testing.T) *Game {
 	return g
 }
 
-// TestHandleLookMentionsChest covers the real HasChest fixture (round
-// 78, see world.Room.HasChest's doc comment) being surfaced in LOOK
-// itself, not just discoverable by blindly guessing "EXAMINE CHEST".
-
 func TestLevel1ExplorationStartRoomIsVisited(t *testing.T) {
 	// Regression test: NewLevel1Exploration originally forgot to mark its
 	// start room Visited (unlike New()/CollodonsPile), which crashed

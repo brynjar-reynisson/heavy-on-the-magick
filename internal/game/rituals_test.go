@@ -27,13 +27,6 @@ func TestHandleNestPhoenixRequiresRealNest(t *testing.T) {
 // Uses a synthetic room (no shipped World.Room is named "Nest of
 // Phoenix" yet - real, scoped follow-up work) - same pattern as
 // TestHandleFireBlocksMovementWithoutClasp/TestHandleSwapItemRevealsRealItem.
-
-// TestHandleNestPhoenixFullRitual covers the real ritual succeeding
-// once every confirmed requirement is met (real room name, carrying
-// the Clasp/"Salamander charm", and an Egg already dropped there).
-// Uses a synthetic room (no shipped World.Room is named "Nest of
-// Phoenix" yet - real, scoped follow-up work) - same pattern as
-// TestHandleFireBlocksMovementWithoutClasp/TestHandleSwapItemRevealsRealItem.
 func TestHandleNestPhoenixFullRitual(t *testing.T) {
 	w := world.New(0)
 	w.AddRoom(&world.Room{ID: 0, Name: "Nest of Phoenix"})
@@ -61,11 +54,6 @@ func TestHandleNestPhoenixFullRitual(t *testing.T) {
 // sourced ritual command (see game.cauldronAchad's doc comment):
 // saying "CAULDRON, ACHAD" anywhere that isn't really named "Cauldron"
 // is an honest rejection.
-
-// TestHandleCauldronAchadRequiresRealCauldron covers round 139's real,
-// sourced ritual command (see game.cauldronAchad's doc comment):
-// saying "CAULDRON, ACHAD" anywhere that isn't really named "Cauldron"
-// is an honest rejection.
 func TestHandleCauldronAchadRequiresRealCauldron(t *testing.T) {
 	g := New() // starts in Room of Misery, not the Cauldron
 	got := g.Handle(parser.Parse("CAULDRON, ACHAD"))
@@ -73,12 +61,6 @@ func TestHandleCauldronAchadRequiresRealCauldron(t *testing.T) {
 		t.Errorf("Handle(CAULDRON, ACHAD) outside the real cauldron = %q, want an honest rejection", got)
 	}
 }
-
-// TestHandleCauldronAchadFullRitual covers the real ritual succeeding
-// once every confirmed requirement is met: real room name, the
-// Scroll removed, and Ulna/Thigh/Skull all dropped. Uses a synthetic
-// room (no shipped World.Room is named "Cauldron" yet) - same pattern
-// as TestHandleNestPhoenixFullRitual.
 
 // TestHandleCauldronAchadFullRitual covers the real ritual succeeding
 // once every confirmed requirement is met: real room name, the
@@ -113,12 +95,3 @@ func TestHandleCauldronAchadFullRitual(t *testing.T) {
 		t.Errorf("Handle(CAULDRON, ACHAD) with every requirement met = %q, want the ritual to succeed", got)
 	}
 }
-
-// TestHandleFireBlocksMovementWithoutClasp covers the real, sourced
-// Fire mechanic (see world.Room.Fire's doc comment): the CASA
-// walkthrough states the Clasp "enables you to walk through fire" -
-// modeled as blocking movement into a Fire room without it. Uses a
-// synthetic 2-room world (world.Level2Grid's real D6 Fire cell is
-// currently isolated, unreachable via ordinary movement) so this real
-// mechanic is exercised end-to-end even though it can't be in the
-// shipped data yet.

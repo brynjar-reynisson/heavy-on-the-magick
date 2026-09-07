@@ -31,12 +31,6 @@ func TestPassGuardsWithNoGuardsPresent(t *testing.T) {
 	}
 }
 
-// TestHandleInvokeSucceedsWithCharm pins round 131's correction: the
-// real mechanic (a genuinely new source, World of Spectrum's separate
-// plain-text instructions file) states "Place Ye the talisman on the
-// ground and proceed with thy invocation from a distance" - the Charm
-// must be dropped in the room, not merely carried.
-
 func TestHandleDoorPasswordCorrect(t *testing.T) {
 	g := New()
 	g.Handle(parser.Parse("EAST")) // move to Secunda Porta, which has a door password
@@ -92,12 +86,6 @@ func TestHandleDoorNoPasswordKnown(t *testing.T) {
 // TestHandleDropPaysRealToll below for the real, now-placed rooms and
 // the "DROP <item>" form a fresh walkthrough re-read found to be the
 // actual trigger phrase — see world.Room.TollItem's doc comment).
-
-// TestHandleTollDoorRequiresItem uses a synthetic TollItem room to
-// isolate the "DOOR, <item>" form specifically (see
-// TestHandleDropPaysRealToll below for the real, now-placed rooms and
-// the "DROP <item>" form a fresh walkthrough re-read found to be the
-// actual trigger phrase — see world.Room.TollItem's doc comment).
 func TestHandleTollDoorRequiresItem(t *testing.T) {
 	g := New()
 	g.World.CurrentRoom().TollItem = "Bag of Gold"
@@ -116,10 +104,6 @@ func TestHandleTollDoorRequiresItem(t *testing.T) {
 		t.Error("Bag of Gold should be spent (removed from inventory) after paying the toll")
 	}
 }
-
-// TestHandleDropPaysRealToll covers the real, now-placed TollItem rooms
-// (round 64) and confirms "DROP <item>" - the phrase a fresh CASA
-// walkthrough re-read found is the actual trigger - opens the door.
 
 // TestHandleDropPaysRealToll covers the real, now-placed TollItem rooms
 // (round 64) and confirms "DROP <item>" - the phrase a fresh CASA

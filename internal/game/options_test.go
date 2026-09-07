@@ -19,11 +19,6 @@ func TestHandleSwapRecognized(t *testing.T) {
 // L/R) - real, frequently-used CASA walkthrough commands, recognized
 // as real (not lumped in with "I don't understand that word") but
 // honestly stubbed since this port has no facing-direction state.
-
-// TestHandleLeftRightRecognized covers LEFT/RIGHT (Merphish keywords
-// L/R) - real, frequently-used CASA walkthrough commands, recognized
-// as real (not lumped in with "I don't understand that word") but
-// honestly stubbed since this port has no facing-direction state.
 func TestHandleLeftRightRecognized(t *testing.T) {
 	for _, keyword := range []string{"L", "R"} {
 		g := New()

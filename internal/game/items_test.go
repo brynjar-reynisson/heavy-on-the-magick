@@ -38,10 +38,6 @@ func TestHandleTakeAndLiftAreSynonymsForPickup(t *testing.T) {
 	}
 }
 
-// TestHandleHelpShowsRealHintScreen covers the real, disassembled,
-// screenshot-cross-confirmed "SOME ADVICE" in-game hint screen (see
-// help's doc comment) — the game's own actual text, not invented.
-
 func TestHandleInventory(t *testing.T) {
 	g := New()
 	// Round 121: Axil starts with a real, confirmed Pouch (see
@@ -56,11 +52,6 @@ func TestHandleInventory(t *testing.T) {
 		t.Errorf("Handle(INVENTORY) after picking up the Grimoire = %q, want it listed", got)
 	}
 }
-
-// TestHandleInventoryEmptyWhenNothingCarried covers the actually-empty
-// case (INVENTORY's other real branch) directly on a Player with no
-// Items, since NewPlayer's real Pouch means New() itself never starts
-// empty anymore.
 
 // TestHandleInventoryEmptyWhenNothingCarried covers the actually-empty
 // case (INVENTORY's other real branch) directly on a Player with no
@@ -86,11 +77,6 @@ func TestHandleExamineShowsRoomItems(t *testing.T) {
 // confirmed grammar "X BOTTLE" (see parser's doc comment): a targeted
 // EXAMINE should confirm just the named thing, not always list
 // everything in the room regardless of what was asked about.
-
-// TestHandleExamineWithTargetConfirmsJustThatThing covers the real
-// confirmed grammar "X BOTTLE" (see parser's doc comment): a targeted
-// EXAMINE should confirm just the named thing, not always list
-// everything in the room regardless of what was asked about.
 func TestHandleExamineWithTargetConfirmsJustThatThing(t *testing.T) {
 	g := New() // Room of Misery has real items: Grimoire, Poison-smeared book
 	got := g.Handle(parser.Parse("X GRIMOIRE"))
@@ -102,10 +88,6 @@ func TestHandleExamineWithTargetConfirmsJustThatThing(t *testing.T) {
 	}
 }
 
-// TestHandleLookMentionsTable covers the real HasTable fixture being
-// surfaced in LOOK itself, not just discoverable by blindly guessing
-// "EXAMINE TABLE".
-
 // TestHandleExamineTable covers the real, sourced HasTable fixture (see
 // world.Room.HasTable's doc comment) - the CASA walkthrough repeatedly
 // uses "EXAMINE TABLE" in specific real rooms.
@@ -116,11 +98,6 @@ func TestHandleExamineTable(t *testing.T) {
 		t.Errorf("Handle(X TABLE) in Room of Misery = %q, want it to acknowledge the real table", got)
 	}
 }
-
-// walkToWolfdorp navigates a fresh Game from Room of Misery to Wolfdorp
-// via real moves - the shared setup TestHandleDropPaysRealToll already
-// uses, split out so other Wolfdorp-specific tests (like the HasChest
-// ones below) don't have to repeat it.
 
 // TestHandleExamineChest covers the real, sourced HasChest fixture - the
 // CASA walkthrough uses "EXAMINE CHEST" before picking up Garlic here.
@@ -184,10 +161,6 @@ func TestHandleSwapItemRevealsRealItem(t *testing.T) {
 // TestHandleSwapItemUnrelatedDropDoesNothing is a regression guard:
 // dropping an item that ISN'T the room's real SwapItem must not
 // trigger a reveal.
-
-// TestHandleSwapItemUnrelatedDropDoesNothing is a regression guard:
-// dropping an item that ISN'T the room's real SwapItem must not
-// trigger a reveal.
 func TestHandleSwapItemUnrelatedDropDoesNothing(t *testing.T) {
 	w := world.New(0)
 	w.AddRoom(&world.Room{ID: 0, Name: "Cache", SwapItem: "Ball", RevealItem: "Pellet"})
@@ -247,11 +220,6 @@ func TestHandlePickupMovesItemToInventory(t *testing.T) {
 // sourced mechanic (a 1986 CRASH magazine review: "Poison damages
 // Stamina upon contact") applied to Room of Misery's already-real
 // "Poison-smeared book".
-
-// TestHandlePickupPoisonedItemCostsStamina covers round 128's real,
-// sourced mechanic (a 1986 CRASH magazine review: "Poison damages
-// Stamina upon contact") applied to Room of Misery's already-real
-// "Poison-smeared book".
 func TestHandlePickupPoisonedItemCostsStamina(t *testing.T) {
 	g := New() // Room of Misery has a real sourced item: Poison-smeared book
 	before := g.Player.Stamina
@@ -263,10 +231,6 @@ func TestHandlePickupPoisonedItemCostsStamina(t *testing.T) {
 		t.Errorf("Stamina after picking up a poisoned item = %d, want %d", g.Player.Stamina, want)
 	}
 }
-
-// TestHandlePickupNonPoisonedItemDoesNotCostStamina is a regression
-// guard: only items whose name actually contains "poison" should cost
-// Stamina on pickup - a plain item like the Grimoire must not.
 
 // TestHandlePickupNonPoisonedItemDoesNotCostStamina is a regression
 // guard: only items whose name actually contains "poison" should cost

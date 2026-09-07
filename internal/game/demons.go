@@ -53,9 +53,6 @@ func (g *Game) invoke(target string) string {
 			}
 			return g.punishFailedInvoke(d)
 		}
-		if strings.HasPrefix(d.Ability, "Warning:") {
-			return fmt.Sprintf("You invoke %s, %s! %s", d.Name, d.Title, d.Ability)
-		}
 		if d.Ability != "" {
 			return fmt.Sprintf("You invoke %s, %s! %s.", d.Name, d.Title, d.Ability)
 		}
@@ -156,4 +153,46 @@ func (g *Game) magotLocate(object string) string {
 		}
 	}
 	return fmt.Sprintf("You invoke %s, %s! %s senses no such object anywhere nearby.", magotName, magotTitle, magotName)
+}
+
+// asmodeeDestroy handles the conversation-form command "ASMODEE,
+// <object>" (round 162). Asmodee's Ability sat as just a warning for
+// many rounds ("Warning: be careful with Asmodee... no confirmed
+// positive effect") — a 4th, genuinely different source (Hardcore
+// Gaming 101's article on this game) states plainly "Asmodee destroys
+// any object you ask of him," a real, positive, functional ability
+// after all (see magic.Demons's own doc comment). No source gives a
+// literal "ASMODEE, X" example, but the same general "name, object"
+// grammar and Charm-gating convention already established for Astarot/
+// Magot applies directly - the identical confidence tier magotLocate's
+// own doc comment already claims for itself. Searches the player's own
+// inventory first, then every room in the CURRENT world (the same
+// search order magotLocate uses to LOCATE an object - this DESTROYS
+// it instead, permanently removing it from wherever it's found), and
+// echoes the item's real stored casing, not the player's raw
+// uppercased typed target - same casing-honesty convention as
+// magotLocate/examine.
+func (g *Game) asmodeeDestroy(object string) string {
+	const asmodeeName, asmodeeTitle, asmodeeCharm = "Asmodee", "the Great Destroyer", "Erlstone"
+	if !g.roomHasItem(asmodeeCharm) {
+		if g.hasItem(asmodeeCharm) {
+			return fmt.Sprintf("You are carrying the %s, but that isn't enough - place it on the ground and stand back before you invoke %s.", asmodeeCharm, asmodeeName)
+		}
+		return fmt.Sprintf("You call out to %s, %s... but you have no suitable Talisman (a %s).", asmodeeName, asmodeeTitle, asmodeeCharm)
+	}
+	for i, item := range g.Player.Items {
+		if strings.EqualFold(item, object) {
+			g.Player.Items = append(g.Player.Items[:i], g.Player.Items[i+1:]...)
+			return fmt.Sprintf("You invoke %s, %s! The %s you carried crumbles to nothing.", asmodeeName, asmodeeTitle, item)
+		}
+	}
+	for _, room := range g.World.Rooms {
+		for i, item := range room.Items {
+			if strings.EqualFold(item, object) {
+				room.Items = append(room.Items[:i], room.Items[i+1:]...)
+				return fmt.Sprintf("You invoke %s, %s! The %s in %s crumbles to nothing.", asmodeeName, asmodeeTitle, item, room.Name)
+			}
+		}
+	}
+	return fmt.Sprintf("You invoke %s, %s! %s finds no such object to destroy.", asmodeeName, asmodeeTitle, asmodeeName)
 }

@@ -47,13 +47,6 @@ func TestHandleFireBlocksMovementWithoutClasp(t *testing.T) {
 // already know Guards were present would never think to try that exact
 // command. Uses a synthetic room since Level1Grid/Level2Grid's real
 // Guards placements aren't reachable from a fresh default-mode game.
-
-// TestHandleLookMentionsGuards covers round 152's real fix: before this,
-// world.Room.Guards (a real, already-functional "GUARDS, DOOR" obstacle
-// since round 19) had no LOOK-time hint at all - a player with no way to
-// already know Guards were present would never think to try that exact
-// command. Uses a synthetic room since Level1Grid/Level2Grid's real
-// Guards placements aren't reachable from a fresh default-mode game.
 func TestHandleLookMentionsGuards(t *testing.T) {
 	w := world.New(0)
 	w.AddRoom(&world.Room{ID: 0, Name: "Gate", Guards: true})
@@ -64,14 +57,6 @@ func TestHandleLookMentionsGuards(t *testing.T) {
 		t.Errorf("Handle(LOOK) with real Guards present = %q, want it mentioned", got)
 	}
 }
-
-// TestHandleLookMentionsLockedDoor covers round 152's real fix for the
-// other half of the same "confirmed but unsurfaced at LOOK-time" gap:
-// world.Room.DoorPasswords/TollItem (real since rounds 9/64) never had
-// any LOOK-time hint either - only discoverable by already guessing the
-// right "DOOR, <word>" command. Deliberately checks the hint does NOT
-// leak the actual password/toll item, since no source confirms a real
-// in-game hint text - only the bare fact that a door exists.
 
 // TestHandleLookMentionsLockedDoor covers round 152's real fix for the
 // other half of the same "confirmed but unsurfaced at LOOK-time" gap:
@@ -110,13 +95,6 @@ func TestHandleLookMentionsLockedDoor(t *testing.T) {
 // only ever discovered it by trying to move there and getting rejected.
 // Checks both the no-Clasp (hinted) and has-Clasp (no longer relevant,
 // silent) cases, mirroring move's own exact behavior.
-
-// TestHandleLookHintsAtAdjacentFire covers round 152's third real fix:
-// move()'s own pre-move Fire check (round 80) has always blocked a
-// Fire-hazard exit, but LOOK never hinted at it beforehand - a player
-// only ever discovered it by trying to move there and getting rejected.
-// Checks both the no-Clasp (hinted) and has-Clasp (no longer relevant,
-// silent) cases, mirroring move's own exact behavior.
 func TestHandleLookHintsAtAdjacentFire(t *testing.T) {
 	w := world.New(0)
 	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
@@ -134,14 +112,6 @@ func TestHandleLookHintsAtAdjacentFire(t *testing.T) {
 		t.Errorf("Handle(LOOK) next to a Fire room WITH Clasp = %q, want no hint (matches move's own no-longer-blocked behavior)", got)
 	}
 }
-
-// TestHandleSwapItemRevealsRealItem covers round 132's real, sourced
-// "protected item" mechanic (see world.Room.SwapItem's doc comment):
-// dropping the room's real SwapItem reveals its RevealItem. Uses a
-// synthetic room (the exact numbered-map cell this triad corresponds
-// to hasn't been cross-referenced to a shipped room yet) so this real
-// mechanic is exercised end-to-end even though it can't be in the
-// shipped data yet - same pattern as TestHandleFireBlocksMovementWithoutClasp.
 
 func TestHandleMovementValidExit(t *testing.T) {
 	g := New()
@@ -168,11 +138,6 @@ func TestHandleLook(t *testing.T) {
 		t.Errorf("Handle(LOOK) = %q, want the starting room's description", got)
 	}
 }
-
-// TestHandleLookShowsLevel pins round 115: world.Room.Level (real data,
-// set since this project's earliest room commits but never shown to
-// the player before) now appears in LOOK's output. Room of Misery is
-// real, confirmed Level 2.
 
 // TestHandleLookShowsLevel pins round 115: world.Room.Level (real data,
 // set since this project's earliest room commits but never shown to
@@ -205,10 +170,6 @@ func TestHandleLookMentionsTable(t *testing.T) {
 	}
 }
 
-// TestHandleExamineTable covers the real, sourced HasTable fixture (see
-// world.Room.HasTable's doc comment) - the CASA walkthrough repeatedly
-// uses "EXAMINE TABLE" in specific real rooms.
-
 // TestHandleLookMentionsChest covers the real HasChest fixture (round
 // 78, see world.Room.HasChest's doc comment) being surfaced in LOOK
 // itself, not just discoverable by blindly guessing "EXAMINE CHEST".
@@ -219,9 +180,6 @@ func TestHandleLookMentionsChest(t *testing.T) {
 		t.Errorf("Handle(LOOK) in Wolfdorp = %q, want it to mention the real chest", got)
 	}
 }
-
-// TestHandleExamineChest covers the real, sourced HasChest fixture - the
-// CASA walkthrough uses "EXAMINE CHEST" before picking up Garlic here.
 
 func TestHandleMapTracksExploration(t *testing.T) {
 	g := New()
@@ -250,11 +208,6 @@ func TestHandleAbbreviatedMovement(t *testing.T) {
 	}
 }
 
-// TestHandleHalt covers HALT (Merphish "H") - round 85 corrected the
-// response to reflect the manual's precise definition ("abandon the
-// command being actioned and the rest of any outstanding command
-// string"), not just a generic "Halted."
-
 func TestLevel1ExplorationReachingExitWins(t *testing.T) {
 	// Real, validated path from the start room (A1) to the Exit cell
 	// (G3), found via BFS over Level1Grid's confirmed connectivity:
@@ -272,14 +225,6 @@ func TestLevel1ExplorationReachingExitWins(t *testing.T) {
 		t.Errorf("Handle() output on reaching Exit = %q, want a win announcement", last)
 	}
 }
-
-// TestReachingExitBelowPhilosophusStillWinsButNotesTheRealRequirement
-// covers round 147's find (the official map poster's own footer
-// banner: "TO LOCATE ALL 3 EXITS, AXIL MUST BECOME PHILOSOPHUS") -
-// Won must still become true for a default (Neophyte) player, since
-// this port has no confirmed path to Philosophus yet and shouldn't
-// silently make its own win condition unreachable, but the real,
-// sourced requirement is surfaced as an honest additional note.
 
 // TestReachingExitBelowPhilosophusStillWinsButNotesTheRealRequirement
 // covers round 147's find (the official map poster's own footer
@@ -306,10 +251,6 @@ func TestReachingExitBelowPhilosophusStillWinsButNotesTheRealRequirement(t *test
 // TestReachingExitAsPhilosophusOmitsTheNote is a regression guard: a
 // player who already holds the Philosophus Grade (or higher) shouldn't
 // see the below-Philosophus note, since the real requirement is met.
-
-// TestReachingExitAsPhilosophusOmitsTheNote is a regression guard: a
-// player who already holds the Philosophus Grade (or higher) shouldn't
-// see the below-Philosophus note, since the real requirement is met.
 func TestReachingExitAsPhilosophusOmitsTheNote(t *testing.T) {
 	g := NewLevel1Exploration()
 	g.Player.Grade = character.Philosophus
@@ -322,18 +263,6 @@ func TestReachingExitAsPhilosophusOmitsTheNote(t *testing.T) {
 		t.Errorf("Handle() output on reaching Exit as Philosophus = %q, want no Grade-requirement note", last)
 	}
 }
-
-// TestNougatDefeatsWerewolfOnDrop covers the real, sourced alternate
-// mechanic (CASA walkthrough: Werewolves "killable by walking through
-// after dropping NOUGAT" — see checkNougatWerewolf). Path to C2 (a real
-// Werewolf, per Level1Grid): A1-South-B1-South-C1-East-C2.
-// TestPelletDefeatsSlugOnDrop covers round 135's real, sourced
-// alternate mechanic (World of Spectrum's plain-text instructions
-// file: Slugs need "a Pellet") - see checkPelletSlug. Level2Grid's
-// real Slug (C2) isn't on a simple path from the start room in this
-// file's own connectivity data, so teleports there directly (the same
-// mechanism astarotTeleport uses) rather than walking an unrelated
-// path just to reach it.
 
 // TestNougatDefeatsWerewolfOnDrop covers the real, sourced alternate
 // mechanic (CASA walkthrough: Werewolves "killable by walking through
@@ -366,13 +295,6 @@ func TestPelletDefeatsSlugOnDrop(t *testing.T) {
 		t.Errorf("Handle(DROP PELLET) with a live Slug present = %q, want it to mention the Pellet mechanic", got)
 	}
 }
-
-// TestSnakeWardsOffHydraOnDrop covers round 145's real, sourced ward-
-// off mechanic (World of Spectrum's plain-text instructions file: "To
-// pass the Hydras you need a Snake") - see checkSnakeHydra. No shipped
-// World.Room carries Monster == "Hydra" yet (a real, honest scope gap
-// - see checkSnakeHydra's doc comment), so this uses a synthetic room,
-// same pattern as TestHandleFireBlocksMovementWithoutClasp.
 
 // TestSnakeWardsOffHydraOnDrop covers round 145's real, sourced ward-
 // off mechanic (World of Spectrum's plain-text instructions file: "To
@@ -423,15 +345,6 @@ func TestNougatDefeatsWerewolfOnDrop(t *testing.T) {
 // confirming game.checkNougatWerewolf's real mechanic is now genuinely
 // reachable in a normal playthrough, not just unit-testable in
 // isolation.
-
-// TestCollodonsPileNougatDefeatsWolfdorpWerewolf covers round 120's
-// Wolfdorp addition end-to-end in the actual DEFAULT (CollodonsPile)
-// game, not just the isolated Level1Grid mechanic test above: picks up
-// the real, already-placed Nougat in Trollwynd, carries it to Wolfdorp
-// (both real rooms on the real walkthrough path), and drops it there -
-// confirming game.checkNougatWerewolf's real mechanic is now genuinely
-// reachable in a normal playthrough, not just unit-testable in
-// isolation.
 func TestCollodonsPileNougatDefeatsWolfdorpWerewolf(t *testing.T) {
 	g := New()
 	g.Handle(parser.Parse("EAST"))          // Secunda Porta
@@ -452,14 +365,6 @@ func TestCollodonsPileNougatDefeatsWolfdorpWerewolf(t *testing.T) {
 		t.Errorf("Wolfdorp's Werewolf should be defeated after dropping the real Nougat carried from Trollwynd, MonsterHealth = %d", room.MonsterHealth)
 	}
 }
-
-// TestCollodonsPileGarlicDefeatsMorfangVampire covers round 126's
-// second CRPG Addict find, end-to-end in the actual DEFAULT
-// (CollodonsPile) game: picks up the real, already-placed Garlic in
-// Wolfdorp, carries it to Morfang (both real rooms on the real
-// walkthrough path), and drops it there - confirming
-// game.checkGarlicVampire's real mechanic is genuinely reachable in a
-// normal playthrough, not just unit-testable in isolation.
 
 // TestCollodonsPileGarlicDefeatsMorfangVampire covers round 126's
 // second CRPG Addict find, end-to-end in the actual DEFAULT
@@ -506,14 +411,6 @@ func TestCollodonsPileGarlicDefeatsMorfangVampire(t *testing.T) {
 // placed Slat in Morfang, carries it East through Room of Arrows to
 // Nidus (all real, already-connected rooms on the confirmed
 // walkthrough path), and drops it on the real Cyclops there.
-
-// TestCollodonsPileSlatDefeatsNidusCyclops covers round 146's real,
-// sourced instant-kill mechanic (World of Spectrum's plain-text
-// instructions file: "the slat kills the Cyclops") end-to-end in the
-// actual DEFAULT (CollodonsPile) game: picks up the real, already-
-// placed Slat in Morfang, carries it East through Room of Arrows to
-// Nidus (all real, already-connected rooms on the confirmed
-// walkthrough path), and drops it on the real Cyclops there.
 func TestCollodonsPileSlatDefeatsNidusCyclops(t *testing.T) {
 	g := New()
 	g.Handle(parser.Parse("EAST"))          // Secunda Porta
@@ -547,10 +444,6 @@ func TestCollodonsPileSlatDefeatsNidusCyclops(t *testing.T) {
 // TestNuggetAlsoDefeatsWerewolfOnDrop covers round 146's extension:
 // Nugget (not just Nougat) also wards off Werewolves, per 2
 // independent sources (see checkNougatWerewolf's doc comment).
-
-// TestNuggetAlsoDefeatsWerewolfOnDrop covers round 146's extension:
-// Nugget (not just Nougat) also wards off Werewolves, per 2
-// independent sources (see checkNougatWerewolf's doc comment).
 func TestNuggetAlsoDefeatsWerewolfOnDrop(t *testing.T) {
 	g := NewLevel1Exploration()
 	for _, dir := range []string{"SOUTH", "SOUTH", "EAST"} {
@@ -569,11 +462,6 @@ func TestNuggetAlsoDefeatsWerewolfOnDrop(t *testing.T) {
 		t.Errorf("Handle(DROP NUGGET) with a live Werewolf present = %q, want it to mention the Nugget mechanic", got)
 	}
 }
-
-// TestSilverNuggetAlsoDefeatsWerewolfOnDrop covers round 149's
-// extension: "Silver Nugget" (not just bare "Nugget") also wards off
-// Werewolves, per 2 independent sources both qualifying the item as
-// silver (see checkNougatWerewolf's doc comment).
 
 // TestSilverNuggetAlsoDefeatsWerewolfOnDrop covers round 149's
 // extension: "Silver Nugget" (not just bare "Nugget") also wards off
@@ -636,13 +524,6 @@ func TestLevel2ExplorationMovement(t *testing.T) {
 		t.Errorf("current room after EAST = %q, want A2", g.World.CurrentRoom().Name)
 	}
 }
-
-// TestLevel2ExplorationStartRoomIsExit pins round 130's find:
-// Level2Grid's own arbitrary starting anchor (A1) turned out to be a
-// real, confirmed "Exit" cell (see level2_grid.go's doc comment) - so
-// a real LOOK right at the start of a fresh -level2grid session
-// genuinely announces a win, an honest quirk of A1 having been picked
-// before its real name was known, not a bug.
 
 // TestLevel2ExplorationStartRoomIsExit pins round 130's find:
 // Level2Grid's own arbitrary starting anchor (A1) turned out to be a

@@ -19,11 +19,6 @@ func TestHandleTalkToApex(t *testing.T) {
 // honest fallback: a room with no real, sourced DoorHints (like the
 // starting room) gets the same generic response as bare "APEX, TALK",
 // not a fabricated riddle.
-
-// TestHandleApexDoorWithNoHintFallsBackToTalk covers apexDoorHint's
-// honest fallback: a room with no real, sourced DoorHints (like the
-// starting room) gets the same generic response as bare "APEX, TALK",
-// not a fabricated riddle.
 func TestHandleApexDoorWithNoHintFallsBackToTalk(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("APEX, DOOR"))
@@ -34,10 +29,6 @@ func TestHandleApexDoorWithNoHintFallsBackToTalk(t *testing.T) {
 		t.Errorf("Handle(APEX, DOOR) with no real hint here = %q, must not fabricate a riddle", got)
 	}
 }
-
-// TestHandleApexDoorGivesRealWolfdorpHints covers round 159's real,
-// sourced riddle content (see world.Room.DoorHints's doc comment) at
-// Wolfdorp, an already-real, reachable CollodonsPile room.
 
 // TestHandleApexDoorGivesRealWolfdorpHints covers round 159's real,
 // sourced riddle content (see world.Room.DoorHints's doc comment) at
@@ -85,9 +76,6 @@ func TestHandleCallWithoutScrollFails(t *testing.T) {
 		t.Errorf("Handle(CALL) without the Scroll = %q, want it to fail, not summon Apex", got)
 	}
 }
-
-// TestHandleCallWithScrollSummonsApex covers CALL's real confirmed
-// effect end-to-end: with the Scroll carried, it summons Apex.
 
 // TestHandleCallWithScrollSummonsApex covers CALL's real confirmed
 // effect end-to-end: with the Scroll carried, it summons Apex.
