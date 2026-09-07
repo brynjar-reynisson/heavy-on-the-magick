@@ -240,6 +240,15 @@ func NewLevel4Exploration() *Game {
 // project) — both real confirmed vocabulary words, same inference
 // caveat as the synonyms above.
 //
+// PLACE (round 166) is accepted as a DROP synonym — a real confirmed
+// vocabulary word, and a STRONGER inference than the other synonyms
+// above: World of Spectrum's plain-text instructions file (round 131,
+// the same source that corrected the Charm-gating mechanic) states the
+// invocation ritual's own real, quoted instruction as "Place Ye the
+// talisman on the ground" — the game's own confirmed text already uses
+// "place" to mean exactly what DROP does here, not just a plausible
+// generic synonym.
+//
 // SWAP is a real recognized keyword (Merphish "Z") with an honest stub
 // response — the manual's own keyword table entry ("a special function
 // to swap the information in Window 1") confirms the effect precisely,
@@ -330,7 +339,7 @@ func (g *Game) Handle(cmd parser.Command) string {
 		return g.pickup(cmd.Target)
 	case "NAME":
 		return fmt.Sprintf("You are %s.", g.Player.Name)
-	case "DROP":
+	case "DROP", "PLACE":
 		return g.drop(cmd.Target)
 	case "INVENTORY":
 		return g.inventory()

@@ -286,3 +286,19 @@ func TestHandleDropNotCarried(t *testing.T) {
 		t.Errorf("Handle(DROP UNICORN) = %q, want a not-carrying response", got)
 	}
 }
+
+// TestHandlePlaceIsSynonymForDrop covers round 166's real vocabulary
+// word PLACE, wired as a DROP synonym - grounded directly in World of
+// Spectrum's own confirmed instruction text ("Place Ye the talisman on
+// the ground"), not just a generic guessed synonym.
+func TestHandlePlaceIsSynonymForDrop(t *testing.T) {
+	g := New()
+	g.Handle(parser.Parse("PICKUP GRIMOIRE"))
+	got := g.Handle(parser.Parse("PLACE GRIMOIRE"))
+	if !strings.Contains(got, "drop the Grimoire") {
+		t.Errorf("Handle(PLACE GRIMOIRE) = %q, want the same DROP confirmation as DROP GRIMOIRE", got)
+	}
+	if g.hasItem("Grimoire") {
+		t.Error("Grimoire should be gone from the player's inventory after PLACE")
+	}
+}

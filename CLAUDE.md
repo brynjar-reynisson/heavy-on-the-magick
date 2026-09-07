@@ -48,11 +48,16 @@ world — see "Open next steps" for why a literal merge isn't safe yet
 (a real, sourced connectivity conflict, not just unstarted work).
 
 **Gameplay / commands** — of the game's real, extracted 313-word
-vocabulary, **45 words have modeled `Handle` behavior** (31 as a bare
-verb + 14 in a specific TARGET-VERB pairing, up from 12 as of round
-165 — `ASMODEE`/`BELEZBAR` gained real dispatch in rounds 162/164 but
-weren't added to `cmd/vocab-coverage`'s own exclusion list until round
-165 caught the gap; see that tool's doc comment) — the rest fall
+vocabulary, **46 words have modeled `Handle` behavior** (32 as a bare
+verb + 14 in a specific TARGET-VERB pairing — the TARGET-VERB count
+rose from 12 to 14 as of round 165, a real MEASUREMENT correction
+(`ASMODEE`/`BELEZBAR` already had real dispatch from rounds 162/164,
+just weren't yet excluded from `cmd/vocab-coverage`'s own list); the
+bare-verb count separately rose from 31 to 32 in round 166, genuinely
+NEW implementation — `PLACE` wired as a real DROP synonym, directly
+grounded in World of Spectrum's own confirmed instruction text ("Place
+Ye the talisman on the ground"), not just another guessed synonym) —
+the rest fall
 through to an honest "recognized, not modeled" stub. That sounds low
 (~14%) read as "313 unimplemented verbs," but repeated audits (rounds
 102/140/155) found the uncovered list is overwhelmingly NOUN content
@@ -7436,6 +7441,44 @@ specific side-effect. Worth treating "add a new `cmd.Target`-position
 dispatch case in `Handle`" and "check `cmd/vocab-coverage`'s exclusion
 list" as one paired habit going forward, the same way this project
 already treats "add a new mechanic" and "update CLAUDE.md" as paired.
+
+### Round 166: PLACE wired as a real DROP synonym — genuinely new implementation, not another counting correction
+
+After another Stop-hook rejection whose complaint specifically drew a
+distinction between round 165's fix (a measurement correction: 43→45)
+and actual new implementation, went back to the uncovered vocabulary
+list one more time looking for a word with more than a generic
+plausible-synonym justification behind it. Found `PLACE`: real,
+confirmed vocabulary, and — unlike TAKE/LIFT/CARRY/ATTACK/KILL/SPEAK's
+"reasonable inference, no stated meaning" tier — this one has a
+STRONGER anchor already sitting in this project's own sourced data:
+World of Spectrum's plain-text instructions file (round 131, the exact
+source that corrected the Charm-gating mechanic) states the real
+invocation ritual's own instruction verbatim as **"Place Ye the
+talisman on the ground"** — the game's own confirmed text already uses
+"place" to mean exactly what `DROP` does in this port, not a guess at
+a plausible synonym.
+
+Wired `case "DROP", "PLACE":` in `Handle`'s dispatch (one line, reusing
+`drop()` entirely — no new logic needed, matching how TAKE/LIFT/CARRY
+already reuse `pickup()`). Added `TestHandlePlaceIsSynonymForDrop`.
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run): **129 tests passing in `internal/game`, 0 failing**
+(128 + 1 new). Verified live via `go run ./cmd/hotm`: `PICKUP
+GRIMOIRE` then `PLACE GRIMOIRE` gave the identical real drop
+confirmation as `DROP GRIMOIRE`. Re-ran `cmd/vocab-coverage`: bare-verb
+coverage genuinely rose 31→32 (not just a re-count — a real word that
+fell through to the generic stub a moment ago now has real, tested
+behavior). Total modeled commands: **46/313**.
+
+**How to apply**: when hunting the uncovered-vocabulary list for a
+synonym candidate, checking whether this project's OWN already-fetched
+sources happen to use that exact word in a relevant sentence (not just
+guessing at plausible real-world adventure-game synonyms) can turn a
+"reasonable inference" into something closer to "the game's own
+confirmed text already establishes this meaning" — worth a quick grep
+across prior rounds' quoted source material before defaulting to the
+weaker inference tier for a new synonym candidate.
 
 ## Open next steps
 
