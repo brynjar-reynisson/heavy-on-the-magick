@@ -748,6 +748,17 @@ func TestHandleInvokeWithNoTargetListsDemons(t *testing.T) {
 	}
 }
 
+// TestHandleInvokeWithNoTargetShowsCorrespondences pins round 114:
+// magic.Demon.Correspondences (extracted round 110, previously unused
+// anywhere in-game) is now shown in the bare INVOKE listing.
+func TestHandleInvokeWithNoTargetShowsCorrespondences(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("INVOKE"))
+	if !strings.Contains(got, "Tourmaline") { // part of Astarot's real Correspondences
+		t.Errorf("Handle(INVOKE) = %q, want it to include demon Correspondences (e.g. Astarot's gem, Tourmaline)", got)
+	}
+}
+
 func TestHandleInvokeRecognizesDemon(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("I ASTAROT")) // "I" expands to INVOKE

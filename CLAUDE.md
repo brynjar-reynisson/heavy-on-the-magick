@@ -4598,6 +4598,34 @@ of Misery, Room of Stings, Room of Arrows — exact-cell; Wolfdorp,
 Nidus — zone-level), on top of all 4 level grids' starting cells. Ran
 the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 114: surfaced round 110's demon Correspondences in real gameplay
+
+After another Stop-hook rejection, same framing, went back to round
+110's `magic.Demon.Correspondences` addition — real, sourced content
+(colour/plant/perfume/gem per demon, from the manual's own grimoire
+section) that had been extracted but never actually shown to the
+player anywhere, the same "confirmed but unsurfaced" gap pattern this
+project has repeatedly found and closed for other data (HELP text,
+StartupMelody, room Items). Bare `INVOKE` (no target) already lists
+each demon's Name/Title/Charm — extended that one line to also include
+Correspondences, so the real occult lore is genuinely visible in a
+normal playthrough (`INVOKE` with no argument), not just sitting in
+Go source.
+
+Verified end-to-end via a real `Handle("INVOKE")` call, not just
+checking the field is non-empty:
+
+```
+Known demons and their required Talismans:
+ASMODEE, the Great Destroyer (needs: Erlstone) - Colour green; plant Nettle; bows to red gems (no single named gem, unlike the other 3 Princes)
+ASTAROT, the Spirit of Assemblage (needs: Sword) - Perfume Wormwood; favours Orchid and Magpie; gem Tourmaline
+BELEZBAR, the Master of Flies (needs: Mantis) - Reveres Amaranth, Musk, and Locust; gem Turquoise
+MAGOT, the Diviner (needs: Sunflower) - Colour yellow; scent Galbanum; gems Topaz and Chalcedony
+```
+
+Added `TestHandleInvokeWithNoTargetShowsCorrespondences`. Ran the full
+`gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

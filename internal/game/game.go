@@ -468,14 +468,17 @@ func (g *Game) deathCheck(msg string) string {
 // requiring each one's specific Charm, and each one's Ability are all
 // real, sourced facts (see magic.Demons's doc comment) — invocation now
 // actually succeeds when the player carries the right Charm. With no
-// target, lists all 4 demons and their Charm requirements — real,
-// already-sourced data that had no way to be seen in-game before this.
+// target, lists all 4 demons, their Charm requirements, and (round 114)
+// their real occult Correspondences (magic.Demon.Correspondences,
+// extracted round 110 from the manual's grimoire section but never
+// actually shown anywhere in-game until now) — real, already-sourced
+// data that had no way to be seen in-game before this.
 func (g *Game) invoke(target string) string {
 	if target == "" {
 		var b strings.Builder
 		b.WriteString("Known demons and their required Talismans:\n")
 		for _, d := range magic.Demons {
-			fmt.Fprintf(&b, "%s, %s (needs: %s)\n", d.Name, d.Title, d.Charm)
+			fmt.Fprintf(&b, "%s, %s (needs: %s) - %s\n", d.Name, d.Title, d.Charm, d.Correspondences)
 		}
 		return strings.TrimRight(b.String(), "\n")
 	}
