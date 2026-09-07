@@ -734,11 +734,13 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 		// 123 add Wolfdorp/Nidus/Trollwynd/Pilefoot too, at an honestly
 		// lower (zone-level, not exact-cell) confidence - see
 		// graphics.WolfdorpSample's/NidusSample's/TrollwyndSample's/
-		// PilefootSample's doc comments.
+		// PilefootSample's doc comments. Round 137 adds Agile Stair, back
+		// at exact-cell confidence (level1_grid.go's own confirmed A7).
 		return game.New(), "", map[string]image.Image{
 			"Room of Misery": graphics.RoomOfMiserySample(),
 			"Room of Stings": graphics.RoomOfStingsSample(),
 			"Room of Arrows": graphics.RoomOfArrowsSample(),
+			"Agile Stair":    graphics.AgileStairSample(),
 			"Wolfdorp":       graphics.WolfdorpSample(),
 			"Nidus":          graphics.NidusSample(),
 			"Trollwynd":      graphics.TrollwyndSample(),

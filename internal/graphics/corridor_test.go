@@ -51,6 +51,14 @@ func TestRoomOfArrowsSampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, RoomOfArrowsSample(), "RoomOfArrowsSample()")
 }
 
+// TestAgileStairSampleDecodesToRealArt mirrors
+// TestCorridorSampleDecodesToRealArt for round 137's Agile Stair
+// addition - exact-cell confidence (level1_grid.go's own A7), the same
+// tier as Room of Misery/Stings/Arrows above.
+func TestAgileStairSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, AgileStairSample(), "AgileStairSample()")
+}
+
 // TestWolfdorpSampleDecodesToRealArt mirrors
 // TestCorridorSampleDecodesToRealArt for round 109's Wolfdorp-zone
 // sample.

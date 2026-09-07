@@ -5695,6 +5695,64 @@ were discovered together — CAULDRON/ACHAD's genuinely different shape
 (multi-item container tracking) is real, separate scope, not a copy-
 paste of NEST/PHOENIX's simpler single-room check.
 
+### Round 137: an 8th real room screenshot for CollodonsPile — Agile Stair, at exact-cell confidence, located via precise pixel template-matching instead of arithmetic estimates
+
+After another Stop-hook rejection, same framing, pivoted back to
+graphics — the goal names it explicitly alongside gameplay, and
+recent rounds had all been gameplay mechanics. Agile Stair is a real,
+connected CollodonsPile room (reached via Trollwynd -N-> Agile Stair)
+whose exact atlas cell was ALREADY independently confirmed:
+`level1_grid.go`'s own A7. Rather than repeat the established "row A
+= +5, column N = +(N-1)" arithmetic-estimate approach (which has
+needed a manual correction before — Level 4's F2, round 104), used a
+more precise method this time: wrote a small numpy template-matching
+script that finds the EXACT pixel position of the already-extracted
+Room of Stings (F3) and Room of Arrows (F5) samples within the full
+atlas (a coarse downsampled search to narrow the region, then a fine
+full-resolution search — both landed on a 0.0 sum-of-squared-
+differences score, i.e. a pixel-perfect match, not an approximation).
+From their real positions (x=1744 and x=2939, two columns apart), a
+real per-column spacing (≈597.5px) and per-row spacing (≈299px, from
+row A's already-confirmed y≈484 to row F's y≈1979) were derived
+directly from measured data, not repeated assumptions.
+
+The computed A7 estimate landed almost exactly on the real cell —
+confirmed doubly: visually, by the atlas's own printed "7"/"8" column
+labels and a "2 B7"/"2 B8" stairwell-arrow annotation directly beneath
+it (independent, in-atlas confirmation this is genuinely the
+stairwell, not a coincidence), and by content, a real blue-toned
+corridor scene, visually distinct from every other sample extracted so
+far (all previously red or magenta) — fitting for a distinct
+architectural feature. Final crop boundary found via the same
+content-color-boundary scan round 104 used to correct Level 4's F2 (a
+blue-dominant-channel mask here, not a fixed grid box), producing a
+clean 511×223 crop.
+
+Added `graphics.AgileStairSample()` (own test,
+`TestAgileStairSampleDecodesToRealArt`) and wired it into `cmd/hotm-
+gui`'s default-mode room-art map — **CollodonsPile's 8th room with
+real extracted art**, and only its 4th at exact-cell confidence (Room
+of Misery/Stings/Arrows were the other 3; Wolfdorp/Nidus/Trollwynd/
+Pilefoot remain at the lower zone-level tier). Ran the full `gofmt`/
+`build`/`vet`/`test` suite (with a repeated `-count=2` run) clean, and
+verified live twice: a throwaway debug test (`selectGame()`'s map has
+the key, `FindRoomByName("Agile Stair")` + `Teleport` reaches it for
+real) and a full disposable-throwaway-repo-copy screenshot (the real
+.exe, patched to teleport there at startup, showing the blue corridor
+art rendering correctly in the live window).
+
+**How to apply**: when the same "estimate row/column offsets, then
+verify" technique has needed a manual correction before (Level 4's
+F2), a MORE PRECISE method is worth the extra effort on a repeat
+extraction — template-matching two already-verified samples against
+the full atlas gives real, measured per-column/per-row spacing (not
+another assumption), and can turn up a pixel-exact match (score 0.0)
+that arithmetic estimation alone can't guarantee. When numpy is
+available but scipy/opencv aren't, a coarse-then-fine downsampled
+brute-force search (⁠~8x downsample to narrow the region fast, then a
+small-window full-resolution search) is fast enough for practical use
+without either dependency.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

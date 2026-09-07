@@ -204,6 +204,44 @@ func RoomOfArrowsSample() image.Image {
 	return img
 }
 
+// assets/agile_stair_sample.png (round 137) is a real screenshot of
+// CollodonsPile's Agile Stair room — level1_grid.go's own A7 cell,
+// already independently confirmed by name (tight-crop-verified against
+// the clean grid map, same as Room of Stings/Room of Arrows), so this
+// is EXACT-cell confidence, the same tier as Room of Misery/Stings/
+// Arrows above, not the lower zone-level tier Wolfdorp/Nidus/Trollwynd/
+// Pilefoot below use. Located precisely via template-matching (pixel-
+// exact, not estimated) the already-extracted Room of Stings (F3) and
+// Room of Arrows (F5) samples against the full atlas to derive real
+// per-column spacing (≈597.5px, from their exact x-positions 1744 and
+// 2939) and per-row spacing (≈299px, from row A's already-confirmed
+// y≈484 to row F's y≈1979) — a more precise, verified calibration than
+// this file's earlier samples used, not just a repeated assumption.
+// The computed A7 estimate landed almost exactly on the real cell,
+// confirmed by the atlas's own printed "7"/"8" column labels and a
+// "2 B7"/"2 B8" stairwell-arrow annotation directly below it — real,
+// visual, independent confirmation this is genuinely the stairwell
+// location, not a guess. Final crop boundary found the same way
+// round 104 corrected Level 4's F2 (scanning for contiguous real
+// content color — here, a blue channel dominant over red/green — not
+// a fixed grid box), producing a clean, tight 511×223 crop: a plain
+// blue-toned corridor, visually distinct from every other sample in
+// this file (all previously red or magenta) - fitting for a distinct
+// architectural feature like a stairwell.
+//
+//go:embed assets/agile_stair_sample.png
+var agileStairSamplePNG []byte
+
+// AgileStairSample decodes the embedded real Agile-Stair screenshot.
+// Panics on failure, matching CorridorSample() above.
+func AgileStairSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(agileStairSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded agile_stair_sample.png: " + err.Error())
+	}
+	return img
+}
+
 // assets/wolfdorp_sample.png (round 109) is a real screenshot from
 // within CollodonsPile's Wolfdorp room, but with an honestly LOWER
 // confidence level than the samples above: Room of Misery/Room of
