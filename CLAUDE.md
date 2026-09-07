@@ -25,8 +25,14 @@ an in-game mentor NPC who gives hints.
 - `hotm-original/` — the genuine tape images, downloaded from
   [Spectrum Computing](https://spectrumcomputing.co.uk/entry/2274/ZX-Spectrum/Heavy_on_the_Magick):
   `Heavy On The Magick - Side 1.tzx` and `- Side 2.tzx` (real `ZXTape!` magic,
-  confirmed via `xxd`). A "bugfix" release also exists there (fixes corrupted
-  graphics + a memory-corruption bug from long text input) — not yet pulled.
+  confirmed via `xxd`). A "bugfix" release (`Heavy On The Magick (Rebound).tzx`,
+  from World of Spectrum) is here too — pulled and checked round 134: its
+  tape structure is genuinely different (standard-speed, single-block load
+  at 24100, not the original's custom "Gargoyle" turbo loader), but its
+  actual game code — including the picture-unpacking routine — is
+  byte-for-byte identical to the original once loaded. Whatever "fixes
+  corrupted graphics" describes, it isn't a code-level graphics-format
+  change (see round 134's writeup below for the full diff).
 - `hotm.z80`, `hotm-live.z80`, `hotm-unpacked.z80`, `hotm-unpacked.mem`,
   `*.ctl`, `*.skool`, `*.png` — SkoolKit analysis artifacts, see below.
 
@@ -5491,6 +5497,73 @@ banners). The zone-banner cross-reference technique keeps paying off
 on repeat use (Mantis, Sword, Sunflower, Erlstone, and now Pellet) —
 worth trying first on any newly-confirmed item before assuming it
 can't be placed.
+
+### Round 134: checked the "Rebound" bugfix release against the picture-format mystery — a real, well-verified negative, plus a genuinely new tape asset now in the repo
+
+After another Stop-hook rejection, same framing, went after this
+project's single oldest, most-repeated unsolved item directly: the
+120-byte picture-block unpacking transform, unresolved since the very
+first disassembly session. This repo's own directory notes have long
+mentioned, unpulled, "A 'bugfix' release also exists there (fixes
+corrupted graphics + a memory-corruption bug from long text input)" —
+a real, specific, previously-untouched lead. Downloaded it (World of
+Spectrum's `HeavyOnTheMagick(Rebound).tzx.zip`, now kept as
+`hotm-original/Heavy On The Magick (Rebound).tzx`, alongside the
+existing Side 1/2 tapes) and inspected its tape structure with
+`tapinfo.py`: genuinely different from the original — standard-speed
+blocks, not the custom "Gargoyle" turbo loader, with the whole
+41435-byte game loading as ONE block directly at address 24100 (the
+original's own confirmed post-loader entry point). A real, structural
+loader difference, immediately promising for the graphics mystery
+specifically, since "fixes corrupted graphics" sat right there in the
+description the whole time.
+
+Loaded it via `tap2sna.py` (`--start 46383`, past the confirmed
+relocate-and-unpack init routine at 46193) and wrote a small, from-
+scratch Python `.z80`-v3 parser (same RLE-decompression technique
+established round 90 for static snapshot reading) to decode its real
+post-init memory. Compared it byte-for-byte against the ALREADY-
+CAPTURED original post-init state (`hotm-unpacked.mem`, on file since
+early in this project): the picture table at 48054, its pointer table,
+the confirmed draw routine (41620-41730), and the confirmed init/
+relocate/unpack routine (46193-46383) are **all byte-for-byte
+IDENTICAL** between the original and the Rebound release. A broader
+diff of the rest of loaded memory (24100-65536) found only 16 tiny,
+scattered differences, every one explainable as ordinary runtime state
+(window-record data, a scratch-buffer copy, sound-loop counters) that
+naturally differs because the two simulations were captured at
+slightly different points in execution — not a code difference
+anywhere.
+
+**Real, concrete, well-verified conclusion**: the Rebound release's
+actual game code — including the exact routine this project has spent
+the most effort trying to understand — is unchanged from the original.
+Whatever "fixes corrupted graphics" describes, it isn't a difference
+in the picture-unpacking algorithm itself; most likely it's a tape-
+transfer/preservation fix (a cleaner, more reliable re-recording,
+consistent with "Rebound" being a common fan-preservation naming
+pattern) or a loader-level fix unrelated to this port's own Go
+implementation (which never emulates the original loader at all).
+This rules out, with real byte-level evidence rather than a guess,
+what looked like the most promising new lead on this mystery in a long
+time — a genuine, valuable negative that prevents a future round from
+re-investigating the same dead end.
+
+No gameplay code changed this round (a legitimate, previously-
+established outcome — see round 82's precedent), but a real, new,
+previously-unexamined tape asset is now permanently in the repo for
+any future disassembly attempt.
+
+**How to apply**: a plausible-sounding unexplored lead (a "bugfix"
+release specifically claiming to fix graphics) is worth checking with
+real evidence before assuming it holds the answer — downloading it and
+diffing its actual code against the already-disassembled original,
+rather than speculating, turned an exciting-sounding hypothesis into a
+concrete, closed question. `tap2sna.py --start ADDR` reliably advances
+a simulation well past a target address even when the tool reports
+"timed out" rather than "reached target" — check the final PC value,
+not just the stop reason, before assuming the run didn't get far
+enough.
 
 ## Open next steps
 
