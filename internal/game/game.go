@@ -630,8 +630,16 @@ func (g *Game) payToll(room *world.Room) string {
 // during disassembly as the game's own on-screen UI strings under the
 // "Magick!" header, not manual prose) - the disassembly confirmed these 5
 // items exist among "options 1-6", but not which numbered slot each one
-// occupies or what the 6th, unextracted option is, so they're listed
-// unnumbered rather than guessing an exact menu layout. "Realign Status"
+// occupies. Round 124 pinned down 3 of the 6 real slots from two
+// separate sources: the manual states "select option 1 and Away You
+// Go!" (option 1 = starting the game — no action needed here, since
+// this port's game already exists once constructed) and "select option
+// 6 and the values will be realigned" (option 6 = Realign Status); the
+// CASA walkthrough's own "Tips" section separately states verbatim
+// "SAVE regularly by pressing key O and then option 2" (option 2 =
+// Save Game). Options 3-5's exact slots still aren't confirmed. A bare
+// numeric target ("O 2", "O 6") now works as a real alternate way to
+// trigger these, alongside the existing keyword form. "Realign Status"
 // is wired to a real effect (Player.Realign, same roll ranges as
 // NewPlayer) since that reroll behavior is confirmed by the manual.
 // Save/Restore Game/Axil are real, confirmed menu choices (see save.go)
@@ -649,6 +657,16 @@ func (g *Game) payToll(room *world.Room) string {
 // single default slot this port has always used.
 func (g *Game) options(target string) string {
 	target = strings.ToUpper(strings.TrimSpace(target))
+	// Round 124: a bare confirmed real numeric slot (see doc comment
+	// above) is translated to its equivalent keyword up front, so it
+	// flows through the exact same logic below as the keyword form -
+	// not a separate, duplicated code path.
+	switch target {
+	case "2":
+		target = "SAVE GAME"
+	case "6":
+		target = "REALIGN"
+	}
 	version := extractVersionLetter(target)
 	versionSuffix := ""
 	if version != "" {

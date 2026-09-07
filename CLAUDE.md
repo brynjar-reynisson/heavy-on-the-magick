@@ -4934,6 +4934,37 @@ hotm-gui`'s default-mode room-art map, verified via `NewGUI` +
 extracted art** (3 exact-cell, 4 zone-level). Ran the full `gofmt`/
 `build`/`vet`/`test` suite clean.
 
+### Round 124: pinned down 3 of the Option Screen's 6 real numbered slots — a fresh angle on the CASA walkthrough after many rounds
+
+After another Stop-hook rejection, same framing, tried a fresh angle
+on the CASA walkthrough source that's been re-fetched many times for
+command sequences: asked specifically for its very first and very last
+lines (title/credit and closing "Tips" section) rather than more
+command data. The opening lines were just author credit ("SOLUTION
+(Spectrum) by E. Yoong") and an already-confirmed fact (start at Room
+of Misery, Level 2) — but the closing "Tips" section had something
+genuinely new: "SAVE regularly by pressing key O and then option 2."
+This is real, sourced evidence for exactly which numbered Option
+Screen slot triggers Save Game — something this project's own doc
+comments had explicitly flagged as unknown ("not which numbered slot
+each one occupies") since the OPTIONS menu was first ported.
+
+Combined with the manual's own already-on-file "select option 1 and
+Away You Go!" and "select option 6 and the values will be realigned,"
+that's 3 of the Option Screen's 6 real slots now pinned down from two
+independent sources (option 1 = start the game, option 2 = Save Game,
+option 6 = Realign Status). Wired the 2 actionable ones (1 needs no
+action in this port, since the game already exists once constructed):
+`game.options` now translates a bare numeric target ("O 2", "O 6")
+into its real keyword-equivalent before the existing switch runs — not
+a duplicated code path, the exact same Save Game / Realign Status
+logic either way. Options 3-5 remain honestly unconfirmed.
+
+Verified via real `Handle` calls: `Handle("O 2")` returns exactly
+`"Game saved."`, `Handle("O 6")` returns a real `"Realign Status: ..."`
+response. Added `TestHandleOptionsNumericSlots`. Ran the full
+`gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

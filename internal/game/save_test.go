@@ -2,6 +2,7 @@ package game
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/parser"
@@ -76,6 +77,23 @@ func TestSaveAxilRoundTrip(t *testing.T) {
 	// RestoreAxil should not touch World.
 	if g2.World.CurrentRoom().Name != "Room of Misery" {
 		t.Errorf("current room after RestoreAxil = %q, want unchanged Room of Misery", g2.World.CurrentRoom().Name)
+	}
+}
+
+// TestHandleOptionsNumericSlots pins round 124: the CASA walkthrough's
+// own "Tips" section ("SAVE regularly by pressing key O and then
+// option 2") and the manual ("select option 6 and the values will be
+// realigned") confirm real numbered Option Screen slots - "O 2" and
+// "O 6" should now work exactly like the keyword forms.
+func TestHandleOptionsNumericSlots(t *testing.T) {
+	withTempSaveDir(t)
+	g := New()
+	if got := g.Handle(parser.Parse("O 2")); got != "Game saved." {
+		t.Errorf(`Handle(O 2) = %q, want "Game saved." (option 2 = Save Game, per CASA's own Tips section)`, got)
+	}
+	got := g.Handle(parser.Parse("O 6"))
+	if !strings.HasPrefix(got, "Realign Status:") {
+		t.Errorf(`Handle(O 6) = %q, want it to start with "Realign Status:" (option 6, per the manual)`, got)
 	}
 }
 
