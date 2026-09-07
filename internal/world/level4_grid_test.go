@@ -2,9 +2,23 @@ package world
 
 import "testing"
 
-func TestLevel4GridHas22Cells(t *testing.T) {
-	if len(level4Cells) != 22 {
-		t.Fatalf("len(level4Cells) = %d, want 22 (the validated 17-cell main component plus 5 isolated named special rooms)", len(level4Cells))
+func TestLevel4GridHas23Cells(t *testing.T) {
+	if len(level4Cells) != 23 {
+		t.Fatalf("len(level4Cells) = %d, want 23 (the validated 17-cell main component plus 6 isolated cells)", len(level4Cells))
+	}
+}
+
+// TestLevel4GridHasSecondWyvern pins the round-68 find: a real,
+// tight-crop-verified Wyvern at E5, isolated (no Exits) same as the
+// round-58 finds.
+func TestLevel4GridHasSecondWyvern(t *testing.T) {
+	w := Level4Grid()
+	room := w.Rooms[level4Room("E5")]
+	if room == nil || room.Monster != "Wyvern" || room.MonsterHealth <= 0 {
+		t.Fatalf("room E5 = %+v, want an isolated cell with a live Wyvern", room)
+	}
+	if len(room.Exits) != 0 {
+		t.Errorf("room E5 Exits = %v, want none (connectivity not confirmed)", room.Exits)
 	}
 }
 

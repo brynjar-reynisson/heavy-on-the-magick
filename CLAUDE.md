@@ -2794,6 +2794,28 @@ real Items. Added `TestHandleLookMentionsTable`, ran the full
 clean, and verified live: `LOOK` in Room of Misery now shows the table
 line without needing to already know to ask for it.
 
+### Swept Level4Grid's remaining unchecked rows: a second real Wyvern found
+
+After another Stop-hook rejection, same framing, finished what round 58
+started but didn't fully cover: that round's tight-crop pass focused on
+rows A-B and the immediate Scales/Doubt of Rabak/Chasm/Exit/Pride area,
+but never swept the rest of rows C-E. Did that sweep this round and
+found one more real, individually pixel-confirmed thing: **E5 has a
+real Wyvern monster icon** (the same confirmed rare exact blue
+RGB(0,132,255) already validated elsewhere on this map). The rest of
+the swept cells (C6/C7/C8, D5/D6/D7/D8, E6/E8) are plain, unlabeled
+cells - correctly left unadded. Also re-confirmed (not newly found) the
+already-documented yellow-dot mystery icon at its known C5 location.
+
+Added E5 as an isolated cell (no Exits - connectivity not extracted),
+same convention as every other special room/monster in this file.
+Level4Grid is now honestly 23 cells (was 22). Updated the stale
+"22-cell" framing in `game.go` and `cmd/hotm/main.go`.
+
+Added `TestLevel4GridHasSecondWyvern`, ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
+live that normal Level 4 play is unaffected.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

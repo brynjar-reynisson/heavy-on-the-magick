@@ -1,14 +1,14 @@
 package world
 
-// Level4Grid is a real, 22-cell room graph for the dungeon's Level 4,
+// Level4Grid is a real, 23-cell room graph for the dungeon's Level 4,
 // extracted from the same clean, computer-rendered grid map as
 // Level1Grid/Level2Grid/Level3Grid (heavymap-grid-clean.gif). Cells are
 // addressed the same way: a row letter and a column number 1-8, offset
-// into a distinct RoomID range via level4Room. 17 of the 22 form one
-// fully connected component reachable from the start room; the other 5
-// (Scales/D2, Doubt of Rabak/D3, The Crypt/F1, Exit/G2, Pride/G4) are
-// real, named, deliberately isolated special rooms - see the "ROUND 58"
-// section below.
+// into a distinct RoomID range via level4Room. 17 of the 23 form one
+// fully connected component reachable from the start room; the other 6
+// (Scales/D2, Doubt of Rabak/D3, a Wyvern/E5, The Crypt/F1, Exit/G2,
+// Pride/G4) are real, deliberately isolated special rooms/monsters -
+// see the "ROUND 58"/"ROUND 68" sections below.
 //
 // CALIBRATION HISTORY - CORRECTED (same failure mode as Level3Grid's,
 // found the same way): this file originally shipped using only 7 rows
@@ -76,6 +76,15 @@ package world
 //     its own, can't actually be reached/trigger Game.Won in this
 //     file today.
 //
+// ROUND 68: swept the remaining unchecked rows C-E for anything missed
+// by round 58's pass (which had focused on rows A-B and the immediate
+// Scales/Doubt of Rabak/Chasm/Exit/Pride area). Found one more real,
+// individually pixel-confirmed thing: E5 has a real Wyvern monster icon
+// (same confirmed rare exact blue RGB(0,132,255) used elsewhere on this
+// map). Added as an isolated cell (no Exits), same convention as the
+// round-58 finds. The rest of rows C-E checked in this sweep (C6/C7/C8,
+// D5/D6/D7/D8, E6/E8) are plain, unlabeled cells - left unadded.
+//
 // Item icon placements were NOT extracted for this file (real
 // follow-up work, same as Levels 1-3), and room descriptions use the
 // same placeholder convention as everywhere else.
@@ -137,6 +146,7 @@ var level4Cells = []*Room{
 	// this project's grid files.
 	{ID: level4Room("D2"), Name: "Scales", Level: 4},
 	{ID: level4Room("D3"), Name: "Doubt of Rabak", Level: 4},
+	{ID: level4Room("E5"), Level: 4, Monster: "Wyvern", MonsterHealth: 3},
 	{ID: level4Room("F1"), Name: "The Crypt", Level: 4},
 	{ID: level4Room("G2"), Name: "Exit", Level: 4},
 	{ID: level4Room("G4"), Name: "Pride", Level: 4},
