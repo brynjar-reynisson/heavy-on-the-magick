@@ -129,6 +129,20 @@ type Room struct {
 	// it clears them. Set for real, tight-crop-verified placements only
 	// (see level1_grid.go).
 	Guards bool
+
+	// HasTable is true for a real, sourced room fixture: the CASA
+	// walkthrough repeatedly uses "EXAMINE TABLE" as a command in
+	// specific named rooms (Room of Misery, Trollwynd, Sothic Complex,
+	// Methos, Wolfdorp, Room of Stings, Morfang, Room of Arrows — see
+	// collodons_pile.go), always right before either picking up an item
+	// or dropping one to pay a real TollItem ("put it on the table" —
+	// the same table, matching the instructions file's own phrasing for
+	// that mechanic). Not an Item (can't be picked up), just a real
+	// environmental fact confirmed for these specific rooms - the
+	// walkthrough happens to use this phrase at the start of nearly
+	// every room visited, so other rooms may well have one too, but
+	// only these are actually confirmed; not assumed for the rest.
+	HasTable bool
 }
 
 // clone returns a deep copy of r, safe to mutate independently of the

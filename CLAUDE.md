@@ -2723,6 +2723,32 @@ up the real Bag in Wolfdorp, carried it through Room of Stings (where
 dropping it correctly does nothing — that door needs a Key), and
 `DROP BAG` at Morfang for real opened the door.
 
+### A real environmental fixture, hiding in plain sight across 3 rounds of the same walkthrough: EXAMINE TABLE
+
+After another Stop-hook rejection, same framing, went back over the
+last 2 rounds' own CASA walkthrough fetches rather than fetching again
+- both had already surfaced "EXAMINE TABLE" repeatedly (it's the
+opening move in nearly every room-paragraph the walkthrough describes,
+always right before a pickup or a toll-paying drop), but this project
+had only ever used those fetches for the item/door facts sitting next
+to it, never modeled the table itself. Room of Misery, Trollwynd,
+Sothic Complex, Wolfdorp, Room of Stings, Morfang, Room of Arrows, and
+Methos are the 8 rooms directly confirmed to have one across those
+fetches.
+
+Added `world.Room.HasTable` and wired `"EXAMINE TABLE"` into `examine`'s
+already-target-aware logic (from 2 rounds ago) to acknowledge it in
+those rooms specifically - not assumed for every room just because the
+walkthrough's own narration happens to open with it almost everywhere;
+only the 8 directly confirmed are marked. A genuine, if small, real
+environmental detail now modeled instead of silently discarded as
+"just flavor text around the real facts."
+
+Added `TestHandleExamineTable` and `TestCollodonsPileHasTablePlacements`,
+ran the full `gofmt`/`build`/`vet`/`test` suite clean, and verified
+live: `X TABLE` in Room of Misery answers "A plain table." instead of
+"You don't see that here."
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

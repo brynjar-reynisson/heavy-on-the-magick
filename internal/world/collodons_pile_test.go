@@ -115,6 +115,20 @@ func TestCollodonsPileRoomOfMiseryHasBothNumberedItems(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileHasTablePlacements pins the 8 real rooms where the
+// CASA walkthrough confirms "EXAMINE TABLE" (see world.Room.HasTable's
+// doc comment).
+func TestCollodonsPileHasTablePlacements(t *testing.T) {
+	w := CollodonsPile()
+	want := []RoomID{roomMisery, roomTrollwynd, roomSothicComplex, roomWolfdorp, roomStings, roomMorfang, roomArrows, roomMethos}
+	for _, id := range want {
+		room := w.Rooms[id]
+		if room == nil || !room.HasTable {
+			t.Errorf("room %q HasTable = %v, want true", room.Name, room != nil && room.HasTable)
+		}
+	}
+}
+
 // TestCollodonsPileTrollwyndAndSothicComplexHaveScrollNougat pins the
 // round-63 walkthrough re-read: Nougat and a Scroll in Trollwynd, plus
 // a second, separate Scroll in Sothic Complex - resolving 2 of the 3

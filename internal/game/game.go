@@ -143,7 +143,8 @@ func NewLevel4Exploration() *Game {
 // EXAMINE reports a room's Monster and Items if present (real data);
 // with a specific target (the manual's confirmed real grammar, e.g.
 // "X BOTTLE" — see parser's doc comment) it instead confirms just that
-// one thing (room Monster, room Item, or carried Item) or says plainly
+// one thing (room Monster, room Item, carried Item, or a real
+// world.Room.HasTable fixture — see its doc comment) or says plainly
 // it isn't here, rather than always listing everything regardless of
 // what was actually asked about.
 // PICKUP and DROP move a named item between the current world.Room.Items
@@ -622,6 +623,9 @@ func (g *Game) examine(target string) string {
 		return "There's nothing to examine."
 	}
 	if target != "" {
+		if room.HasTable && strings.EqualFold(target, "TABLE") {
+			return "A plain table."
+		}
 		if room.Monster != "" && room.MonsterHealth > 0 && strings.EqualFold(room.Monster, target) {
 			return fmt.Sprintf("You see a %s.", room.Monster)
 		}
