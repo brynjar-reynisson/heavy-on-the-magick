@@ -1526,6 +1526,29 @@ func TestNuggetAlsoDefeatsWerewolfOnDrop(t *testing.T) {
 	}
 }
 
+// TestSilverNuggetAlsoDefeatsWerewolfOnDrop covers round 149's
+// extension: "Silver Nugget" (not just bare "Nugget") also wards off
+// Werewolves, per 2 independent sources both qualifying the item as
+// silver (see checkNougatWerewolf's doc comment).
+func TestSilverNuggetAlsoDefeatsWerewolfOnDrop(t *testing.T) {
+	g := NewLevel1Exploration()
+	for _, dir := range []string{"SOUTH", "SOUTH", "EAST"} {
+		g.Handle(parser.Parse(dir))
+	}
+	room := g.World.CurrentRoom()
+	if room.Monster != "Werewolf" || room.MonsterHealth <= 0 {
+		t.Fatalf("test setup bug: expected a live Werewolf at C2, got %+v", room)
+	}
+	g.Player.Items = append(g.Player.Items, "Silver Nugget")
+	got := g.Handle(parser.Parse("DROP SILVER NUGGET"))
+	if room.MonsterHealth > 0 {
+		t.Errorf("Werewolf should be defeated after dropping the Silver Nugget, MonsterHealth = %d", room.MonsterHealth)
+	}
+	if !strings.Contains(got, "Nugget") {
+		t.Errorf("Handle(DROP SILVER NUGGET) with a live Werewolf present = %q, want it to mention the Nugget mechanic", got)
+	}
+}
+
 func TestLevel1ExplorationMovementAndCombat(t *testing.T) {
 	g := NewLevel1Exploration()
 	// A1 (start) has a real Ghost, per world.Level1Grid's extracted data.

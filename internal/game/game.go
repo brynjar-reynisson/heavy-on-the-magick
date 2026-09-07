@@ -1179,6 +1179,18 @@ func (g *Game) move(dir world.Direction) string {
 // its own right, not proven wrong), both items are accepted - the
 // honest, safe reading of 2 sources agreeing on "Nugget" without
 // discarding a 3rd, different source's real "Nougat" finding.
+//
+// ROUND 149 EXTENSION - "Silver Nugget" (not just bare "Nugget") is
+// accepted too: TWO independent sources both qualify this item as
+// silver specifically - the numbered map poster's own #49 entry
+// ("Nugget (silver), rock, protected") and, this round,
+// heavymap-levels3-4-poster.jpg's own Level Four item label ("Silver
+// Nugget" - see level_items.go's LevelFourItems). Given this project's
+// numbered-map-derived "protected item" swap mechanic (round 132/133)
+// already treats this exact item as the real reveal target, and two
+// unrelated sources both specify "silver," accepting the fuller name
+// alongside the bare one is the same safe "don't discard a source's
+// own precision" convention already used for Nougat/Nugget above.
 func (g *Game) checkNougatWerewolf() string {
 	room := g.World.CurrentRoom()
 	if room == nil || room.Monster != "Werewolf" || room.MonsterHealth <= 0 {
@@ -1189,7 +1201,7 @@ func (g *Game) checkNougatWerewolf() string {
 			room.MonsterHealth = 0
 			return "The Werewolf catches the scent of Nougat and lets you pass unharmed."
 		}
-		if strings.EqualFold(item, "Nugget") {
+		if strings.EqualFold(item, "Nugget") || strings.EqualFold(item, "Silver Nugget") {
 			room.MonsterHealth = 0
 			return "The Werewolf is warded off by the Nugget and lets you pass unharmed."
 		}

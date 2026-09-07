@@ -6370,6 +6370,36 @@ predates most of this project's now-standard "measure, don't eyeball"
 discipline) — don't assume old data is settled just because it already
 shipped.
 
+### Round 150: "Silver Nugget," not just bare "Nugget," also wards off Werewolves — a genuine detail found by cross-checking round 149's own new data
+
+After another Stop-hook rejection, same framing, went back over round
+149's own freshly-ported `LevelFourItems` list looking for anything
+that connected to already-shipped mechanics rather than moving to a
+new source. Found one: `LevelFourItems` includes "Silver Nugget" — and
+`numbered_room_contents.go`'s own long-standing #49 entry already
+reads "Nugget (silver), rock, protected." **Two independent sources**
+(the numbered map poster and now the levels3-4 poster, from a
+completely different family of source) both qualify this item as
+silver specifically, not just plain "Nugget."
+
+Extended `checkNougatWerewolf` (already accepting both "Nougat" and
+bare "Nugget" as of round 146) to also accept the exact string "Silver
+Nugget" — the same safe "don't discard a source's own precision"
+convention already used for the Nougat/Nugget extension itself.
+Neither existing test broke, since this only ADDS a third accepted
+name rather than changing the other two.
+
+Added `TestSilverNuggetAlsoDefeatsWerewolfOnDrop`, mirroring
+`TestNuggetAlsoDefeatsWerewolfOnDrop` exactly. Ran the full `gofmt`/
+`build`/`vet`/`test` suite (with a repeated `-count=2` run) clean.
+
+**How to apply**: a freshly-ported data list is worth cross-checking
+against ALREADY-SHIPPED mechanics immediately, not just mined for its
+own new room/item facts — round 149's `LevelFourItems` addition turned
+up a real, actionable refinement to a mechanic that already existed,
+simply by comparing its own new entries against what this project
+already knows, not by fetching anything new.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
