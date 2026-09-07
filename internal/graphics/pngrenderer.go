@@ -7,11 +7,7 @@ import (
 	"io"
 )
 
-// palette maps the ZX Spectrum's 8 colors (non-bright) to real RGB. Real
-// Spectrum hardware also has a "bright" variant of each color (roughly
-// doubling the RGB values); PNGRenderer doesn't distinguish bright/normal
-// yet since nothing built on it has needed that distinction so far — see
-// the TODO on DrawGlyph.
+// palette maps the ZX Spectrum's 8 colors (non-bright) to real RGB.
 var palette = map[Color]color.RGBA{
 	Black:   {0, 0, 0, 255},
 	Blue:    {0, 0, 214, 255},
@@ -21,6 +17,24 @@ var palette = map[Color]color.RGBA{
 	Cyan:    {0, 214, 214, 255},
 	Yellow:  {214, 214, 0, 255},
 	White:   {214, 214, 214, 255},
+}
+
+// brightPalette maps the same 8 colors to their real ZX Spectrum ULA
+// BRIGHT-attribute RGB values — 255 per "on" channel instead of 214, the
+// standard real hardware bright-intensity value (matching this project's
+// own already-confirmed exact bright RGB facts, e.g. Ghost's bright green
+// (0,255,0) and Wraith/Medusa's bright red (255,0,0) from the clean grid
+// map's legend — see CLAUDE.md). Black has no bright variant on real
+// hardware (BRIGHT only affects "on" bits), so it's identical to palette.
+var brightPalette = map[Color]color.RGBA{
+	Black:   {0, 0, 0, 255},
+	Blue:    {0, 0, 255, 255},
+	Red:     {255, 0, 0, 255},
+	Magenta: {255, 0, 255, 255},
+	Green:   {0, 255, 0, 255},
+	Cyan:    {0, 255, 255, 255},
+	Yellow:  {255, 255, 0, 255},
+	White:   {255, 255, 255, 255},
 }
 
 // PNGRenderer implements Renderer by drawing into an in-memory image,
@@ -63,16 +77,14 @@ func (r *PNGRenderer) Clear(bg Color) {
 	}
 }
 
-// DrawGlyph draws an 8x8 Glyph at character-cell (col, row).
-//
-// TODO: fg is currently always treated as non-bright (see palette); the
-// original ZX Spectrum ULA also has a BRIGHT attribute bit per cell (used
-// throughout the game — e.g. the confirmed magenta/green spell-icon
-// squares in CLAUDE.md are both "bright" variants). Once bright rendering
-// is needed, extend Color or add a separate bright flag here rather than
-// guessing at RGB values not yet cross-checked against a real screenshot.
-func (r *PNGRenderer) DrawGlyph(g Glyph, col, row int, fg Color) {
+// DrawGlyph draws an 8x8 Glyph at character-cell (col, row). bright
+// selects the real ZX Spectrum ULA's BRIGHT attribute bit (round 88 -
+// see screen.go's Renderer.DrawGlyph doc comment and brightPalette).
+func (r *PNGRenderer) DrawGlyph(g Glyph, col, row int, fg Color, bright bool) {
 	c := palette[fg]
+	if bright {
+		c = brightPalette[fg]
+	}
 	baseX := col * 8 * r.CellSize
 	baseY := row * 8 * r.CellSize
 	for py := range 8 {

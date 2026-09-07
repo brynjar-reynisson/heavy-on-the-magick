@@ -20,9 +20,11 @@ func main() {
 	r.Clear(graphics.Black)
 
 	for i, g := range graphics.RuneGlyphs {
-		r.DrawGlyph(g, i, 0, graphics.White)
+		r.DrawGlyph(g, i, 0, graphics.White, false)
 	}
-	r.DrawGlyph(graphics.KnownIcons["magenta-icon"], len(graphics.RuneGlyphs), 0, graphics.Magenta)
+	// Real confirmed ULA attribute 0x43 = ink magenta BRIGHT (see
+	// KnownIcons's doc comment) - not a cosmetic choice.
+	r.DrawGlyph(graphics.KnownIcons["magenta-icon"], len(graphics.RuneGlyphs), 0, graphics.Magenta, true)
 
 	f, err := os.Create(*out)
 	if err != nil {

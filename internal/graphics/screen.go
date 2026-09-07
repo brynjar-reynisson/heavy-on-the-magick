@@ -10,7 +10,11 @@ type Renderer interface {
 	// DrawGlyph draws an 8x8 Glyph at the given cell position (col, row in
 	// 8x8-character-cell units, matching the original's coordinate system)
 	// in the given foreground color, useful for spell sigils and text.
-	DrawGlyph(g Glyph, col, row int, fg Color)
+	// bright selects the ZX Spectrum ULA's BRIGHT attribute bit (roughly
+	// doubling ink intensity) - a real, confirmed-in-hardware distinction
+	// (see KnownIcons's "magenta-icon" doc comment: its real attribute
+	// byte is 0x43, ink=magenta BRIGHT), not a cosmetic option.
+	DrawGlyph(g Glyph, col, row int, fg Color, bright bool)
 
 	// Clear wipes the screen to a background color.
 	Clear(bg Color)

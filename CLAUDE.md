@@ -3565,6 +3565,42 @@ Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
 `-count=2` run) clean and verified live: `CALL` now names the real,
 already-reachable Trollwynd connection.
 
+### Closed a long-standing graphics TODO: real ZX Spectrum BRIGHT-attribute rendering
+
+After another Stop-hook rejection, same framing, went looking for any
+old `TODO` markers still sitting in the codebase and found one in
+`internal/graphics/pngrenderer.go`, on `DrawGlyph`: *"the original ZX
+Spectrum ULA also has a BRIGHT attribute bit per cell ... Once bright
+rendering is needed, extend Color or add a separate bright flag here
+rather than guessing at RGB values not yet cross-checked against a
+real screenshot."* This TODO had been waiting, unaddressed, since a
+much earlier disassembly round already confirmed the exact real
+attribute byte for the magenta spell-icon (`0x43` — ink=magenta,
+**BRIGHT**, black paper) — and this project has since accumulated
+several more confirmed-real bright RGB facts too (Ghost's bright green
+`(0,255,0)`, Wraith/Medusa's bright red `(255,0,0)`, from the clean
+grid map's own legend). The cross-check the TODO was waiting for had
+been sitting available for a long time; nobody had gone back to close
+the loop.
+
+Added `brightPalette` (the real ZX Spectrum ULA bright-intensity RGB
+values — `255` per "on" channel instead of `214`, matching this
+project's own already-confirmed exact bright facts) and extended
+`Renderer.DrawGlyph`'s signature with a `bright bool` parameter across
+the interface, `PNGRenderer`'s implementation, and all 3 call sites
+(`cmd/hotm-gui`, `cmd/render-glyphs`, `pngrenderer_test.go`). This
+isn't just infrastructure: the magenta spell-icon's own confirmed
+attribute byte means it was being drawn in the *wrong* (non-bright)
+shade of magenta this whole time — fixed at its one real call site, a
+genuine, verified visual-fidelity correction, not just new capability.
+
+Added `TestPNGRendererBrightUsesBrightPalette` (confirms a bright draw
+uses the real higher-intensity RGB and differs from the same color
+drawn non-bright), ran the full `gofmt`/`build`/`vet`/`test` suite
+(with a repeated `-count=2` run) clean, and verified visually via
+`cmd/render-glyphs`: the magenta icon now renders in a visibly
+brighter, more saturated magenta than before.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

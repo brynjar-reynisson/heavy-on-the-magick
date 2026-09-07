@@ -95,9 +95,13 @@ func buildHUD() *ebiten.Image {
 	r := graphics.NewPNGRenderer(len(graphics.RuneGlyphs)+1, 1, 8)
 	r.Clear(graphics.Black)
 	for i, gl := range graphics.RuneGlyphs {
-		r.DrawGlyph(gl, i, 0, graphics.White)
+		r.DrawGlyph(gl, i, 0, graphics.White, false)
 	}
-	r.DrawGlyph(graphics.KnownIcons["magenta-icon"], len(graphics.RuneGlyphs), 0, graphics.Magenta)
+	// The magenta spell-icon's real confirmed ULA attribute is 0x43 -
+	// ink=magenta BRIGHT (see KnownIcons's doc comment) - so this is the
+	// first place this port renders a real confirmed bright color, not a
+	// cosmetic choice.
+	r.DrawGlyph(graphics.KnownIcons["magenta-icon"], len(graphics.RuneGlyphs), 0, graphics.Magenta, true)
 	return ebiten.NewImageFromImage(r.Image())
 }
 

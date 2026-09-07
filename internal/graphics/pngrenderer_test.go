@@ -11,7 +11,7 @@ var _ Renderer = (*PNGRenderer)(nil) // compile-time interface check
 func TestPNGRendererProducesValidPNG(t *testing.T) {
 	r := NewPNGRenderer(4, 4, 4)
 	r.Clear(Black)
-	r.DrawGlyph(RuneGlyphs[0], 1, 1, White)
+	r.DrawGlyph(RuneGlyphs[0], 1, 1, White, false)
 
 	var buf bytes.Buffer
 	if err := r.WritePNG(&buf); err != nil {
@@ -33,7 +33,7 @@ func TestPNGRendererDrawsSetPixels(t *testing.T) {
 	r := NewPNGRenderer(1, 1, 1)
 	r.Clear(Black)
 	// A glyph with the top-left pixel set.
-	r.DrawGlyph(Glyph{0x80, 0, 0, 0, 0, 0, 0, 0}, 0, 0, White)
+	r.DrawGlyph(Glyph{0x80, 0, 0, 0, 0, 0, 0, 0}, 0, 0, White, false)
 
 	got := r.img.RGBAAt(0, 0)
 	want := palette[White]
@@ -45,5 +45,29 @@ func TestPNGRendererDrawsSetPixels(t *testing.T) {
 	want2 := palette[Black]
 	if got2 != want2 {
 		t.Errorf("pixel (7,7) = %+v, want %+v (unset bit)", got2, want2)
+	}
+}
+
+// TestPNGRendererBrightUsesBrightPalette pins the real ZX Spectrum ULA
+// BRIGHT attribute distinction (round 88) - a bright draw must use
+// brightPalette's confirmed higher-intensity RGB, not palette's normal
+// values, and must differ from the same color drawn non-bright.
+func TestPNGRendererBrightUsesBrightPalette(t *testing.T) {
+	r := NewPNGRenderer(2, 1, 1)
+	r.Clear(Black)
+	full := Glyph{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+	r.DrawGlyph(full, 0, 0, Red, false)
+	r.DrawGlyph(full, 1, 0, Red, true)
+
+	normal := r.img.RGBAAt(0, 0)
+	bright := r.img.RGBAAt(8, 0)
+	if normal != palette[Red] {
+		t.Errorf("non-bright Red pixel = %+v, want palette[Red] %+v", normal, palette[Red])
+	}
+	if bright != brightPalette[Red] {
+		t.Errorf("bright Red pixel = %+v, want brightPalette[Red] %+v", bright, brightPalette[Red])
+	}
+	if normal == bright {
+		t.Error("bright and non-bright Red rendered identically, want the confirmed higher-intensity RGB to differ")
 	}
 }
