@@ -1429,6 +1429,65 @@ func TestCollodonsPileGarlicDefeatsMorfangVampire(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileSlatDefeatsNidusCyclops covers round 146's real,
+// sourced instant-kill mechanic (World of Spectrum's plain-text
+// instructions file: "the slat kills the Cyclops") end-to-end in the
+// actual DEFAULT (CollodonsPile) game: picks up the real, already-
+// placed Slat in Morfang, carries it East through Room of Arrows to
+// Nidus (all real, already-connected rooms on the confirmed
+// walkthrough path), and drops it on the real Cyclops there.
+func TestCollodonsPileSlatDefeatsNidusCyclops(t *testing.T) {
+	g := New()
+	g.Handle(parser.Parse("EAST"))          // Secunda Porta
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd
+	g.Handle(parser.Parse("NORTH"))         // Agile Stair
+	g.Handle(parser.Parse("SOUTH-EAST"))    // Methos
+	g.Handle(parser.Parse("SOUTH"))         // Sothic Complex
+	g.Handle(parser.Parse("SOUTH"))         // Wolfdorp
+	g.Handle(parser.Parse("NORTH-WEST"))    // Room of Stings
+	g.Handle(parser.Parse("NORTH"))         // Morfang - has the real Slat
+	if got := g.Handle(parser.Parse("PICKUP SLAT")); !strings.Contains(got, "Slat") {
+		t.Fatalf("test setup bug: PICKUP SLAT in Morfang = %q, want it to succeed", got)
+	}
+	g.Handle(parser.Parse("EAST")) // Room of Arrows
+	g.Handle(parser.Parse("EAST")) // Nidus - has the real Cyclops
+
+	room := g.World.CurrentRoom()
+	if room.Name != "Nidus" || room.Monster != "Cyclops" || room.MonsterHealth <= 0 {
+		t.Fatalf("test setup bug: expected a live Cyclops in Nidus, got %+v", room)
+	}
+	got := g.Handle(parser.Parse("DROP SLAT"))
+	if room.MonsterHealth > 0 {
+		t.Errorf("Nidus's Cyclops should be defeated after dropping the real Slat carried from Morfang, MonsterHealth = %d", room.MonsterHealth)
+	}
+	if !strings.Contains(got, "Slat") {
+		t.Errorf("Handle(DROP SLAT) with a live Cyclops present = %q, want it to mention the Slat mechanic", got)
+	}
+}
+
+// TestNuggetAlsoDefeatsWerewolfOnDrop covers round 146's extension:
+// Nugget (not just Nougat) also wards off Werewolves, per 2
+// independent sources (see checkNougatWerewolf's doc comment).
+func TestNuggetAlsoDefeatsWerewolfOnDrop(t *testing.T) {
+	g := NewLevel1Exploration()
+	for _, dir := range []string{"SOUTH", "SOUTH", "EAST"} {
+		g.Handle(parser.Parse(dir))
+	}
+	room := g.World.CurrentRoom()
+	if room.Monster != "Werewolf" || room.MonsterHealth <= 0 {
+		t.Fatalf("test setup bug: expected a live Werewolf at C2, got %+v", room)
+	}
+	g.Player.Items = append(g.Player.Items, "Nugget")
+	got := g.Handle(parser.Parse("DROP NUGGET"))
+	if room.MonsterHealth > 0 {
+		t.Errorf("Werewolf should be defeated after dropping Nugget, MonsterHealth = %d", room.MonsterHealth)
+	}
+	if !strings.Contains(got, "Nugget") {
+		t.Errorf("Handle(DROP NUGGET) with a live Werewolf present = %q, want it to mention the Nugget mechanic", got)
+	}
+}
+
 func TestLevel1ExplorationMovementAndCombat(t *testing.T) {
 	g := NewLevel1Exploration()
 	// A1 (start) has a real Ghost, per world.Level1Grid's extracted data.

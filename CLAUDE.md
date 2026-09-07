@@ -6125,19 +6125,89 @@ grids. Worth flagging plainly as a real open item (a 9th monster type,
 still unlocated) rather than silently shipping the mechanic without
 naming the gap it depends on.
 
+### Round 146: Slat kills the Cyclops (immediately playable end-to-end), plus a real correction — Nugget, not just Nougat, wards off Werewolves
+
+After a break, resumed by following up directly on round 145's own
+"Hydra" gap: re-checked whether the walkthrough source distinguishes
+Hydra from Wyvern at all (it does — "you'll sooner or later run into a
+hostile monster such as a Wyvern or Ghost" names Wyvern separately in
+the same document), and cross-checked `zone_monsters.go`/the portrait
+gallery once more for any missed Hydra entry (none found either). This
+rules out the plausible Wraith/Vampire-style naming-mismatch
+hypothesis with real evidence, not just another guess — the gap is
+confirmed genuine, not a resolvable confusion, and is now recorded
+that way in "Open next steps."
+
+The same fetch that confirmed this surfaced two real, immediately
+actionable finds. First: **"the slat kills the Cyclops."** Slat
+(Morfang, round 78) and Cyclops (Nidus, long-shipped, independently
+corroborated by `zone_monsters.go`'s own "Nidus: Cyclops x1" sighting)
+are both real, already-placed CollodonsPile data — and, better than
+several earlier cross-referenced pairs in this project, both rooms sit
+on the SAME already-confirmed walkthrough path (Morfang -East->
+Room of Arrows -East-> Nidus), making this immediately playable in a
+single default-mode session from the very first round it's implemented.
+Added `game.checkSlatCyclops`, the 5th real ward-off/instant-kill
+mechanic now following the identical drop-triggered convention.
+
+Second, a genuine correction surfaced by re-reading the SAME source
+with a more careful, targeted fetch (the "verify against raw text"
+discipline round 82 established): the tips section states plainly "To
+pass the werewolfs you need a Nugget" and separately spells out the
+real action sequence — "PICK UP NUGGET, DROP NOUGAT ... (you can now
+destroy werewolves just by walking through them)." This is the SAME
+"Nugget" The CRPG Addict's account named back in round 126 ("a
+'nugget' that allows you to instantly kill werewolves") — at the time
+read as a likely casual misspelling of the already-known Nougat
+mechanic, but now confirmed by a SECOND, more precise, independent
+source as a real, separate item. Rather than override the CASA-sourced
+Nougat trigger (itself a real, independently-confirmed source, not
+proven wrong), extended `checkNougatWerewolf` to accept EITHER item —
+the honest, safe reading of 2 sources agreeing on "Nugget" without
+discarding a 3rd source's real "Nougat" finding.
+
+Added `TestCollodonsPileSlatDefeatsNidusCyclops` (a full real
+end-to-end default-mode test, same pattern as
+`TestCollodonsPileGarlicDefeatsMorfangVampire`) and
+`TestNuggetAlsoDefeatsWerewolfOnDrop`. Ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
+live via `go run ./cmd/hotm`: the real Morfang→Room of Arrows→Nidus
+path, ending in "The Slat kills the Cyclops."
+
+**How to apply**: when 2 independent sources agree on a specific fact
+that contradicts (or refines) an earlier round's own reading of a
+3rd source, the safe move is to ADD the new finding alongside the old
+one (accept either trigger) rather than silently overriding
+already-shipped, already-tested behavior on one new fetch — especially
+when the earlier source was never actually proven wrong, just
+possibly incomplete. Re-reading an OLD round's own doc comment with
+fresh eyes (round 126's Garlic/Vampire comment already quoted the
+"nugget" fact once, unresolved) can be exactly what's needed to
+recognize a new fetch is corroborating something, not contradicting
+it out of nowhere.
+
 ## Open next steps
 
 - **A 9th monster type, "Hydra," has never been located anywhere in
-  this project's data** (round 145): World of Spectrum's instructions
-  file confirms "Hydras" are real, plural dungeon creatures requiring
-  a Snake to pass — but every icon-legend scan across all 4 level
+  this project's data** (round 145, re-checked round 146): World of
+  Spectrum's instructions file confirms "Hydras" are real, plural
+  dungeon creatures requiring a Snake to pass, and separately, in the
+  same document, names "Wyvern" as a genuinely different monster
+  ("you'll sooner or later run into a hostile monster such as a
+  Wyvern or Ghost") — ruling out the plausible-looking hypothesis that
+  "Hydra" is just a fan nickname for the Wyvern already found at the
+  "Rook of Hydra" room (the same kind of naming mismatch round 74
+  found for Wraith/Vampire). Every icon-legend scan across all 4 level
   grids has only ever turned up 8 monster types (Troll/Ghost/Slug/
-  Vampire/Werewolf/Wyvern/Medusa/Cyclops). `game.checkSnakeHydra` is
-  shipped and tested, but can't fire in real gameplay until a real
-  Hydra icon/placement is found — worth a fresh, targeted re-scan of
-  `heavymap-grid-clean.gif`'s legend (maybe Hydra shares a icon with
-  something else, or appears only in an unswept region) or a check of
-  whether "Hydra" appears in the game's own real screenshot atlas.
+  Vampire/Werewolf/Wyvern/Medusa/Cyclops), and neither the portrait
+  gallery (13 confirmed, round 76) nor `zone_monsters.go`'s own
+  independent sighting list has ever named a "Hydra" either.
+  `game.checkSnakeHydra` is shipped and tested, but can't fire in real
+  gameplay until a real Hydra icon/placement is found — worth a fresh,
+  targeted re-scan of `heavymap-grid-clean.gif`'s legend (maybe Hydra
+  shares an icon with something else, or appears only in an unswept
+  region) or a check of whether "Hydra" appears in the game's own real
+  screenshot atlas.
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
   Screenshot Maps", credited to Hippy Smith) is a 10056×5493 composite
   of REAL in-game screenshots for all 4 levels, plus a full demon/

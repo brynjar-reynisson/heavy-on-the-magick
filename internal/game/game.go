@@ -1027,6 +1027,9 @@ func (g *Game) drop(target string) string {
 			if msg := g.checkSnakeHydra(); msg != "" {
 				result += "\n" + msg
 			}
+			if msg := g.checkSlatCyclops(); msg != "" {
+				result += "\n" + msg
+			}
 			if msg := g.checkSwapItem(item); msg != "" {
 				result += "\n" + msg
 			}
@@ -1105,6 +1108,9 @@ func (g *Game) move(dir world.Direction) string {
 	if msg := g.checkSnakeHydra(); msg != "" {
 		msgs = append(msgs, msg)
 	}
+	if msg := g.checkSlatCyclops(); msg != "" {
+		msgs = append(msgs, msg)
+	}
 	desc := g.describeCurrentRoom()
 	if len(msgs) > 0 {
 		return strings.Join(msgs, "\n") + "\n" + desc
@@ -1137,6 +1143,24 @@ func (g *Game) move(dir world.Direction) string {
 // trigger mechanics beyond this aren't stated (e.g. whether the Nougat
 // is consumed) - honestly left as non-consuming, the simplest reading
 // of the source that doesn't mention the Nougat being used up.
+//
+// ROUND 146 EXTENSION - Nugget also wards off Werewolves, per TWO
+// independent sources both naming "Nugget" specifically (not Nougat):
+// The CRPG Addict's playthrough account ("a 'nugget' that allows you to
+// instantly kill werewolves" - round 126's own doc comment already
+// quoted this, but at the time read it as a casual misspelling of the
+// already-known Nougat mechanic) and, more decisively, World of
+// Spectrum's plain-text instructions file states plainly "To pass the
+// werewolfs you need a Nugget" and separately confirms the full real
+// sequence: "PICK UP NUGGET, DROP NOUGAT ... (you can now destroy
+// werewolves just by walking through them)" - i.e. dropping Nougat
+// reveals a Nugget (round 132/133's already-shipped SwapItem
+// mechanic), and it's specifically after THAT exchange that werewolves
+// become passable. Rather than treat this as overriding the CASA-
+// sourced Nougat trigger (a real, independently-confirmed source in
+// its own right, not proven wrong), both items are accepted - the
+// honest, safe reading of 2 sources agreeing on "Nugget" without
+// discarding a 3rd, different source's real "Nougat" finding.
 func (g *Game) checkNougatWerewolf() string {
 	room := g.World.CurrentRoom()
 	if room == nil || room.Monster != "Werewolf" || room.MonsterHealth <= 0 {
@@ -1146,6 +1170,10 @@ func (g *Game) checkNougatWerewolf() string {
 		if strings.EqualFold(item, "Nougat") {
 			room.MonsterHealth = 0
 			return "The Werewolf catches the scent of Nougat and lets you pass unharmed."
+		}
+		if strings.EqualFold(item, "Nugget") {
+			room.MonsterHealth = 0
+			return "The Werewolf is warded off by the Nugget and lets you pass unharmed."
 		}
 	}
 	return ""
@@ -1244,6 +1272,33 @@ func (g *Game) checkSnakeHydra() string {
 		if strings.EqualFold(item, "Snake") {
 			room.MonsterHealth = 0
 			return "The Hydra recoils from the Snake and lets you pass."
+		}
+	}
+	return ""
+}
+
+// checkSlatCyclops implements a fifth real, sourced instant-kill
+// mechanic (round 146), same drop-triggered pattern as
+// checkNougatWerewolf/checkGarlicVampire/checkPelletSlug/
+// checkSnakeHydra: World of Spectrum's plain-text instructions file
+// states plainly "the slat kills the Cyclops." Both halves are already
+// real, placed, reachable CollodonsPile data - Slat in Morfang (round
+// 78) and Cyclops in Nidus (long-shipped, cross-confirmed via
+// zone_monsters.go's independent "Nidus: Cyclops x1" sighting) - and,
+// unlike several other cross-referenced pairs in this project, these 2
+// rooms sit on the SAME already-confirmed walkthrough path (Morfang
+// -East-> Room of Arrows -East-> Nidus), so this is immediately
+// playable in a single default-mode session, not just testable in
+// isolation.
+func (g *Game) checkSlatCyclops() string {
+	room := g.World.CurrentRoom()
+	if room == nil || room.Monster != "Cyclops" || room.MonsterHealth <= 0 {
+		return ""
+	}
+	for _, item := range room.Items {
+		if strings.EqualFold(item, "Slat") {
+			room.MonsterHealth = 0
+			return "The Slat kills the Cyclops."
 		}
 	}
 	return ""
