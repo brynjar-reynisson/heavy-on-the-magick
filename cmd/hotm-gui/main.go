@@ -256,7 +256,7 @@ func (gui *GUI) Update() error {
 		gui.appendLog(gui.g.Handle(parser.Parse("EXAMINE")))
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyI) {
-		gui.invokeCarriedDemon()
+		gui.invokeDemonForGroundedCharm()
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
 		gui.handleAndPlay("GUARDS, DOOR")
@@ -332,23 +332,40 @@ func (gui *GUI) pickUpFirstItem() {
 	gui.appendLog(gui.g.Handle(parser.Parse(cmd)))
 }
 
-// invokeCarriedDemon handles the I key. The GUI has no text input, so
-// INVOKE (which takes a specific demon name, see parser.Parse) can't
-// offer a free-form target the way the text frontend can - this
-// instead scans the player's real carried Items against each confirmed
-// magic.Demons's Charm and invokes the first match, going through the
-// exact same game.Game.Handle("INVOKE ...") path either way (same
-// target-selection convention as pickUpFirstItem/dropFirstItem above).
-// With no matching Charm carried, falls back to bare INVOKE (lists the
-// 4 demons and their requirements) rather than doing nothing.
-func (gui *GUI) invokeCarriedDemon() {
-	gui.handleAndPlay(invokeCommandFor(gui.g.Player.Items))
+// invokeDemonForGroundedCharm handles the I key. The GUI has no text
+// input, so INVOKE (which takes a specific demon name, see
+// parser.Parse) can't offer a free-form target the way the text
+// frontend can - this instead scans the CURRENT ROOM's real Items
+// against each confirmed magic.Demons's Charm and invokes the first
+// match, going through the exact same game.Game.Handle("INVOKE ...")
+// path either way. With no matching Charm on the ground, falls back to
+// bare INVOKE (lists the 4 demons and their requirements) rather than
+// doing nothing.
+//
+// Round 131: previously scanned the player's CARRIED Items (renamed
+// from invokeCarriedDemon) - a genuinely new source (World of
+// Spectrum's plain-text instructions file) confirmed the real
+// mechanic requires the Charm to be dropped on the ground, not merely
+// carried ("Place Ye the talisman on the ground and proceed with thy
+// invocation from a distance" - see game.invoke's doc comment for the
+// full correction). Scanning the room instead of the inventory keeps
+// this key's behavior consistent with the corrected text-frontend
+// mechanic, rather than silently trying (and now always failing) the
+// old carried-item assumption.
+func (gui *GUI) invokeDemonForGroundedCharm() {
+	room := gui.g.World.CurrentRoom()
+	var items []string
+	if room != nil {
+		items = room.Items
+	}
+	gui.handleAndPlay(invokeCommandFor(items))
 }
 
 // invokeCommandFor picks which real game.Handle("INVOKE ...") command
-// invokeCarriedDemon should send, given the player's carried items -
-// split out from invokeCarriedDemon so the target-selection logic is
-// testable without needing a real audio context.
+// invokeDemonForGroundedCharm should send, given a set of item names
+// (the current room's real Items, since round 131) - split out so the
+// target-selection logic is testable without needing a real audio
+// context.
 func invokeCommandFor(items []string) string {
 	for _, d := range magic.Demons {
 		for _, item := range items {

@@ -5316,6 +5316,83 @@ project's own EXIT! label had been sitting in that "rejected" list for
 many rounds before anyone thought to ask why the label said "EXIT!" in
 the first place.
 
+### Round 131: a genuinely new source (World of Spectrum's separate plain-text instructions) corrects how INVOKE actually works — the Talisman must be on the ground, not carried
+
+After another Stop-hook rejection, same framing, went back to
+`worldofspectrum.org`'s own archive page for this game (found via
+round 130's Wikipedia search, but the page itself had never been
+fetched) and found it links several files this project already has,
+plus 2 genuinely new ones: a previously-unchecked map image
+(`HeavyOnTheMagick_4.jpg`, turned out to be the same world-of-
+Graumerphy overview page the manual's own backstory section already
+described, mostly confirmatory rather than new) and, far more
+valuably, `HeavyOnTheMagick.txt` — a SEPARATE plain-text instructions
+file, distinct from the PDF manual this project has mined heavily
+since round 9. It turned out to contain far more than a manual: a
+detailed 45-step walkthrough, door-password/key mappings, and item-
+swap tips (declined to reproduce the walkthrough's prose in bulk, per
+this project's own long-standing copyright discipline — only asked
+for short, specific verbatim quotes, the same convention used for
+every walkthrough source so far).
+
+The single most consequential find: **"Place Ye the talisman on the
+ground and proceed with thy invocation from a distance."** This is a
+real, precise correction to how `game.invoke`/`astarotTeleport`/
+`magotLocate` have gated on a demon's Charm since rounds 12/75/77 -
+all three checked `g.hasItem` (carried in inventory), but the real
+mechanic requires the Talisman to be DROPPED on the ground first. Not
+a cosmetic wording issue: this changes the actual required player
+action from "carry the Charm and invoke" to "carry the Charm to the
+room, drop it, then invoke" - a real, previously-missing step in
+every one of this port's invocation mechanics.
+
+Fixed all 3 gating sites to check a new `game.roomHasItem` (the
+current room's real Items) instead of `hasItem`. A player who IS
+carrying the Charm but hasn't dropped it gets a distinct, honest hint
+("...place it on the ground and stand back...") rather than
+`punishFailedInvoke`'s furnace-room punishment, which stays reserved
+for not having the Charm at all - a real, more precise 3-way state
+(have it dropped here / have it but not dropped / don't have it) where
+this port previously only modeled 2. Updated 6 existing tests that had
+been carrying the Charm rather than dropping it (an honest reflection
+of the OLD, now-corrected assumption, not a design choice worth
+preserving) and added a new one covering the "carried but not dropped"
+hint specifically. Also fixed `cmd/hotm-gui`'s I-key helper
+(`invokeCarriedDemon`, renamed `invokeDemonForGroundedCharm`) which
+had scanned the player's carried Items to pick a target demon - now
+correctly scans the current room's Items instead, so the GUI's
+shortcut stays consistent with the corrected mechanic rather than
+silently always failing the moment a player picks a Charm up.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified live end-to-end via `go run
+./cmd/hotm`: walked to Methos, `PICKUP ERLSTONE`, `INVOKE ASMODEE`
+correctly failed with the new carried-not-dropped hint, `DROP
+ERLSTONE`, `INVOKE ASMODEE` then succeeded for real.
+
+Two other real facts from the same file, documented but not yet
+acted on: an item-swap mechanic ("To get the Pellet swap it for a
+Ball... To get the nugget swap it for the Nougat... Get the Shell and
+swap it for the egg") whose exact trigger isn't precise enough to
+implement safely yet (risking a conflict with Nougat's already-real
+Werewolf-defeat mechanic if mismodeled) - a real, scoped next step,
+not guessed at this round; and a general rule ("Locked doors with
+tables by them need keys. Locked doors with ornate pillars need
+passwords") that explains, but doesn't change, the already-implemented
+TollItem-vs-DoorPasswords split.
+
+**How to apply**: a game's OWN publisher/archive page can link more
+than one instructions document — this project had mined the PDF
+manual extensively but never checked whether a plain-text version
+existed separately, and it turned out to be a materially different,
+richer source (a full walkthrough, not just a rules summary). When a
+new source corrects a core mechanic's exact trigger condition (carried
+vs. dropped), check every site in the codebase that implements the
+same rule, not just the first one found - this round's fix touched 3
+separate gating sites (bare INVOKE, ASTAROT teleport, MAGOT locate)
+plus a 4th, easy-to-miss one in the GUI frontend that assumed the old
+behavior.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

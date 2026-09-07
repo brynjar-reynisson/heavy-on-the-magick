@@ -493,19 +493,29 @@ func (g *Game) deathCheck(msg string) string {
 // player named as cmd.Target. Recognizing the 4 confirmed magic.Demons,
 // requiring each one's specific Charm, and each one's Ability are all
 // real, sourced facts (see magic.Demons's doc comment) — invocation now
-// actually succeeds when the player carries the right Charm. With no
-// target, lists all 4 demons, their Charm requirements, and (round 114)
-// their real occult Correspondences (magic.Demon.Correspondences,
-// extracted round 110 from the manual's grimoire section but never
-// actually shown anywhere in-game until now) — real, already-sourced
-// data that had no way to be seen in-game before this. Round 115
-// closes the same gap for Number/Sign/Aspect, which were ALSO real,
-// confirmed manual facts (present on every Demon since this project's
-// very first magic.Demons commit) but — unlike Ability/Charm/
-// Correspondences — had never been referenced by internal/game at all,
-// found the same way round 114 was: checking each struct field against
-// what actually reaches the player, not assuming "it's a field, so it
-// must be used somewhere."
+// actually succeeds when the right Charm is present. With no target,
+// lists all 4 demons, their Charm requirements, and (round 114) their
+// real occult Correspondences (magic.Demon.Correspondences, extracted
+// round 110 from the manual's grimoire section but never actually shown
+// anywhere in-game until now) — real, already-sourced data that had no
+// way to be seen in-game before this. Round 115 closes the same gap for
+// Number/Sign/Aspect, which were ALSO real, confirmed manual facts
+// (present on every Demon since this project's very first magic.Demons
+// commit) but — unlike Ability/Charm/Correspondences — had never been
+// referenced by internal/game at all, found the same way round 114 was:
+// checking each struct field against what actually reaches the player,
+// not assuming "it's a field, so it must be used somewhere."
+//
+// Round 131 CORRECTION: the Charm gate previously checked g.hasItem
+// (carried in inventory) — but a genuinely new source (World of
+// Spectrum's separate plain-text instructions file, distinct from the
+// PDF manual this project had already mined heavily) states the real
+// mechanic precisely: "Place Ye the talisman on the ground and proceed
+// with thy invocation from a distance." The Charm must be DROPPED in
+// the room, not merely carried. Fixed to check g.roomHasItem instead;
+// a player who IS carrying the Charm but hasn't dropped it gets an
+// honest, specific hint (not punishFailedInvoke's furnace-room
+// punishment, which is reserved for not having the Charm at all).
 func (g *Game) invoke(target string) string {
 	if target == "" {
 		var b strings.Builder
@@ -519,7 +529,10 @@ func (g *Game) invoke(target string) string {
 		if !strings.EqualFold(d.Name, target) {
 			continue
 		}
-		if !g.hasItem(d.Charm) {
+		if !g.roomHasItem(d.Charm) {
+			if g.hasItem(d.Charm) {
+				return fmt.Sprintf("You are carrying the %s, but that isn't enough - place it on the ground and stand back before you invoke %s.", d.Charm, d.Name)
+			}
 			return g.punishFailedInvoke(d)
 		}
 		if strings.HasPrefix(d.Ability, "Warning:") {
@@ -598,14 +611,19 @@ func (g *Game) call() string {
 // entry already confirms the underlying ability ("Transports the player
 // to a named location, if its name is known") and Charm ("Sword") - this
 // is the first place that ability is actually implemented, using the
-// same Charm-gating convention as bare INVOKE. The location name is
+// same Charm-gating convention as bare INVOKE (round 131: the Charm
+// must be on the ground, per World of Spectrum's plain-text
+// instructions file - see invoke's doc comment). The location name is
 // looked up against the CURRENT world's real Room names (Wolfdorp itself
 // is a real, already-shipped CollodonsPile room), so this only reaches
 // places that genuinely exist in whichever world is active - no
 // fabricated destinations.
 func (g *Game) astarotTeleport(location string) string {
 	const astarotName, astarotTitle, astarotCharm = "Astarot", "the Spirit of Assemblage", "Sword"
-	if !g.hasItem(astarotCharm) {
+	if !g.roomHasItem(astarotCharm) {
+		if g.hasItem(astarotCharm) {
+			return fmt.Sprintf("You are carrying the %s, but that isn't enough - place it on the ground and stand back before you invoke %s.", astarotCharm, astarotName)
+		}
 		return fmt.Sprintf("You call out to %s, %s... but you have no suitable Talisman (a %s).", astarotName, astarotTitle, astarotCharm)
 	}
 	id, ok := g.World.FindRoomByName(location)
@@ -637,7 +655,10 @@ func (g *Game) astarotTeleport(location string) string {
 // already applied once before to examine().
 func (g *Game) magotLocate(object string) string {
 	const magotName, magotTitle, magotCharm = "Magot", "the Diviner", "Sunflower"
-	if !g.hasItem(magotCharm) {
+	if !g.roomHasItem(magotCharm) {
+		if g.hasItem(magotCharm) {
+			return fmt.Sprintf("You are carrying the %s, but that isn't enough - place it on the ground and stand back before you invoke %s.", magotCharm, magotName)
+		}
 		return fmt.Sprintf("You call out to %s, %s... but you have no suitable Talisman (a %s).", magotName, magotTitle, magotCharm)
 	}
 	for _, item := range g.Player.Items {
@@ -674,6 +695,23 @@ func (g *Game) passGuards() string {
 // hasItem reports whether the player is carrying an item by name.
 func (g *Game) hasItem(name string) bool {
 	return g.Player.HasItem(name)
+}
+
+// roomHasItem reports whether the current room's real world.Room.Items
+// contains the named item (case-insensitive, matching hasItem's
+// convention) - used by invoke (round 131) to check whether a Talisman
+// has actually been placed on the ground, not merely carried.
+func (g *Game) roomHasItem(name string) bool {
+	room := g.World.CurrentRoom()
+	if room == nil {
+		return false
+	}
+	for _, item := range room.Items {
+		if strings.EqualFold(item, name) {
+			return true
+		}
+	}
+	return false
 }
 
 // payToll handles a real, distinct door mechanic (see world.Room.TollItem's

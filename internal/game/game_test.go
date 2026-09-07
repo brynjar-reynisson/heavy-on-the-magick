@@ -83,15 +83,36 @@ func TestPassGuardsWithNoGuardsPresent(t *testing.T) {
 	}
 }
 
+// TestHandleInvokeSucceedsWithCharm pins round 131's correction: the
+// real mechanic (a genuinely new source, World of Spectrum's separate
+// plain-text instructions file) states "Place Ye the talisman on the
+// ground and proceed with thy invocation from a distance" - the Charm
+// must be dropped in the room, not merely carried.
 func TestHandleInvokeSucceedsWithCharm(t *testing.T) {
 	g := New()
-	g.Player.Items = append(g.Player.Items, "Sunflower")
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sunflower")
 	got := g.Handle(parser.Parse("I MAGOT")) // Magot's confirmed Charm is Sunflower
 	if strings.Contains(got, "no suitable Talisman") {
-		t.Errorf("Handle(I MAGOT) with Sunflower carried = %q, want the invocation to succeed", got)
+		t.Errorf("Handle(I MAGOT) with Sunflower on the ground = %q, want the invocation to succeed", got)
 	}
 	if !strings.Contains(got, "MAGOT") {
 		t.Errorf("Handle(I MAGOT) = %q, want it to name Magot", got)
+	}
+}
+
+// TestHandleInvokeCarriedNotDroppedCharmFails pins the other half of
+// round 131's correction: merely CARRYING the Charm isn't enough, and
+// gets a distinct, honest hint (not the furnace-room punishment, which
+// is reserved for not having the Charm at all).
+func TestHandleInvokeCarriedNotDroppedCharmFails(t *testing.T) {
+	g := New()
+	g.Player.Items = append(g.Player.Items, "Sunflower")
+	got := g.Handle(parser.Parse("I MAGOT"))
+	if !strings.Contains(got, "place it on the ground") {
+		t.Errorf("Handle(I MAGOT) with Sunflower only carried = %q, want a place-it-on-the-ground hint", got)
+	}
+	if strings.Contains(got, "furnace room") {
+		t.Errorf("Handle(I MAGOT) with the Charm carried (not dropped) = %q, want it to NOT trigger the no-Charm-at-all punishment", got)
 	}
 }
 
@@ -138,7 +159,7 @@ func TestHandleAstarotTeleportRequiresSword(t *testing.T) {
 // confirmed Charm (Sword).
 func TestHandleAstarotTeleportSucceeds(t *testing.T) {
 	g := New()
-	g.Player.Items = append(g.Player.Items, "Sword")
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sword")
 	got := g.Handle(parser.Parse("ASTAROT, WOLFDORP"))
 	if strings.Contains(got, "no suitable Talisman") {
 		t.Errorf("Handle(ASTAROT, WOLFDORP) with Sword carried = %q, want the teleport to succeed", got)
@@ -153,7 +174,7 @@ func TestHandleAstarotTeleportSucceeds(t *testing.T) {
 
 func TestHandleAstarotTeleportUnknownLocation(t *testing.T) {
 	g := New()
-	g.Player.Items = append(g.Player.Items, "Sword")
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sword")
 	got := g.Handle(parser.Parse("ASTAROT, NARNIA"))
 	if !strings.Contains(got, "doesn't recognize") {
 		t.Errorf("Handle(ASTAROT, NARNIA) = %q, want an honest unknown-location rejection", got)
@@ -178,7 +199,7 @@ func TestHandleMagotLocateRequiresSunflower(t *testing.T) {
 // of Misery.
 func TestHandleMagotLocateFindsRealItem(t *testing.T) {
 	g := New()
-	g.Player.Items = append(g.Player.Items, "Sunflower")
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sunflower")
 	got := g.Handle(parser.Parse("MAGOT, GRIMOIRE"))
 	if strings.Contains(got, "no suitable Talisman") {
 		t.Errorf("Handle(MAGOT, GRIMOIRE) with Sunflower carried = %q, want the locate to succeed", got)
@@ -190,7 +211,8 @@ func TestHandleMagotLocateFindsRealItem(t *testing.T) {
 
 func TestHandleMagotLocateAlreadyCarried(t *testing.T) {
 	g := New()
-	g.Player.Items = append(g.Player.Items, "Sunflower", "Grimoire")
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sunflower")
+	g.Player.Items = append(g.Player.Items, "Grimoire")
 	got := g.Handle(parser.Parse("MAGOT, GRIMOIRE"))
 	if !strings.Contains(got, "already carry") {
 		t.Errorf("Handle(MAGOT, GRIMOIRE) while carrying it = %q, want an honest already-carried response", got)
@@ -205,7 +227,7 @@ func TestHandleMagotLocateAlreadyCarried(t *testing.T) {
 
 func TestHandleMagotLocateUnknownObject(t *testing.T) {
 	g := New()
-	g.Player.Items = append(g.Player.Items, "Sunflower")
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sunflower")
 	got := g.Handle(parser.Parse("MAGOT, EXCALIBUR"))
 	if !strings.Contains(got, "senses no such object") {
 		t.Errorf("Handle(MAGOT, EXCALIBUR) = %q, want an honest not-found response", got)

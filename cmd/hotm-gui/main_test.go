@@ -63,14 +63,16 @@ func TestItemsColorIsLegible(t *testing.T) {
 }
 
 // TestInvokeCommandForPicksCarriedCharm covers the I key's real
-// target-selection logic (see invokeCarriedDemon's doc comment): with
-// no text input, it scans the player's items for any demon's Charm.
+// target-selection logic (see invokeDemonForGroundedCharm's doc
+// comment): with no text input, it scans a set of item names (the
+// current room's real Items, since round 131's Charm-on-the-ground
+// correction) for any demon's Charm.
 func TestInvokeCommandForPicksCarriedCharm(t *testing.T) {
 	if got := invokeCommandFor([]string{"Grimoire", "sword"}); got != "INVOKE ASTAROT" {
-		t.Errorf("invokeCommandFor with a carried Sword = %q, want \"INVOKE ASTAROT\"", got)
+		t.Errorf("invokeCommandFor with a Sword present = %q, want \"INVOKE ASTAROT\"", got)
 	}
 	if got := invokeCommandFor([]string{"Grimoire"}); got != "INVOKE" {
-		t.Errorf("invokeCommandFor with no Charm carried = %q, want bare \"INVOKE\"", got)
+		t.Errorf("invokeCommandFor with no Charm present = %q, want bare \"INVOKE\"", got)
 	}
 }
 
