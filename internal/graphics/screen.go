@@ -1,11 +1,15 @@
 package graphics
 
-// Renderer draws the game's visuals. No implementation exists yet — the
-// plan is an ebiten-backed one (see ../../CLAUDE.md's "port" discussion:
-// a Go port doesn't need to replicate the ZX Spectrum's bit-packed/
-// attribute-clash screen format, just draw the same pictures with normal
-// 2D primitives), but the interface is defined now so game logic can be
-// written against it before the renderer exists.
+// Renderer draws the game's visuals (see ../../CLAUDE.md's "port"
+// discussion: a Go port doesn't need to replicate the ZX Spectrum's
+// bit-packed/attribute-clash screen format, just draw the same pictures
+// with normal 2D primitives). PNGRenderer (pngrenderer.go) is the one
+// real implementation, drawing into a plain in-memory image — both
+// offline PNG export (cmd/render-glyphs) and live GUI display
+// (cmd/hotm-gui) use it directly, the latter converting its output via
+// ebiten.NewImageFromImage rather than needing a separate ebiten-native
+// Renderer of its own; one drawing implementation, two frontends, no
+// duplicated glyph-drawing code.
 type Renderer interface {
 	// DrawGlyph draws an 8x8 Glyph at the given cell position (col, row in
 	// 8x8-character-cell units, matching the original's coordinate system)

@@ -5,20 +5,17 @@
 // STATUS: found the sound routine (Z80 addresses 64671-64781, disassembled
 // in ../../CLAUDE.md) and a confirmed, genuinely musical 53-note chromatic
 // pitch table at address 64812 (see pitch_table.go — verified via its
-// semitone ratio, not guessed). A square-wave PCM synthesizer
-// (synth.go) can render that data to real audio (WAV export; no live
-// playback backend wired up yet — see Player below). The exact period-to-
-// Hz calibration is still an approximation (the beeper loop's T-state cost
-// wasn't fully cycle-counted — see synth.go's tStatesPerPeriodUnit doc),
-// so relative pitch is faithful but absolute pitch/octave placement isn't
-// confirmed yet.
+// semitone ratio, not guessed). A square-wave PCM synthesizer (synth.go)
+// renders that data to real audio, and this package now has TWO real
+// output paths, not just offline export: WriteWAV (synth.go) for offline
+// rendering/testing, and RenderNotes + ToStereo16 (pcm.go) for live
+// playback — cmd/hotm-gui feeds their output directly into ebiten's own
+// audio player, so no separate Player interface/backend of this
+// package's own was ever needed (an earlier round's forward-looking
+// Player interface sat here unused and was removed once the real live-
+// playback path turned out to be simpler than anticipated). The exact
+// period-to-Hz calibration is still an approximation (the beeper loop's
+// T-state cost wasn't fully cycle-counted — see synth.go's
+// tStatesPerPeriodUnit doc), so relative pitch is faithful but absolute
+// pitch/octave placement isn't confirmed yet.
 package audio
-
-// Player will play back the game's beeper sound effects and music through
-// a real audio backend. No implementation exists yet (WriteWAV in synth.go
-// is the only working output path so far — useful for offline rendering/
-// testing, not live playback).
-type Player interface {
-	// PlayTone plays a single square-wave tone.
-	PlayTone(hz float64, durationMs int)
-}

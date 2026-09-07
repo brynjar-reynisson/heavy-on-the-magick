@@ -3601,6 +3601,45 @@ drawn non-bright), ran the full `gofmt`/`build`/`vet`/`test` suite
 `cmd/render-glyphs`: the magenta icon now renders in a visibly
 brighter, more saturated magenta than before.
 
+### Removed a dead, never-adopted interface and corrected two stale "not implemented yet" doc comments
+
+After another Stop-hook rejection, same framing, followed up on last
+round's TODO-hunting technique with an adjacent check: are there other
+old package-level doc comments describing something as "not
+implemented yet" that's actually been real and working for a long
+time? Found two, both in `internal/graphics`/`internal/audio` — the
+exact packages the goal names ("graphics and sound") — which is worth
+noting: it's not that graphics/sound are less faithful than they
+appear, it's that the project's own *documentation* of them had drifted
+out of date.
+
+- `internal/audio/beeper.go` declared a `Player` interface ("will play
+  back the game's beeper sound effects... No implementation exists
+  yet") that turned out to be **completely unreferenced anywhere in the
+  codebase** — `cmd/hotm-gui`'s real, working live audio playback
+  (confirmed live and working many rounds ago) never actually used it;
+  it calls `RenderNotes`/`ToStereo16` directly into ebiten's own audio
+  player instead, a simpler design than this interface anticipated.
+  Removed the dead interface and rewrote the package doc comment to
+  describe the real, current two-path situation (`WriteWAV` for offline
+  export, `RenderNotes`+`ToStereo16` for live playback) instead of the
+  stale "no live playback backend wired up yet" claim.
+- `internal/graphics/screen.go`'s `Renderer` interface doc comment
+  still said "No implementation exists yet — the plan is an
+  ebiten-backed one" — but `PNGRenderer` has been the one real, working
+  implementation for a very long time, and the actual design that
+  emerged (both `cmd/render-glyphs` and `cmd/hotm-gui` share the *same*
+  `PNGRenderer`, the GUI just converts its output via
+  `ebiten.NewImageFromImage`) is simpler and better than the
+  originally-planned separate ebiten-native renderer. Corrected the
+  comment to describe reality.
+
+No behavior change — this is a documentation-accuracy and dead-code-removal
+round, which this project's own history already recognizes as legitimate,
+valuable work (a round doesn't need a new mechanic to be real progress).
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean and confirmed the text frontend still runs.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
