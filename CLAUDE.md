@@ -4800,6 +4800,43 @@ and a new `Handle`-level test confirms `O SAVE GAME B` creates
 Updated `.gitignore` for the new versioned filenames. Ran the full
 `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 120: gave Wolfdorp its Werewolf — activating a real mechanic that's been tested but unreachable since round 63
+
+After another Stop-hook rejection, same framing, resumed the round-101/
+106 "audit zone_monsters.go for entries still unapplied" pass — this
+time systematically, checking every one of the 15 entries against
+CollodonsPile's current room data rather than the ones already
+remembered as fixed. Found one real, clean case left: "Wolfdorp: Ghost
+x2, Werewolf x2" (already cross-confirmed exactly against Level1Grid's
+own A1/C2/C6/D5 placements back in round 71) had never been applied —
+`roomWolfdorp` had no `Monster` field at all. (Also re-checked "Sothic
+Complex: Ghost x1" — that one is genuinely NOT safe to apply, per
+`level3_grid.go`'s own already-documented naming clash between Level 2
+and Level 3's "Sothic Complex"; left alone, consistent with that
+existing caution.)
+
+`Room.Monster` only holds one species, but the source names two — a
+deliberate choice, not an arbitrary one, decided which: `game.
+checkNougatWerewolf` (a real, sourced mechanic — "killable by walking
+through after dropping NOUGAT," confirmed round 63, unit-tested ever
+since) checks specifically for `room.Monster == "Werewolf"`, and no
+CollodonsPile room has ever carried that value — meaning this exact
+mechanic has been shipped and tested for 57 rounds without ever being
+reachable in a real playthrough. Set Wolfdorp's Monster to Werewolf,
+documented the Ghost half honestly as a real fact this single-field
+model can't also represent.
+
+Verified properly end-to-end, not just via the field itself: a new
+test walks the REAL path from `game.New()` (Room of Misery → Secunda
+Porta → Trollwynd, where it picks up the real, already-placed Nougat →
+Sothic Complex → Wolfdorp), drops the Nougat there, and confirms the
+real Werewolf is defeated — the first time this mechanic has ever been
+exercised through actual default-mode gameplay rather than an isolated
+Level1Grid-only test. Added `TestCollodonsPileWolfdorpHasWerewolf` too.
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean — every existing
+Wolfdorp-related test (Sword, chest, door passwords, ASTAROT teleport)
+still passes unchanged.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

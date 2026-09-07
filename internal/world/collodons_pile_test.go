@@ -197,6 +197,20 @@ func TestCollodonsPileHasChestPlacements(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileWolfdorpHasWerewolf pins the round-120 addition:
+// zone_monsters.go's "Wolfdorp: Ghost x2, Werewolf x2" sighting had
+// sat unapplied - Werewolf was chosen (not Ghost) because it activates
+// the real, already-tested game.checkNougatWerewolf mechanic for the
+// first time in actual default-mode play. See CollodonsPile's doc
+// comment.
+func TestCollodonsPileWolfdorpHasWerewolf(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomWolfdorp]
+	if room.Monster != "Werewolf" || room.MonsterHealth <= 0 {
+		t.Errorf("Wolfdorp Monster = %q (health %d), want a live Werewolf", room.Monster, room.MonsterHealth)
+	}
+}
+
 // TestCollodonsPileMethosHasVampire pins the round-71 addition: Methos
 // is a real, connected, reachable room, and zone_monsters.go's
 // independently-sourced "Methos: Wraith x1" sighting - cross-validated

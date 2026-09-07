@@ -1041,6 +1041,35 @@ func TestNougatDefeatsWerewolfOnDrop(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileNougatDefeatsWolfdorpWerewolf covers round 120's
+// Wolfdorp addition end-to-end in the actual DEFAULT (CollodonsPile)
+// game, not just the isolated Level1Grid mechanic test above: picks up
+// the real, already-placed Nougat in Trollwynd, carries it to Wolfdorp
+// (both real rooms on the real walkthrough path), and drops it there -
+// confirming game.checkNougatWerewolf's real mechanic is now genuinely
+// reachable in a normal playthrough, not just unit-testable in
+// isolation.
+func TestCollodonsPileNougatDefeatsWolfdorpWerewolf(t *testing.T) {
+	g := New()
+	g.Handle(parser.Parse("EAST"))          // Secunda Porta
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd - has real Nougat
+	if got := g.Handle(parser.Parse("PICKUP NOUGAT")); !strings.Contains(got, "Nougat") {
+		t.Fatalf("test setup bug: PICKUP NOUGAT in Trollwynd = %q, want it to succeed", got)
+	}
+	g.Handle(parser.Parse("SOUTH")) // Sothic Complex
+	g.Handle(parser.Parse("SOUTH")) // Wolfdorp - has the real Werewolf
+
+	room := g.World.CurrentRoom()
+	if room.Name != "Wolfdorp" || room.Monster != "Werewolf" || room.MonsterHealth <= 0 {
+		t.Fatalf("test setup bug: expected a live Werewolf in Wolfdorp, got %+v", room)
+	}
+	g.Handle(parser.Parse("DROP NOUGAT"))
+	if room.MonsterHealth > 0 {
+		t.Errorf("Wolfdorp's Werewolf should be defeated after dropping the real Nougat carried from Trollwynd, MonsterHealth = %d", room.MonsterHealth)
+	}
+}
+
 func TestLevel1ExplorationMovementAndCombat(t *testing.T) {
 	g := NewLevel1Exploration()
 	// A1 (start) has a real Ghost, per world.Level1Grid's extracted data.

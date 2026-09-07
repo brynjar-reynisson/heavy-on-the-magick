@@ -112,6 +112,25 @@ package world
 // this makes it a genuine, reachable combat encounter, not just
 // recorded data.
 //
+// Wolfdorp's Werewolf (round 120): zone_monsters.go's "Wolfdorp: Ghost
+// x2, Werewolf x2" sighting (already cross-confirmed above, round 71,
+// against Level1Grid's own A1/C2/C6/D5 placements — all 4 cells sit
+// within Wolfdorp's own zone boundary per round 109's clean-map
+// reading) had sat unapplied here the same way Trollwynd's did before
+// round 101. Room.Monster only holds ONE species, but the source has
+// two (Ghost AND Werewolf) — Werewolf was chosen deliberately, not
+// arbitrarily: game.checkNougatWerewolf (a real, sourced, already-
+// TESTED mechanic — "killable by walking through after dropping
+// NOUGAT", confirmed round 63) checks specifically for `room.Monster
+// == "Werewolf"`, and no CollodonsPile room has ever carried that
+// value before now — meaning this real mechanic has been shipped and
+// unit-tested since round 63 but never once reachable in an actual
+// default-mode playthrough. Nougat is already a real, placed item
+// (Trollwynd), so the player can genuinely carry it here and try it.
+// The Ghost half of the sighting is real too, just not representable
+// alongside Werewolf in this single-Monster-field data model — an
+// honest simplification, not a silently dropped fact.
+//
 // Morfang's Vampire (round 106): zone_monsters.go records "Morfang:
 // Vampire x3" — at the time of Methos's fix above (round 72's
 // writeup), this was deliberately left untouched, flagged as "a
@@ -264,7 +283,7 @@ func CollodonsPile() *World {
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget", "Erlstone"}, HasTable: true, Monster: "Vampire", MonsterHealth: 2},
 		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower"}, HasTable: true},
-		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true, HasChest: true},
+		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Monster: "Werewolf", MonsterHealth: 2, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true, HasChest: true},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key", HasTable: true},
 		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Monster: "Vampire", MonsterHealth: 2, Items: []string{"Slat"}, TollItem: "Bag", HasTable: true, HasChest: true},
 		{ID: roomArrows, Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{East: roomNidus, North: roomWolfdorp}, TollItem: "Slat", HasTable: true},
