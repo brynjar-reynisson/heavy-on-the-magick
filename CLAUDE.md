@@ -48,14 +48,16 @@ world — see "Open next steps" for why a literal merge isn't safe yet
 (a real, sourced connectivity conflict, not just unstarted work).
 
 **Gameplay / commands** — of the game's real, extracted 313-word
-vocabulary, **43 words have modeled `Handle` behavior** (31 as a bare
-verb + 12 in a specific TARGET-VERB pairing — see
-`cmd/vocab-coverage`'s own doc comment) — the rest fall through to an
-honest "recognized, not modeled" stub. That sounds low (~14%) read as
-"313 unimplemented verbs," but repeated audits (rounds 102/140/155)
-found the uncovered list is overwhelmingly NOUN content (room/item/
-monster/demon names already used as real data elsewhere in this
-project, not unimplemented ACTIONS) — the real unimplemented-verb
+vocabulary, **45 words have modeled `Handle` behavior** (31 as a bare
+verb + 14 in a specific TARGET-VERB pairing, up from 12 as of round
+165 — `ASMODEE`/`BELEZBAR` gained real dispatch in rounds 162/164 but
+weren't added to `cmd/vocab-coverage`'s own exclusion list until round
+165 caught the gap; see that tool's doc comment) — the rest fall
+through to an honest "recognized, not modeled" stub. That sounds low
+(~14%) read as "313 unimplemented verbs," but repeated audits (rounds
+102/140/155) found the uncovered list is overwhelmingly NOUN content
+(room/item/monster/demon names already used as real data elsewhere in
+this project, not unimplemented ACTIONS) — the real unimplemented-verb
 count is much smaller than the raw percentage suggests, though not
 zero (a handful of plausible verb candidates like ENTER/SEEK/KNOWS/
 DESTROYS remain genuinely unchecked). Real, working mechanics beyond
@@ -7395,6 +7397,45 @@ index page with no relevant link) is worth checking definitively (via
 the item's own metadata, a Wayback Machine lookup) rather than
 guessing it might work with more retries — a confirmed "no" is more
 useful than an ambiguous non-attempt.
+
+### Round 165: caught cmd/vocab-coverage silently miscounting rounds 162/164's own new demon commands — the exact round-140 lesson recurring
+
+After another Stop-hook rejection whose complaint again centered on
+the "43/313" figure, went straight to the tool this project maintains
+specifically to keep that number honest (`cmd/vocab-coverage`) rather
+than another vocabulary search. Checked its own uncovered-word list
+directly for `ASMODEE` and `BELEZBAR` — both appeared, meaning the
+tool was silently counting rounds 162/164's real, tested, working
+`asmodeeDestroy`/`belezbarReveal` commands as "unimplemented," the
+exact same shape of gap round 140 already fixed once (a new
+`cmd.Target`-position command shipped without updating this tool's
+`targetPositionWords` exclusion list, so its self-check falls through
+to the generic bare-`cmd.Verb` path and finds nothing).
+
+Added both to `targetPositionWords` (mirroring `ASTAROT`/`MAGOT`'s
+existing entries exactly — same "cmd.Target, paired with any non-empty
+verb" shape) and updated the tool's own package doc comment and count
+(12 → 14 excluded). Verified before/after: `ASMODEE`/`BELEZBAR` no
+longer appear in the uncovered list; excluded count 12→14, checked-as-
+verb 301→299, uncovered 270→268, covered-as-bare-verb unchanged at 31
+(correct — neither was ever counted as a covered bare verb, only
+miscounted as uncovered instead of correctly excluded). The real total
+of modeled commands (bare + target-position) is therefore **45/313**,
+not 43 — genuinely higher than the figure this project's own Porting
+status section, and the Stop-hook's own repeated citations, have used
+for several rounds. Updated that section's exact wording to match and
+explain the correction. Ran the full `gofmt`/`build`/`vet`/`test`
+suite (with a repeated `-count=2` run) clean.
+
+**How to apply**: this is the SAME lesson round 140 already recorded
+("every new TARGET-VERB-paired command should prompt a check of
+whether `targetPositionWords` needs updating") recurring in practice,
+not just in principle — shipping a new demon command (round 162's
+Asmodee, round 164's Belezbar) is easy to do without remembering this
+specific side-effect. Worth treating "add a new `cmd.Target`-position
+dispatch case in `Handle`" and "check `cmd/vocab-coverage`'s exclusion
+list" as one paired habit going forward, the same way this project
+already treats "add a new mechanic" and "update CLAUDE.md" as paired.
 
 ## Open next steps
 

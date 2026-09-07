@@ -16,18 +16,29 @@
 // not a hand-maintained mirror list that could silently drift out of
 // sync with game.go's actual switch cases.
 //
-// KNOWN BLIND SPOT, honestly documented rather than silently wrong: 12
+// KNOWN BLIND SPOT, honestly documented rather than silently wrong: 14
 // real vocabulary words (see targetPositionWords below) only work in a
-// specific TARGET-VERB pairing — some (APEX, ASTAROT, MAGOT, GUARDS,
-// DOOR, NEST, CAULDRON) are recognized as cmd.Target paired with a
-// specific companion verb; others (TALK, SPEAK, THANKS, PHOENIX, ACHAD)
-// are the reverse — recognized as cmd.Verb only paired with a specific
-// companion Target. This tool only calls Handle with each word alone as
-// cmd.Verb (empty Target), the dominant pattern for the other 30
-// modeled words, so it can't detect these 12 through that single check.
-// Rather than either miscount them as "unimplemented" or build fragile
-// per-word position-pairing logic to chase every combination, they're
-// explicitly excluded and listed separately.
+// specific TARGET-VERB pairing — some (APEX, ASTAROT, MAGOT, ASMODEE,
+// BELEZBAR, GUARDS, DOOR, NEST, CAULDRON) are recognized as cmd.Target
+// paired with a specific companion verb; others (TALK, SPEAK, THANKS,
+// PHOENIX, ACHAD) are the reverse — recognized as cmd.Verb only paired
+// with a specific companion Target. This tool only calls Handle with
+// each word alone as cmd.Verb (empty Target), the dominant pattern for
+// the other 31 modeled words, so it can't detect these 14 through that
+// single check. Rather than either miscount them as "unimplemented" or
+// build fragile per-word position-pairing logic to chase every
+// combination, they're explicitly excluded and listed separately.
+//
+// ROUND 165 FIX (the same undercounting class round 155 already fixed
+// once for a different cause): ASMODEE and BELEZBAR gained real
+// cmd.Target-position dispatch in rounds 162/164 (game.asmodeeDestroy,
+// game.belezbarReveal — the same shape as the already-excluded
+// ASTAROT/MAGOT) but were never added here, so this tool was silently
+// counting 2 real, working, tested commands as "unimplemented" for 2-3
+// rounds without anyone noticing — exactly the "self-audit tool needs
+// the same maintenance as the game code" lesson round 140 already
+// recorded, recurring because a NEW demon command is easy to add
+// without remembering this tool exists to update too.
 //
 // ROUND 155 FIX (was a real, silent undercounting bug, not previously
 // documented as a blind spot): this tool used to build a bare
@@ -72,6 +83,8 @@ var targetPositionWords = map[string]string{
 	"PHOENIX":  "recognized as cmd.Verb, only when paired with cmd.Target NEST (round 136)",
 	"CAULDRON": "recognized as cmd.Target, paired with verb ACHAD (round 139)",
 	"ACHAD":    "recognized as cmd.Verb, only when paired with cmd.Target CAULDRON (round 139)",
+	"ASMODEE":  "recognized as cmd.Target, paired with any non-empty verb (an object name to destroy, round 162)",
+	"BELEZBAR": "recognized as cmd.Target, paired with any non-empty verb (an object name to reveal, round 164)",
 }
 
 func uniqueSorted(words []string) []string {
