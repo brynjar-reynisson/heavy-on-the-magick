@@ -388,6 +388,21 @@ const combatStaminaCost = 5
 // exactly right, not a guess anymore.
 const saveStaminaCost = 1
 
+// poisonPickupStaminaCost is charged when the player picks up a real,
+// named "poison" item - round 128's find, a genuinely NEW source type
+// for this project (a 1986 CRASH magazine review,
+// crashonline.org.uk/29/magick.htm): "Poison damages Stamina upon
+// contact." The exact amount isn't stated, so this is an honest
+// placeholder, matching the same convention as combatStaminaCost/
+// saveStaminaCost - deliberately between the two (worse than a save,
+// milder than a full combat hit, since it's a single incidental
+// contact rather than an ongoing fight). Room of Misery's already-real,
+// already-placed "Poison-smeared book" (round 53) is the one item in
+// this port whose name confirms it as poisonous - "contact" is read as
+// picking it up, the natural point of contact for an item, not a
+// separate required action no source describes.
+const poisonPickupStaminaCost = 3
+
 // transfusion handles TRANSFUSION. Confirmed real effect (restores
 // Stamina) via the CASA walkthrough extraction; the exact original
 // restore amount was not stated there and hasn't been extracted from the
@@ -832,7 +847,12 @@ func (g *Game) pickup(target string) string {
 		if strings.EqualFold(item, target) {
 			room.Items = append(room.Items[:i], room.Items[i+1:]...)
 			g.Player.Items = append(g.Player.Items, item)
-			return fmt.Sprintf("You pick up the %s.", item)
+			result := fmt.Sprintf("You pick up the %s.", item)
+			if strings.Contains(strings.ToLower(item), "poison") {
+				g.Player.Stamina -= poisonPickupStaminaCost
+				result = g.deathCheck(result + " It's poisonous to the touch! You feel your strength ebb.")
+			}
+			return result
 		}
 	}
 	return fmt.Sprintf("There's no %s here to pick up.", strings.ToLower(target))

@@ -880,6 +880,34 @@ func TestHandlePickupMovesItemToInventory(t *testing.T) {
 	}
 }
 
+// TestHandlePickupPoisonedItemCostsStamina covers round 128's real,
+// sourced mechanic (a 1986 CRASH magazine review: "Poison damages
+// Stamina upon contact") applied to Room of Misery's already-real
+// "Poison-smeared book".
+func TestHandlePickupPoisonedItemCostsStamina(t *testing.T) {
+	g := New() // Room of Misery has a real sourced item: Poison-smeared book
+	before := g.Player.Stamina
+	got := g.Handle(parser.Parse("PICKUP POISON-SMEARED BOOK"))
+	if !strings.Contains(got, "poisonous") {
+		t.Errorf("Handle(PICKUP POISON-SMEARED BOOK) = %q, want it to mention the poison", got)
+	}
+	if want := before - poisonPickupStaminaCost; g.Player.Stamina != want {
+		t.Errorf("Stamina after picking up a poisoned item = %d, want %d", g.Player.Stamina, want)
+	}
+}
+
+// TestHandlePickupNonPoisonedItemDoesNotCostStamina is a regression
+// guard: only items whose name actually contains "poison" should cost
+// Stamina on pickup - a plain item like the Grimoire must not.
+func TestHandlePickupNonPoisonedItemDoesNotCostStamina(t *testing.T) {
+	g := New()
+	before := g.Player.Stamina
+	g.Handle(parser.Parse("PICKUP GRIMOIRE"))
+	if g.Player.Stamina != before {
+		t.Errorf("Stamina after picking up the Grimoire = %d, want unchanged %d", g.Player.Stamina, before)
+	}
+}
+
 func TestHandlePickupMissingItem(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("PICKUP UNICORN"))

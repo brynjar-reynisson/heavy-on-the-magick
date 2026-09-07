@@ -5128,6 +5128,70 @@ post) found another real, previously-unmodeled mechanic. Don't assume
 a good new source is exhausted after just one or two fetches; ask a
 different, more specific question each time.
 
+### Round 128: a genuinely new source type (a 1986 CRASH magazine review) confirms Poison damages Stamina — wired to the already-real Poison-smeared book
+
+After another Stop-hook rejection, same framing, tried a 4th `WebFetch`
+pass on The CRPG Addict's post first — this one, asking specifically
+about any room names not already captured plus difficulty/puzzle
+detail, came back a clean negative for new rooms (a real, useful
+result: confirms this port's 14-room CollodonsPile roster matches
+every location this particular source ever names) but did re-confirm
+the 3 door mechanisms already modeled (key-on-table, gold-on-table,
+password) almost verbatim: "Some doors are passed by dropping keys on
+nearby tables, others by dropping bags of gold on nearby tables, and
+still others by giving a password to the door."
+
+With that source's room-name well confirmed dry, found and tried a
+genuinely different one instead: `crashonline.org.uk/29/magick.htm`, a
+real 1986 CRASH magazine review — a source type (a contemporary
+print review) this project had cited generically before (round 74's
+"contemporary reviews" mention of Neophyte/randomized stats) but never
+actually fetched and mined directly. It gave several new facts, one of
+which is immediately, concretely actionable: **"Poison damages Stamina
+upon contact."** Room of Misery has carried a real, sourced item named
+exactly "Poison-smeared book" since round 53 (the numbered-map poster's
+own #2 entry, matching the strongest-confidence item placement in this
+whole port) — its very name is the confirmation that this is the
+poisonous item this fact describes, not a coincidence needing a guess.
+
+Added `poisonPickupStaminaCost` (an honest placeholder amount, no exact
+number stated, deliberately between `saveStaminaCost` and
+`combatStaminaCost` per the manual's own "combat reduces Stamina a lot,
+most other actions reduce it a little" framing) and wired it into
+`game.pickup`: picking up any item whose name contains "poison"
+(case-insensitive — also covers numbered-map entry #48's unplaced
+"Poison-smeared head" if it's ever placed) now costs real Stamina and
+runs the same `deathCheck` every other Stamina cost uses. "Contact" is
+read as picking the item up, the natural point of contact, not a
+separate unstated action.
+
+Other facts from the same review, real but not yet actionable without
+more precision, documented rather than acted on: a passive per-turn
+Stamina drain from "the rustling of garment" (would need a real
+per-move/per-tick cost, a bigger design change risking many existing
+tests — deliberately not forced this round); item weight draining
+Stamina (no specific weights are stated for any item); a flashing
+direction-marker threat warning (a graphics/UI feature, no text
+equivalent modeled); and confirmation that compass exits can carry a
+level-change ("NE↑ would indicate the NE exit takes you up a level") —
+consistent with, but not new information beyond, Agile Stair's already-
+understood cross-level role.
+
+Added `TestHandlePickupPoisonedItemCostsStamina` and a regression guard
+`TestHandlePickupNonPoisonedItemDoesNotCostStamina` (confirms a plain
+item like the Grimoire is unaffected). Ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
+live via `go run ./cmd/hotm`: `PICKUP POISON-SMEARED BOOK` → "You pick
+up the Poison-smeared book. It's poisonous to the touch! You feel your
+strength ebb."
+
+**How to apply**: when a well-mined source (The CRPG Addict's post,
+3 rounds running) finally gives a clean negative on the specific thing
+being searched for, that's the signal to look for a genuinely different
+source TYPE again (round 125's original insight, reapplied) — a 1986
+print review is a source category this project had referenced but
+never actually fetched, and it paid off on the first try.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
