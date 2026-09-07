@@ -126,6 +126,23 @@ package world
 // both are kept as-is rather than "resolving" the discrepancy by
 // guessing.
 //
+// A2's protected Pellet (round 133): the numbered map poster's key
+// list gives #31 as "Pellet - rock, protected" - tight-cropping the
+// poster's own Level 3 grid section confirms #31 sits directly under
+// the "GORBURG" zone banner, right next to #32 ("Cabinet (Mantis)"),
+// the exact same zone already used (round 103) to place Belezbar's
+// Mantis at A1 - the same zone-banner cross-reference confidence tier.
+// Placed on A2 (the zone's next real, connected cell, real Exits to
+// A1/A3/B2) rather than A1 itself, to avoid conflating it with the
+// already-placed Mantis. See world.Room.SwapItem's doc comment (round
+// 132) for the "protected item" mechanic itself and its own two-source
+// sourcing (World of Spectrum's instructions file's "swap it for a
+// Ball" tip, cross-confirmed by this same poster's "protected"
+// qualifier). This is the mechanic's first real room placement - a
+// player carrying a Ball (itself not yet placed anywhere - honest,
+// separate scope limit) can now genuinely trigger it in real
+// -level3grid play.
+//
 // Same honest scope as Level2Grid otherwise: room descriptions use the
 // same placeholder convention as everywhere else, and no other item
 // placements were extracted for this file.
@@ -163,7 +180,7 @@ func level3CellCode(id RoomID) string {
 
 var level3Cells = []*Room{
 	{ID: level3Room("A1"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("A2"), South: level3Room("B1")}, Items: []string{"Mantis"}},
-	{ID: level3Room("A2"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("A3"), South: level3Room("B2"), West: level3Room("A1")}},
+	{ID: level3Room("A2"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("A3"), South: level3Room("B2"), West: level3Room("A1")}, SwapItem: "Ball", RevealItem: "Pellet"},
 	{ID: level3Room("A3"), Level: 3, Exits: map[Direction]RoomID{South: level3Room("B3"), West: level3Room("A2")}},
 	{ID: level3Room("A4"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("A5"), South: level3Room("B4")}},
 	{ID: level3Room("A5"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("A6"), South: level3Room("B5"), West: level3Room("A4")}},

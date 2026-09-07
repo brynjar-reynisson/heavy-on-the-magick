@@ -131,6 +131,18 @@ func TestLevel3GridHasMantisCharm(t *testing.T) {
 	}
 }
 
+// TestLevel3GridA2HasPelletSwap pins round 133's placement: A2, in the
+// same GORBURG zone already used for Belezbar's Mantis (A1), carries
+// the real "protected item" swap mechanic (see world.Room.SwapItem's
+// doc comment) - a Ball dropped here reveals a Pellet.
+func TestLevel3GridA2HasPelletSwap(t *testing.T) {
+	w := Level3Grid()
+	room := w.Rooms[level3Room("A2")]
+	if room == nil || room.SwapItem != "Ball" || room.RevealItem != "Pellet" {
+		t.Fatalf("Level3Grid room A2 SwapItem/RevealItem = %q/%q, want \"Ball\"/\"Pellet\"", room.SwapItem, room.RevealItem)
+	}
+}
+
 // TestLevel3GridMainComponentIsFullyConnected pins that the original
 // 41-cell component, like Level2Grid's 50 (but unlike Level1Grid's
 // 44/64), is entirely reachable from the start room - it was

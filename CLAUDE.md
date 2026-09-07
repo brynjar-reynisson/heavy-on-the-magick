@@ -5445,6 +5445,53 @@ implementing is what turned "3 vague tips" into "a confirmed, cross-
 validated mechanic" — the same discipline this project has applied to
 every other real mechanic before shipping it.
 
+### Round 133: gave round 132's swap mechanic its first real room, using the same zone-banner technique that placed Belezbar's Mantis
+
+After another Stop-hook rejection, same framing, went back to
+`heavymap-numbered-key.jpg` (the numbered map poster) to see whether
+any of the 3 "protected item" cells (#12 Egg, #31 Pellet, #49 Nugget)
+could be pinned to a real, connected room, the same zone-banner
+cross-reference method that has placed 4 of this project's demon
+Charms before (Mantis/Sword/Sunflower/Erlstone). Cropped the poster's
+Level 3 section directly: **#31 ("Pellet - rock, protected") sits
+right next to #32 ("Cabinet (Mantis)")**, both under the exact same
+"GORBURG" zone banner already used (round 103) to place Belezbar's
+Mantis at Level3Grid's A1. #49's cluster (bone/rock catacombs themed
+cells 34-49, near an "Agile Stair" mini-box and a "Methos" banner) had
+no single clear zone banner directly over it and was left honestly
+unplaced rather than forced; #12 wasn't chased further this round
+either — one solid, confident placement is worth more than three
+rushed, uncertain ones.
+
+Added `SwapItem: "Ball"`/`RevealItem: "Pellet"` to Level3Grid's A2 (the
+zone's next real, connected cell — East/South/West exits already
+shipped — picked instead of A1 itself specifically to avoid conflating
+it with the already-placed Mantis). This is the swap mechanic's first
+real room: a player who's found a Ball (itself not yet placed
+anywhere — an honest, separate scope limit, same as INVOKE's Charm gate
+before Sword/Sunflower/Erlstone/Mantis were found) can genuinely
+trigger it in real `-level3grid` play, not just a synthetic unit test.
+
+Added `TestLevel3GridA2HasPelletSwap`, ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
+live end-to-end via a throwaway `zz_debug_test.go` (`go run
+./cmd/hotm -level3grid`'s own session has no Ball to test with,
+matching the honest "not fully reachable without Ball's own placement"
+scope note above): `NewLevel3Exploration()`, `EAST` to A2, granted a
+Ball directly, `DROP BALL` → "You drop the Ball. As you set it down,
+you notice a Pellet hidden nearby!" — confirmed real, not just
+compiling.
+
+**How to apply**: when several candidate placements for the same new
+mechanic have different confidence levels, ship the confident one and
+leave the uncertain ones explicitly unplaced rather than forcing all
+of them — a single solid placement (#31/Pellet, clear zone banner) is
+worth more than three shaky ones (#12/#49, ambiguous or absent zone
+banners). The zone-banner cross-reference technique keeps paying off
+on repeat use (Mantis, Sword, Sunflower, Erlstone, and now Pellet) —
+worth trying first on any newly-confirmed item before assuming it
+can't be placed.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
