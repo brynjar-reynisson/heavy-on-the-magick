@@ -58,6 +58,22 @@ func TestHandleLookMentionsGuards(t *testing.T) {
 	}
 }
 
+// TestHandleLookMentionsWater covers round 172's real fix: round 169's
+// Water hazard (see world.Room.Water and game.passWater) never got the
+// same LOOK-time hint round 152 already gave Guards/locked doors - a
+// player standing in a real Water room had no hint "WATER, FALL" was
+// even relevant there.
+func TestHandleLookMentionsWater(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Pool", Water: true})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("LOOK"))
+	if !strings.Contains(got, "water") {
+		t.Errorf("Handle(LOOK) with real Water present = %q, want it mentioned", got)
+	}
+}
+
 // TestHandleLookMentionsLockedDoor covers round 152's real fix for the
 // other half of the same "confirmed but unsurfaced at LOOK-time" gap:
 // world.Room.DoorPasswords/TollItem (real since rounds 9/64) never had

@@ -250,6 +250,16 @@ func (g *Game) checkSlatCyclops() string {
 // but was never once referenced by internal/game before this, so the
 // player had no way to tell which of the dungeon's 4 levels they were
 // actually on.
+//
+// Round 172: round 152 added real LOOK-time hints for Guards/locked
+// doors/adjacent Fire, closing the exact same "confirmed but
+// unsurfaced" gap for those 3 - but round 169's new Water hazard
+// (world.Room.Water) never got the same treatment when it shipped,
+// so a player standing in a real Water room had zero hint from LOOK
+// that "WATER, FALL" was even relevant there, the identical blind-
+// guess problem round 152 originally fixed. Added the same style of
+// hint line, same tier as Guards (a real obstacle in the CURRENT
+// room, not a neighboring one like Fire).
 func (g *Game) describeCurrentRoom() string {
 	room := g.World.CurrentRoom()
 	if room == nil {
@@ -276,6 +286,9 @@ func (g *Game) describeCurrentRoom() string {
 	}
 	if room.Guards {
 		b.WriteString("Guards bar your way here.\n")
+	}
+	if room.Water {
+		b.WriteString("Standing water blocks your way here.\n")
 	}
 	if len(room.DoorPasswords) > 0 || room.TollItem != "" {
 		b.WriteString("There is a locked door here.\n")

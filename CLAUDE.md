@@ -7797,6 +7797,43 @@ standing open-items list, so a future round starts from "these 2
 sources are exhausted, try a third kind" rather than re-treading the
 same ground.
 
+### Round 172: round 169's new Water hazard never got round 152's own LOOK-time hint treatment — closed the gap directly
+
+After another Stop-hook rejection, same framing, re-ran the exact
+audit round 152 established (checking whether every real per-room
+obstacle field gets a LOOK-time hint, not just discoverable by already
+knowing the right blind command) against the CURRENT set of fields —
+the same "re-run this periodically, new fields keep appearing" note
+round 153's own writeup already flagged. Found round 169's `Water`
+hazard had shipped with the real command (`"WATER, FALL"`) and the map
+marker (round 170), but never got the `describeCurrentRoom` (LOOK)
+hint round 152 gave `Guards`/locked doors — a player standing in a
+real Water room had zero in-game indication that hazard was even
+there, the identical blind-guess problem round 152 originally set out
+to fix, just for a field that didn't exist yet at the time.
+
+Added `"Standing water blocks your way here.\n"` right alongside the
+existing `Guards` hint (same tier — a real obstacle in the CURRENT
+room, not a neighboring one like `Fire`). Added
+`TestHandleLookMentionsWater` (a synthetic room, matching
+`TestHandleLookMentionsGuards`'s own exact pattern). Ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run):
+**133 tests passing in `internal/game`, 0 failing** (132 + 1 new), and
+verified live via a throwaway debug test: `LOOK` at the real Water
+cell (`Level3Grid`'s H4) now shows "Standing water blocks your way
+here." before the player would ever need to already know to try
+`"WATER, FALL"` blind.
+
+**How to apply**: this is the third time in this project's history
+(rounds 151/152, then 153, now 172) that "does every relevant surface
+keep up with a newly-added field" has needed a fresh check rather than
+a one-time fix — the discipline itself was already documented, but
+still required someone to actually go re-run it against `Water`
+specifically. Worth treating "shipped a new per-room obstacle field"
+and "checked whether LOOK/MAP both mention it" as one paired habit
+going forward, the same way this project already treats new commands
+and `cmd/vocab-coverage` updates as paired (rounds 140/165/169).
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
