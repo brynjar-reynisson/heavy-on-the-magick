@@ -2749,6 +2749,30 @@ ran the full `gofmt`/`build`/`vet`/`test` suite clean, and verified
 live: `X TABLE` in Room of Misery answers "A plain table." instead of
 "You don't see that here."
 
+### Extended the named-special-room technique to Level 3's Kitchen of Ai zone: 3 more finds, including a new Wyvern
+
+After another Stop-hook rejection, same framing, applied the now-
+standard "check a gap span for named special rooms" technique (Sothic
+Complex, then Nani/Hydra) to the one remaining unchecked corner of
+Level3Grid: the Kitchen of Ai zone (rows G-H, cols 1-4), entirely
+absent from the main component like the earlier gaps were. Tight-
+cropped all 8 cells and found 3 more real, individually pixel-confirmed
+things: **G2 reads "TWO"** (a real named special room), **G4 has a
+real, confirmed Wyvern monster icon** (the same rare exact blue
+RGB(0,132,255) already validated elsewhere on this map), and **H4
+reads "WATER"**. G1, G3, H1, and H3 were also checked and are plain,
+unlabeled cells - correctly left unadded.
+
+Added all 3 as isolated cells (no Exits - connectivity for this zone
+isn't extracted), same honest convention as every other special room
+in this file. Level3Grid is now honestly 47 cells (was 44): the
+41-cell main component plus 6 isolated special rooms/monsters. Updated
+the stale "44-cell" framing in `game.go` and `cmd/hotm/main.go`.
+
+Added `TestLevel3GridKitchenOfAiFinds`, ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
+live that normal Level 3 play is unaffected.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

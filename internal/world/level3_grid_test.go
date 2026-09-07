@@ -2,9 +2,29 @@ package world
 
 import "testing"
 
-func TestLevel3GridHas44Cells(t *testing.T) {
-	if len(level3Cells) != 44 {
-		t.Fatalf("len(level3Cells) = %d, want 44 (the validated 41-cell connected component plus 3 isolated named cells: Sothic Complex, Nani, Hydra)", len(level3Cells))
+func TestLevel3GridHas47Cells(t *testing.T) {
+	if len(level3Cells) != 47 {
+		t.Fatalf("len(level3Cells) = %d, want 47 (the validated 41-cell connected component plus 6 isolated cells: Sothic Complex, Nani, Hydra, Two, G4/Wyvern, Water)", len(level3Cells))
+	}
+}
+
+// TestLevel3GridKitchenOfAiFinds pins the 3 real, tight-crop-verified
+// finds from round 66 (see Level3Grid's doc comment): Two (G2), a
+// Wyvern monster (G4), and Water (H4) - all isolated, same convention
+// as Sothic Complex/Nani/Hydra.
+func TestLevel3GridKitchenOfAiFinds(t *testing.T) {
+	w := Level3Grid()
+	two := w.Rooms[level3Room("G2")]
+	if two == nil || two.Name != "Two" || len(two.Exits) != 0 {
+		t.Errorf("room G2 = %+v, want isolated with Name \"Two\"", two)
+	}
+	g4 := w.Rooms[level3Room("G4")]
+	if g4 == nil || g4.Monster != "Wyvern" || g4.MonsterHealth <= 0 || len(g4.Exits) != 0 {
+		t.Errorf("room G4 = %+v, want isolated with a live Wyvern", g4)
+	}
+	water := w.Rooms[level3Room("H4")]
+	if water == nil || water.Name != "Water" || len(water.Exits) != 0 {
+		t.Errorf("room H4 = %+v, want isolated with Name \"Water\"", water)
 	}
 }
 

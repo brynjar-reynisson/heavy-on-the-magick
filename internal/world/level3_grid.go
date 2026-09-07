@@ -1,14 +1,14 @@
 package world
 
-// Level3Grid is a real, 44-cell room graph for the dungeon's Level 3,
+// Level3Grid is a real, 47-cell room graph for the dungeon's Level 3,
 // extracted from the same clean, computer-rendered grid map as
 // Level1Grid/Level2Grid (heavymap-grid-clean.gif). Cells are addressed
 // the same way: a row letter A-H and a column number 1-8, offset into a
-// distinct RoomID range via level3Room. 41 of the 44 form one fully
-// connected component reachable from the start room; the other 3 (D4
-// "Sothic Complex", F3 "Nani", F5 "Hydra") are real, named, deliberately
-// isolated special rooms - see the "SOTHIC COMPLEX" section below and
-// the round-57 update.
+// distinct RoomID range via level3Room. 41 of the 47 form one fully
+// connected component reachable from the start room; the other 6 (D4
+// "Sothic Complex", F3 "Nani", F5 "Hydra", G2 "Two", G4, H4 "Water") are
+// real, named or monster-bearing, deliberately isolated special rooms -
+// see the "SOTHIC COMPLEX" section below and the round-57/66 updates.
 //
 // ROUND 57: applying the same "check for a named special room explaining
 // a gap" technique that found Sothic Complex, tight-cropped the F2-F6
@@ -20,6 +20,17 @@ package world
 // a special-room-style border but no legible text in this crop; F6 is
 // a plain cell) - left unadded rather than guess at a name or force
 // connectivity for them.
+//
+// ROUND 66: extended the same check to the Kitchen of Ai zone (rows
+// G-H, cols 1-4 - also entirely absent from the main component).
+// Tight-cropped every cell and found 3 more real, individually
+// pixel-confirmed finds: G2 reads "TWO" (a real named special room);
+// G4 has a real, confirmed Wyvern monster icon (same rare exact blue
+// RGB(0,132,255) used elsewhere on this map); H4 reads "WATER". G1,
+// G3, H1, and H3 were also checked and are plain, unlabeled cells -
+// left unadded. All 3 finds are added the same way as Sothic Complex/
+// Nani/Hydra: isolated (no Exits), since connectivity for this zone
+// isn't extracted.
 //
 // CALIBRATION HISTORY - CORRECTED (this matters for anyone diffing old
 // output against this file): an earlier round found only 7 of the
@@ -185,5 +196,8 @@ var level3Cells = []*Room{
 	{ID: level3Room("F3"), Name: "Nani", Level: 3},
 	{ID: level3Room("F5"), Name: "Hydra", Level: 3},
 	{ID: level3Room("F7"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("F8"), North: level3Room("E7")}},
+	{ID: level3Room("G2"), Name: "Two", Level: 3},
+	{ID: level3Room("G4"), Level: 3, Monster: "Wyvern", MonsterHealth: 3},
+	{ID: level3Room("H4"), Name: "Water", Level: 3},
 	{ID: level3Room("F8"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("E8"), West: level3Room("F7")}, Monster: "Troll", MonsterHealth: 3},
 }
