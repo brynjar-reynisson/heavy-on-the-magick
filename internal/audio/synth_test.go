@@ -50,11 +50,37 @@ func TestSquareWaveSilence(t *testing.T) {
 	}
 }
 
-func TestRenderNotesHandlesRests(t *testing.T) {
-	samples := RenderNotes([]byte{0, RestMarkerA, 5}, 0.01, SampleRate)
+// TestRenderNotesHandlesOutOfRangeIndex covers RenderNotes's silence
+// fallback for a NoteIndex result outside PitchTable's 0-52 range - 41
+// is a real, confirmed StartupMelody value that lands exactly on
+// PitchTableTerminator's position (53), not a playable note.
+func TestRenderNotesHandlesOutOfRangeIndex(t *testing.T) {
+	samples := RenderNotes([]byte{0, 41, 5}, 0.01, SampleRate)
 	want := 3 * int(0.01*SampleRate)
 	if len(samples) != want {
 		t.Fatalf("len(samples) = %d, want %d", len(samples), want)
+	}
+}
+
+// TestNoteIndex pins the real, confirmed (round 90) signed-byte+12
+// decoding rule - see NoteIndex's doc comment for the disassembly and
+// cross-stream evidence.
+func TestNoteIndex(t *testing.T) {
+	cases := []struct {
+		raw  byte
+		want int
+	}{
+		{0, 12},   // plain positive value
+		{244, 0},  // signed -12 -> the lowest valid index
+		{245, 1},  // signed -11
+		{254, 10}, // formerly (wrongly) treated as a rest marker
+		{252, 8},  // formerly (wrongly) treated as a rest marker
+		{41, 53},  // lands exactly on PitchTableTerminator's position
+	}
+	for _, c := range cases {
+		if got := NoteIndex(c.raw); got != c.want {
+			t.Errorf("NoteIndex(%d) = %d, want %d", c.raw, got, c.want)
+		}
 	}
 }
 
@@ -63,14 +89,15 @@ func TestRenderNotesHandlesRests(t *testing.T) {
 // one continuous tone, identical to a single SquareWave call spanning
 // the whole run's duration - not as separate re-triggered notes, which
 // would restart the waveform's phase at each tick boundary and produce
-// an audible click. note 0's period (255) doesn't evenly divide a
-// 0.01s tick at 44100Hz, so a naive re-triggering implementation would
-// produce different samples than this continuous-phase one - a real
-// behavioral difference, not just a cosmetic one.
+// an audible click. note 0's real period (PitchTable[NoteIndex(0)]=128)
+// doesn't evenly divide a 0.01s tick at 44100Hz, so a naive
+// re-triggering implementation would produce different samples than
+// this continuous-phase one - a real behavioral difference, not just a
+// cosmetic one.
 func TestRenderNotesHeldNoteHasContinuousPhase(t *testing.T) {
 	const tick = 0.01
 	held := RenderNotes([]byte{0, 0, 0}, tick, SampleRate)
-	freq := PeriodToFrequency(PitchTable[0])
+	freq := PeriodToFrequency(PitchTable[NoteIndex(0)])
 	continuous := SquareWave(freq, 3*tick, SampleRate)
 	if len(held) != len(continuous) {
 		t.Fatalf("len(held) = %d, want %d (matching one continuous SquareWave call)", len(held), len(continuous))

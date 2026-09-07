@@ -15,9 +15,11 @@ package audio
 // from the smooth geometric sequence).
 //
 // The routine that reads this (Z80 `64649`) does `noteIndex + 12` before
-// indexing — i.e. callers pass a note index that's offset by one octave
-// (12 semitones) from this table's own start, though the exact reason
-// (headroom for a transpose/octave parameter elsewhere) isn't confirmed.
+// indexing. Round 90 confirmed WHY: `noteIndex` is a SIGNED byte, not
+// unsigned - see NoteIndex. The +12 gives headroom for negative offsets
+// (down to -12) while still landing inside this table's unsigned 0-52
+// index range, using a single shared table for a wider effective pitch
+// range than 53 straight ascending entries alone would allow.
 var PitchTable = []byte{
 	255, 240, 227, 215, 203, 192, 180, 171, 161, 151,
 	144, 136, 128, 121, 114, 108, 102, 96, 91, 86,
@@ -31,16 +33,24 @@ var PitchTable = []byte{
 // original data — not a playable note.
 const PitchTableTerminator = 1
 
-// StartupMelody is a raw note-index stream found immediately after
-// PitchTable in memory (64812+54 onward), not yet confirmed to be THE
-// startup jingle specifically, but positioned exactly where a melody
-// would follow a pitch table, and shaped like one: runs of the same
-// value 2-4 times in a row (a held note, played across several timer
-// ticks) mixed with two special values, 254 and 252, that fall well
-// outside the valid 0-52 note range and are presumed to be
-// rest/silence or duration-control markers — their exact meaning is NOT
-// confirmed (the routine that reads this stream during real playback
-// hasn't been traced yet).
+// StartupMelody is a raw note stream found immediately after PitchTable
+// in memory (64812+54 onward), not yet confirmed to be THE startup
+// jingle specifically, but positioned exactly where a melody would
+// follow a pitch table, and shaped like one: runs of the same value 2-4
+// times in a row (a held note, played across several timer ticks).
+//
+// CORRECTED (round 90): 254 and 252 were previously treated as special
+// rest/silence markers (RestMarkerA/RestMarkerB), guessed because they
+// fall outside PitchTable's unsigned 0-52 range. That guess was wrong.
+// Directly parsing a .z80 memory snapshot (see SecondaryMelody below)
+// found a second, clearly real, musically coherent note stream that
+// uses the exact same encoding and contains several values in this same
+// "looks out of range" territory (244/245/246/247) forming an obviously
+// intentional, coherent melodic phrase once read as NoteIndex expects
+// (SIGNED bytes) - not silence. Applying the same rule here: 254 (signed
+// -2) and 252 (signed -4) decode to real, valid PitchTable indices (10
+// and 8), not silence. See NoteIndex - RenderNotes now uses it for
+// every entry, with no special-casing.
 var StartupMelody = []byte{
 	26, 41, 27, 41, 29, 41, 31, 41, 32, 41, 31, 41, 27, 41, 31, 41,
 	26, 26, 27, 27, 29, 29, 31, 31, 32, 32, 31, 31, 27, 27, 31, 31,
@@ -53,15 +63,63 @@ var StartupMelody = []byte{
 	17, 17, 17, 17, 17, 19, 20, 17, 22, 20, 19, 20,
 }
 
-// RestValues are StartupMelody entries outside the valid note range —
-// treat as silence, not an out-of-bounds PitchTable lookup.
-const (
-	RestMarkerA = 254
-	RestMarkerB = 252
-)
+// SecondaryMelody is a SECOND, independent real note stream, found and
+// confirmed this round (90) via disassembly + a direct .z80 memory
+// snapshot read (not live emulator access - snapshot parsing was
+// validated by re-deriving PitchTable and StartupMelody's own bytes
+// from the same file and confirming an exact match against the
+// already-shipped data above before trusting anything new from it).
+//
+// Source: the sound routine at Z80 64671 reads TWO independent,
+// separately-advancing note streams per call, each via its own 2-byte
+// pointer variable (64627 and 64631) chained forward one byte at a time
+// by the shared reader routine at 64636/64663 - StartupMelody is the
+// stream reached through the first pointer (initialized to 64865,
+// i.e. one byte before this project's already-confirmed 64866 start);
+// this is the stream reached through the SECOND pointer, initialized to
+// 65155. Extracted from 65156 (the first byte after that pointer's own
+// +1 initial advance) up to the first occurrence of the confirmed
+// chain/loop marker value 64 (0x40, at address 65444) - the same
+// terminator value routine 64636 checks for explicitly, so this is a
+// real, well-defined stream boundary, not an arbitrary cutoff.
+//
+// Not yet wired into any live playback (that's real, scoped follow-up
+// work) - what a two-simultaneous-stream sound routine actually PRODUCES
+// audibly (alternating single-channel "fake polyphony," a true harmony
+// line, something else) isn't confirmed, only that this second stream
+// exists, decodes to musically coherent values under the same NoteIndex
+// rule as StartupMelody, and is real extracted game data, not invented.
+var SecondaryMelody = []byte{
+	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
+	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
+	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
+	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
+	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
+	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
+	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
+	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 29,
+	31, 29, 32, 29, 34, 29, 36, 29, 37, 29, 36, 29, 32, 29, 36, 29,
+	31, 29, 32, 29, 34, 29, 36, 29, 37, 29, 36, 29, 32, 29, 36, 29,
+	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
+	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 41,
+	12, 14, 12, 14, 15, 14, 12, 14, 0, 2, 0, 2, 3, 2, 0, 2,
+	10, 12, 10, 12, 14, 12, 10, 14, 12, 10, 12, 10, 12, 10, 9, 5,
+	36, 24, 36, 24, 36, 24, 36, 24, 244, 19, 245, 24, 246, 19, 247, 24,
+	0, 3, 0, 4, 0, 5, 0, 6, 0, 3, 0, 4, 12, 11, 10, 9,
+	5, 7, 8, 5, 14, 14, 12, 12, 5, 7, 8, 5, 14, 14, 12, 12,
+	19, 17, 19, 17, 19, 17, 15, 14, 12, 15, 19, 24, 27, 31, 36, 36,
+}
 
-// IsRest reports whether a StartupMelody entry is a silence marker rather
-// than a playable note index.
-func IsRest(noteIndex byte) bool {
-	return noteIndex == RestMarkerA || noteIndex == RestMarkerB
+// NoteIndex converts a raw note-stream byte (from StartupMelody or
+// SecondaryMelody) into the real PitchTable index the game's own
+// routine (Z80 64649) computes: the byte is interpreted as SIGNED, then
+// offset by +12 (see PitchTable's doc comment). Confirmed (round 90) by
+// checking this decodes SecondaryMelody's otherwise-out-of-range-looking
+// values (244/245/246/247, i.e. signed -12/-11/-10/-9) into a musically
+// coherent phrase — the same rule then correctly re-explains
+// StartupMelody's 254/252 as real notes too, not silence. A result of
+// 53 lands exactly on PitchTableTerminator's position (not a playable
+// note); RenderNotes treats any index outside 0-52 as silence.
+func NoteIndex(raw byte) int {
+	return int(int8(raw)) + 12
 }

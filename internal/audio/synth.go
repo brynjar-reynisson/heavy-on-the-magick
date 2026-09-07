@@ -59,10 +59,13 @@ func SquareWave(freqHz, durationSec float64, sampleRate int) []float32 {
 	return samples
 }
 
-// RenderNotes renders a stream of PitchTable indices (as found in
-// StartupMelody) to PCM samples, each timer tick held for
-// noteDurationSec. Values that IsRest reports as silence markers produce
-// silence instead of a (meaningless) PitchTable lookup.
+// RenderNotes renders a raw note stream (StartupMelody or
+// SecondaryMelody) to PCM samples, each timer tick held for
+// noteDurationSec. Every value goes through NoteIndex (round 90 -
+// signed byte + 12, matching the game's own real indexing) before
+// looking up PitchTable; a result outside PitchTable's 0-52 range
+// (e.g. the terminator position, 53) produces silence rather than an
+// out-of-bounds lookup.
 //
 // A run of consecutive identical note values is real, confirmed data for
 // a single HELD note (see StartupMelody's doc comment: "runs of the same
@@ -85,10 +88,11 @@ func RenderNotes(notes []byte, noteDurationSec float64, sampleRate int) []float3
 			runLen++
 		}
 		duration := float64(runLen) * noteDurationSec
-		if IsRest(n) || int(n) >= len(PitchTable) {
+		idx := NoteIndex(n)
+		if idx < 0 || idx >= len(PitchTable) {
 			out = append(out, make([]float32, int(duration*float64(sampleRate)))...)
 		} else {
-			freq := PeriodToFrequency(PitchTable[n])
+			freq := PeriodToFrequency(PitchTable[idx])
 			out = append(out, SquareWave(freq, duration, sampleRate)...)
 		}
 		i += runLen

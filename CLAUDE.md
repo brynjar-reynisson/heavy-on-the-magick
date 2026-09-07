@@ -3640,6 +3640,63 @@ valuable work (a round doesn't need a new mechanic to be real progress).
 Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
 `-count=2` run) clean and confirmed the text frontend still runs.
 
+### Found and fixed a real sound-decoding bug, and discovered a second, previously-unexamined melody stream
+
+After another Stop-hook rejection, same framing, went back to the
+audio package's own long-standing honesty caveats (relative pitch
+confirmed, absolute calibration not) and did real disassembly work on
+the beeper routine at Z80 `64671`/`64733`/`64649` for the first time in
+many rounds — this time using a technique not tried before in this
+session: parsing one of the repo's own `.z80` memory snapshots
+(`hotm.z80`) directly in Python to read real, static RAM bytes, rather
+than needing a live emulator session. Validated the parser first by
+re-deriving `PitchTable` and `StartupMelody`'s own already-shipped
+bytes from the snapshot and confirming an exact match before trusting
+anything new from it.
+
+Tracing routine `64671` carefully found it reads **two independent
+note streams**, not one — each through its own 2-byte pointer variable
+(`64627`, `64631`), advanced one byte at a time by a shared reader
+routine (`64636`/`64663`) that recognizes a special chain/loop marker
+value (`64`, i.e. `0x40`). `StartupMelody` is the stream behind the
+first pointer; the second pointer (initialized to `65155`) reaches a
+**second, real, previously-unexamined stream** — extracted as
+`SecondaryMelody` (288 bytes, cleanly bounded by the same `0x40`
+marker, address `65156` to `65444`).
+
+Decoding this second stream surfaced a real bug in already-shipped
+code. Several of its bytes (`244`/`245`/`246`/`247`) looked invalid
+under the existing unsigned indexing — but reading them as **signed**
+bytes (`-12`/`-11`/`-10`/`-9`) plus the already-known `+12` offset
+decodes them into a musically coherent phrase, not garbage. Applying
+that same signed rule back to `StartupMelody` re-explains its own
+`254`/`252` values — previously guessed to be `RestMarkerA`/
+`RestMarkerB` silence markers, since they looked out-of-range too —
+as real, playable notes (indices 10 and 8), **not silence**. That
+earlier guess was wrong, and the startup melody has been rendering 2
+real notes as silence this whole time.
+
+Added `audio.NoteIndex(raw byte) int` (the confirmed real decoding
+rule), rewired `RenderNotes` to use it for every entry with no special
+casing, removed the now-known-wrong `RestMarkerA`/`RestMarkerB`/
+`IsRest`, and added `SecondaryMelody` as new confirmed data (not yet
+wired into playback — what the routine's real audible effect from
+combining two streams is isn't confirmed, only that the second stream
+is real and decodes coherently). Updated `PitchTable`'s doc comment
+with the now-confirmed reason for the `+12` offset (headroom for
+negative signed offsets).
+
+Added `TestNoteIndex` (pins the exact decode rule with concrete
+before/after cases, including the two formerly-miscategorized values)
+and updated 2 existing tests that assumed the old unsigned indexing.
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified via `cmd/render-melody`: renders a
+valid 21-second WAV at the correct duration (no crash, no truncation).
+Audio playback itself can't be verified by ear in this environment —
+same honest caveat this project has always applied to sound work — but
+the decoding logic itself is now precisely pinned down by a
+concrete, reproducible test, not just "sounds about right."
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
