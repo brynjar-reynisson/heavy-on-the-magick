@@ -83,6 +83,24 @@ package world
 // NOT placed then — assigning them to a guessed room would have been
 // fabrication.
 //
+// Methos's Wraith (round 71): zone_monsters.go's ZoneMonsterSightings
+// (real data, sourced back in round 12 but never fully cross-checked
+// against every already-real room until now) records "Methos: Wraith
+// x1" - and Methos was the one CollodonsPile room in that list still
+// missing a monster entirely. Cross-checking the OTHER sightings
+// against already-shipped per-cell data found strong, exact
+// corroboration everywhere else (Trollwynd's "Troll x4" matches
+// Level3Grid's 4 tight-crop-verified Trolls exactly; Gorburg's
+// "Wyvern x1, Ghost x2" matches Level3Grid's Gorburg-zone placements
+// exactly; Wolfdorp's "Ghost x2, Werewolf x2" matches Level1Grid's
+// placements exactly) - real, strong validation that both this
+// independent source and the per-cell tight-crop work agree. Given
+// that track record, Methos's still-missing Wraith is trustworthy
+// too, and unlike the isolated-cell finds elsewhere in this project,
+// Methos is already a real, connected, playable CollodonsPile room -
+// this makes it a genuine, reachable combat encounter, not just
+// recorded data.
+//
 // TollItem placements (round 64): the same fresh, more detailed CASA
 // walkthrough re-read found the real drop-to-open-door mechanic (see
 // world.Room.TollItem's doc comment) recurring at 3 more rooms, each
@@ -151,7 +169,7 @@ func CollodonsPile() *World {
 		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}},
 		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "monster", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll"}, HasTable: true},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
-		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget"}, HasTable: true},
+		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget"}, HasTable: true, Monster: "Wraith", MonsterHealth: 2},
 		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll"}, HasTable: true},
 		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key", HasTable: true},

@@ -2879,6 +2879,74 @@ Added `TestHandleCallIsRecognizedStub` and extended
 `SPELLS` lists CALL, and `CALL` itself gets a real, honest response
 instead of the generic unknown-word message.
 
+### Cross-validated zone_monsters.go against per-cell data, placed 4 new real monsters
+
+After another Stop-hook rejection, same framing, went back to
+`internal/world/zone_monsters.go`'s `ZoneMonsterSightings` - an
+independently-sourced list of `{Zone, Monster, Count}` triples, pulled
+back in round 12 from a computer-rendered grid map
+(`HeavyOnTheMagick_5.gif`) at zone granularity, but deliberately never
+wired to specific rooms at the time "to avoid overwriting or
+contradicting monster data already sourced from the CASA walkthrough."
+That caution meant the file had sat almost entirely unused ever since,
+even as per-cell monster data for Level1Grid/Level2Grid/Level3Grid grew
+far more detailed.
+
+First cross-checked its existing entries against everything already
+shipped, to see whether this old source is even trustworthy: Trollwynd
+("Troll x4") matches Level3Grid's 4 tight-crop-verified Trolls (C4, C6,
+E7, F8) exactly; Gorburg ("Wyvern x1, Ghost x2") matches Level3Grid's
+B1/B2/E2 exactly; Wolfdorp ("Ghost x2, Werewolf x2") matches
+Level1Grid's placements exactly; Nidus ("Cyclops x1") and The Pit
+("Medusa x1") both match too. Five-for-five exact matches - real,
+strong validation that this independent source agrees with the
+tight-crop work, not just coincidence.
+
+With that trust established, looked for zones the list names that
+still have no monster at all, and found 4 genuine gaps:
+
+- **Methos** (`internal/world/collodons_pile.go`) - a real, connected,
+  reachable CollodonsPile room that had never had a monster - the list
+  says "Methos: Wraith x1". This is the highest-value placement of the
+  four: unlike the isolated-cell finds below, Methos is playable in a
+  normal walkthrough today, verified live (`EAST, NORTH, NORTH,
+  SOUTH-EAST` from the start reaches it, and `BLAST` twice kills the
+  new Wraith for +15 XP, same as any other monster).
+- **Sothic Complex** (Level3Grid D4, isolated) - "Sothic Complex: Ghost
+  x1".
+- **Rook of Hydra** (Level3Grid F5, isolated) - "Rook of Hydra: Wyvern
+  x1".
+- **Room of Icthys** (Level2Grid C3, isolated) - "Room of Icthys: Slug
+  x1".
+
+The 3 isolated placements follow the same honesty convention as every
+other isolated named cell in these files: real per the source, but
+only reachable/verifiable via unit test, not a live playthrough, since
+connectivity for those cells was never extracted.
+
+Left deliberately unresolved, as open discrepancies rather than forced
+fixes: Wraithvale ("Wraith x1") and Wormring ("Wyvern x4") have no
+known cell mapping at all; Doubt of Rabak's ("Wraith x1") plausible
+match to Level4Grid's already-placed A6 Wraith wasn't conclusively
+re-examined; Morfang's list count ("Wraith x3") doesn't exactly match
+Level1Grid's currently-shipped 4 Wraiths (F2/G1/G2/H1) - a near-miss,
+not touched.
+
+Added `TestCollodonsPileMethosHasWraith` and extended
+`TestLevel3GridSothicComplexIsIsolated`,
+`TestLevel3GridNaniAndHydraAreIsolated`, and
+`TestLevel2GridOtherNamedIsolatedCells` to pin the new Monster fields,
+ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified live as described above.
+
+**How to apply**: this is a reusable pattern worth repeating -
+periodically re-cross-check older, underused independently-sourced
+data files (like `zone_monsters.go`) against newer, more detailed
+per-cell work. A source that agrees exactly everywhere it's checkable
+is trustworthy enough to fill gaps the checkable data can't reach on
+its own, and disagreements that don't resolve cleanly are worth
+recording as open discrepancies rather than forcing a fix either way.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

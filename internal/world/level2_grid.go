@@ -76,6 +76,14 @@ package world
 //   - Room descriptions: same placeholder convention as everywhere else
 //     in this project.
 //
+// Icthys's Slug (round 71): zone_monsters.go's independently-sourced
+// ZoneMonsterSightings records "Room of Icthys: Slug x1" - and cross-
+// checking that same list's OTHER entries against already-shipped
+// per-cell data (Level1Grid, Level3Grid) found exact matches
+// everywhere checked, real validation this source is trustworthy.
+// Added here even though Icthys itself is isolated (same honest
+// convention as the rest of this file's isolated named cells).
+//
 // Guards: a later round re-derived this file's own row/column pixel
 // calibration directly (validated against A6/A8's own printed labels,
 // plus the "AGILE STAIR" box - real, at B8 here, not A7/A8 like
@@ -144,7 +152,7 @@ var level2Cells = []*Room{
 	{ID: level2Room("B7"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("A7"), West: level2Room("B6")}},
 	{ID: level2Room("C1"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("C2"), South: level2Room("D1")}},
 	{ID: level2Room("C2"), Level: 2, Exits: map[Direction]RoomID{South: level2Room("D2"), West: level2Room("C1")}, Monster: "Slug", MonsterHealth: 2},
-	{ID: level2Room("C3"), Name: "Icthys", Level: 2},
+	{ID: level2Room("C3"), Name: "Icthys", Level: 2, Monster: "Slug", MonsterHealth: 2},
 	{ID: level2Room("C5"), Level: 2, Exits: map[Direction]RoomID{North: level2Room("B5"), South: level2Room("D5")}},
 	{ID: level2Room("C7"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("C8"), South: level2Room("D7")}},
 	{ID: level2Room("C8"), Level: 2, Exits: map[Direction]RoomID{South: level2Room("D8"), West: level2Room("C7")}, Guards: true},

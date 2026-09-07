@@ -129,6 +129,19 @@ func TestCollodonsPileHasTablePlacements(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileMethosHasWraith pins the round-71 addition: Methos
+// is a real, connected, reachable room, and zone_monsters.go's
+// independently-sourced "Methos: Wraith x1" sighting - cross-validated
+// against other exact matches in that same list - is the first monster
+// this room has had (see CollodonsPile's doc comment).
+func TestCollodonsPileMethosHasWraith(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomMethos]
+	if room.Monster != "Wraith" || room.MonsterHealth <= 0 {
+		t.Errorf("Methos Monster = %q (health %d), want a live Wraith", room.Monster, room.MonsterHealth)
+	}
+}
+
 // TestCollodonsPileTrollwyndAndSothicComplexHaveScrollNougat pins the
 // round-63 walkthrough re-read: Nougat and a Scroll in Trollwynd, plus
 // a second, separate Scroll in Sothic Complex - resolving 2 of the 3

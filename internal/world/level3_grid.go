@@ -32,6 +32,15 @@ package world
 // Nani/Hydra: isolated (no Exits), since connectivity for this zone
 // isn't extracted.
 //
+// ROUND 71: zone_monsters.go's independently-sourced
+// ZoneMonsterSightings records "Gorburg: Wyvern x1, Ghost x2" (exact
+// match for this file's already-shipped B1/B2/E2) and "Trollwynd:
+// Troll x4" (exact match for C4/C6/E7/F8) - strong validation that
+// source is trustworthy - and also "Sothic Complex: Ghost x1" and
+// "Rook of Hydra: Wyvern x1", neither of which this file had a monster
+// for yet. Added to the already-isolated Sothic Complex (D4) and
+// Hydra (F5) cells.
+//
 // CALIBRATION HISTORY - CORRECTED (this matters for anyone diffing old
 // output against this file): an earlier round found only 7 of the
 // expected 8 horizontal grid dividers and, after searching (wrongly) for
@@ -173,7 +182,7 @@ var level3Cells = []*Room{
 	{ID: level3Room("C3"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("B3"), South: level3Room("D3"), West: level3Room("C2")}},
 	{ID: level3Room("C4"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("C5"), North: level3Room("B4")}, Monster: "Troll", MonsterHealth: 3},
 	{ID: level3Room("C5"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("C6"), North: level3Room("B5"), South: level3Room("D5"), West: level3Room("C4")}},
-	{ID: level3Room("D4"), Name: "Sothic Complex", Level: 3},
+	{ID: level3Room("D4"), Name: "Sothic Complex", Level: 3, Monster: "Ghost", MonsterHealth: 2},
 	{ID: level3Room("C6"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("C7"), North: level3Room("B6"), South: level3Room("D6"), West: level3Room("C5")}, Monster: "Troll", MonsterHealth: 3},
 	{ID: level3Room("C7"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("C8"), North: level3Room("B7"), South: level3Room("D7"), West: level3Room("C6")}},
 	{ID: level3Room("C8"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("B8"), South: level3Room("D8"), West: level3Room("C7")}},
@@ -194,7 +203,7 @@ var level3Cells = []*Room{
 	{ID: level3Room("E8"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("D8"), South: level3Room("F8"), West: level3Room("E7")}},
 	{ID: level3Room("F1"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("E1")}},
 	{ID: level3Room("F3"), Name: "Nani", Level: 3},
-	{ID: level3Room("F5"), Name: "Hydra", Level: 3},
+	{ID: level3Room("F5"), Name: "Hydra", Level: 3, Monster: "Wyvern", MonsterHealth: 3},
 	{ID: level3Room("F7"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("F8"), North: level3Room("E7")}},
 	{ID: level3Room("G2"), Name: "Two", Level: 3},
 	{ID: level3Room("G4"), Level: 3, Monster: "Wyvern", MonsterHealth: 3},

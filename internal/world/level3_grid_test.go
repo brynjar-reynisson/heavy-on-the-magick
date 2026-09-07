@@ -44,6 +44,12 @@ func TestLevel3GridNaniAndHydraAreIsolated(t *testing.T) {
 			t.Errorf("room %s Exits = %v, want none (connectivity not confirmed)", code, room.Exits)
 		}
 	}
+	// Round 71: zone_monsters.go's "Rook of Hydra: Wyvern x1" sighting,
+	// cross-validated against other exact matches in that same list.
+	hydra := w.Rooms[level3Room("F5")]
+	if hydra.Monster != "Wyvern" || hydra.MonsterHealth <= 0 {
+		t.Errorf("Hydra (F5) Monster = %q (health %d), want a live Wyvern", hydra.Monster, hydra.MonsterHealth)
+	}
 }
 
 // TestLevel3GridSothicComplexIsIsolated pins the real, named-but-
@@ -59,6 +65,11 @@ func TestLevel3GridSothicComplexIsIsolated(t *testing.T) {
 	}
 	if len(room.Exits) != 0 {
 		t.Errorf("Sothic Complex (D4) has Exits %v, want none (connectivity not confirmed)", room.Exits)
+	}
+	// Round 71: zone_monsters.go's "Sothic Complex: Ghost x1" sighting,
+	// cross-validated against other exact matches in that same list.
+	if room.Monster != "Ghost" || room.MonsterHealth <= 0 {
+		t.Errorf("Sothic Complex (D4) Monster = %q (health %d), want a live Ghost", room.Monster, room.MonsterHealth)
 	}
 }
 

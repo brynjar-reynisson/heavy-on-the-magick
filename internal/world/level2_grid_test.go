@@ -37,6 +37,12 @@ func TestLevel2GridOtherNamedIsolatedCells(t *testing.T) {
 			t.Errorf("room %s Exits = %v, want none (connectivity not confirmed)", code, room.Exits)
 		}
 	}
+	// Round 71: zone_monsters.go's "Room of Icthys: Slug x1" sighting,
+	// cross-validated against other exact matches in that same list.
+	icthys := w.Rooms[level2Room("C3")]
+	if icthys.Monster != "Slug" || icthys.MonsterHealth <= 0 {
+		t.Errorf("Icthys (C3) Monster = %q (health %d), want a live Slug", icthys.Monster, icthys.MonsterHealth)
+	}
 }
 
 // TestLevel2GridRoomOfMiseryPocketNamedCells pins the 2 real, tight-crop-
