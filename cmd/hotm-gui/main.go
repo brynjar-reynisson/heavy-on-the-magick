@@ -447,6 +447,7 @@ func (gui *GUI) Draw(screen *ebiten.Image) {
 	gui.drawMonster(screen)
 	gui.drawGuards(screen)
 	gui.drawItems(screen)
+	gui.drawFixtures(screen)
 	gui.drawPortrait(screen)
 	gui.drawCorridorSample(screen)
 
@@ -683,6 +684,45 @@ func (gui *GUI) drawItems(screen *ebiten.Image) {
 	opts.GeoM.Translate(280, 44) // below drawGuards's (280, 26)
 	opts.ColorScale.ScaleWithColor(itemsColor)
 	etext.Draw(screen, strings.Join(room.Items, ", "), face, opts)
+}
+
+// drawFixtures renders the current room's real HasTable/HasChest
+// fixtures (round 151) - confirmed, sourced content (see
+// world.Room.HasTable's/HasChest's doc comments) that the text
+// frontend has surfaced since rounds 56/79 ("There is a table/chest
+// here." in LOOK), but this GUI never showed anywhere at all - the
+// same "confirmed but unsurfaced in the live GUI" gap this project has
+// repeatedly found and closed for other data (Monster, Guards, Items
+// above). itemsColor is reused (same honest "not the confirmed icon
+// color, just a legible stand-in" caveat already noted there).
+func (gui *GUI) drawFixtures(screen *ebiten.Image) {
+	room := gui.g.World.CurrentRoom()
+	if room == nil {
+		return
+	}
+	text := fixturesText(room.HasTable, room.HasChest)
+	if text == "" {
+		return
+	}
+	opts := &etext.DrawOptions{}
+	opts.GeoM.Translate(280, 62) // below drawItems's (280, 44)
+	opts.ColorScale.ScaleWithColor(itemsColor)
+	etext.Draw(screen, text, face, opts)
+}
+
+// fixturesText picks what drawFixtures should render, given a room's
+// real HasTable/HasChest fields - split out so the decision logic is
+// testable without needing a real ebiten image, the same convention
+// currentPortraitName's own split-out used.
+func fixturesText(hasTable, hasChest bool) string {
+	var fixtures []string
+	if hasTable {
+		fixtures = append(fixtures, "Table")
+	}
+	if hasChest {
+		fixtures = append(fixtures, "Chest")
+	}
+	return strings.Join(fixtures, ", ")
 }
 
 // statsLine renders the player's real confirmed stats (see

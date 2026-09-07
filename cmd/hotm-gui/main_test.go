@@ -139,6 +139,23 @@ func TestCurrentPortraitNamePriority(t *testing.T) {
 	}
 }
 
+// TestFixturesText covers round 151's real, previously-unsurfaced-in-
+// the-GUI HasTable/HasChest content (see drawFixtures's doc comment).
+func TestFixturesText(t *testing.T) {
+	if got := fixturesText(false, false); got != "" {
+		t.Errorf("fixturesText(false, false) = %q, want empty", got)
+	}
+	if got := fixturesText(true, false); got != "Table" {
+		t.Errorf("fixturesText(true, false) = %q, want \"Table\"", got)
+	}
+	if got := fixturesText(false, true); got != "Chest" {
+		t.Errorf("fixturesText(false, true) = %q, want \"Chest\"", got)
+	}
+	if got := fixturesText(true, true); got != "Table, Chest" {
+		t.Errorf("fixturesText(true, true) = %q, want \"Table, Chest\"", got)
+	}
+}
+
 // TestStatsLine constructs a bare *GUI directly (not via NewGUI, which
 // touches ebiten's audio/image APIs and needs a real display/audio
 // device) since statsLine only reads gui.g.Player - a pure formatting

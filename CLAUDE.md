@@ -6400,6 +6400,49 @@ up a real, actionable refinement to a mechanic that already existed,
 simply by comparing its own new entries against what this project
 already knows, not by fetching anything new.
 
+### Round 151: closed a real "confirmed but unsurfaced in the live GUI" gap — HasTable/HasChest were never shown in cmd/hotm-gui at all
+
+After another Stop-hook rejection, same framing, went looking for
+more connections from round 149/150's freshly-ported data, then
+pivoted to a systematic check: which real `world.Room` fields does
+`cmd/hotm-gui` actually draw, versus what the text frontend already
+surfaces? Found a genuine, previously-unnoticed gap: `HasTable` and
+`HasChest` (real, sourced fixtures — see their own doc comments) have
+been shown in `cmd/hotm`'s `LOOK` output since rounds 56/79 ("There is
+a table/chest here."), but `cmd/hotm-gui` never referenced either
+field anywhere — not in its V=EXAMINE key's bare listing, not in any
+drawn HUD element. A GUI player had literally no way to learn a table
+or chest was present, even in Room of Misery, the very room every
+default session starts in.
+
+Added `drawFixtures` (following the exact same pattern as the already-
+shipped `drawMonster`/`drawGuards`/`drawItems`), rendering "Table"/
+"Chest" in the HUD row below the existing Items line. Split the
+decision logic into a small, pure `fixturesText(hasTable, hasChest
+bool) string` helper (the same "split out for testability" convention
+`currentPortraitName`/`apexPortraitShouldShow` already established),
+so the real behavior is unit-tested without needing a live ebiten
+image.
+
+Added `TestFixturesText`. Ran the full `gofmt`/`build`/`vet`/`test`
+suite (with a repeated `-count=2` run) clean, and verified live: built
+the real (unmodified) repo's `cmd/hotm-gui` — Room of Misery already
+has `HasTable: true` by default, so no throwaway patching was needed
+this time — and a real screenshot confirms "Table" renders correctly
+in the HUD.
+
+**How to apply**: the "confirmed but unsurfaced in the live GUI" audit
+(originally used for HELP text, StartupMelody, Guards) is worth
+re-running periodically against the CURRENT set of real `world.Room`/
+`character.Player` fields, not just once — new fields keep getting
+added (`SwapItem`/`RevealItem` most recently), and older ones
+(`HasTable`/`HasChest`, present since rounds 56/79) can sit unwired in
+one frontend for many rounds without anyone checking both frontends'
+coverage side by side. When a room already used as the GUI's own
+default starting point (Room of Misery) has the missing data, live
+verification doesn't need a throwaway patched build at all — check
+first before reaching for that heavier technique.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
