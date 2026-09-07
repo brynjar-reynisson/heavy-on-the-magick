@@ -130,6 +130,21 @@ type Room struct {
 	// (see level1_grid.go).
 	Guards bool
 
+	// Fire, when true, means this room is a real fire hazard blocking
+	// ordinary movement - two independent sources agree it's real: the
+	// CASA walkthrough states, of the Clasp (a real, already-placed item
+	// in Trollwynd), "Pick up CLASP (this enables you to walk through
+	// fire)"; separately, a tight-crop of the clean grid map's Level 2
+	// section confirms a real "FIRE!" warning label at cell D6 (round 80
+	// — a prior round's doc comment had mis-described this as E6, an
+	// off-by-one-row description error, not a data bug, since no Fire
+	// field existed yet to be wrong; corrected when this field was
+	// added). No source states what happens to a player without the
+	// Clasp beyond "enables you to walk through" - game.move models the
+	// simplest honest reading (blocks passage), the same convention
+	// already used for Guards' "simplest honest reading" precedent.
+	Fire bool
+
 	// HasTable is true for a real, sourced room fixture: the CASA
 	// walkthrough repeatedly uses "EXAMINE TABLE" as a command in
 	// specific named rooms (Room of Misery, Trollwynd, Sothic Complex,

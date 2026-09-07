@@ -6,6 +6,7 @@ import (
 
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/character"
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/parser"
+	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/world"
 )
 
 func TestHandleUnknownWord(t *testing.T) {
@@ -190,6 +191,38 @@ func TestHandleMagotLocateUnknownObject(t *testing.T) {
 	got := g.Handle(parser.Parse("MAGOT, EXCALIBUR"))
 	if !strings.Contains(got, "senses no such object") {
 		t.Errorf("Handle(MAGOT, EXCALIBUR) = %q, want an honest not-found response", got)
+	}
+}
+
+// TestHandleFireBlocksMovementWithoutClasp covers the real, sourced
+// Fire mechanic (see world.Room.Fire's doc comment): the CASA
+// walkthrough states the Clasp "enables you to walk through fire" -
+// modeled as blocking movement into a Fire room without it. Uses a
+// synthetic 2-room world (world.Level2Grid's real D6 Fire cell is
+// currently isolated, unreachable via ordinary movement) so this real
+// mechanic is exercised end-to-end even though it can't be in the
+// shipped data yet.
+func TestHandleFireBlocksMovementWithoutClasp(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "Blaze", Fire: true})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("NORTH"))
+	if !strings.Contains(got, "Flames block") {
+		t.Errorf("Handle(NORTH) into a Fire room without Clasp = %q, want it blocked", got)
+	}
+	if g.World.CurrentRoom().Name != "Start" {
+		t.Errorf("current room after a blocked Fire move = %q, want unchanged (Start)", g.World.CurrentRoom().Name)
+	}
+
+	g.Player.Items = append(g.Player.Items, "Clasp")
+	got = g.Handle(parser.Parse("NORTH"))
+	if strings.Contains(got, "Flames block") {
+		t.Errorf("Handle(NORTH) into a Fire room WITH Clasp = %q, want it to succeed", got)
+	}
+	if g.World.CurrentRoom().Name != "Blaze" {
+		t.Errorf("current room after a Clasp-protected Fire move = %q, want \"Blaze\"", g.World.CurrentRoom().Name)
 	}
 }
 

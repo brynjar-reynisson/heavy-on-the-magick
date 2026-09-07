@@ -2,9 +2,9 @@ package world
 
 import "testing"
 
-func TestLevel2GridHas60Cells(t *testing.T) {
-	if len(level2Cells) != 60 {
-		t.Fatalf("len(level2Cells) = %d, want 60 (the validated 50-cell main component, the full 7-cell Room of Misery pocket, and 3 isolated named cells: Icthys/Horns/Purity)", len(level2Cells))
+func TestLevel2GridHas61Cells(t *testing.T) {
+	if len(level2Cells) != 61 {
+		t.Fatalf("len(level2Cells) = %d, want 61 (the validated 50-cell main component, the full 7-cell Room of Misery pocket, 3 isolated named cells: Icthys/Horns/Purity, and D6's Fire hazard)", len(level2Cells))
 	}
 }
 
@@ -19,6 +19,20 @@ func TestLevel2GridFloxIsInMainComponent(t *testing.T) {
 	}
 	if len(room.Exits) == 0 {
 		t.Error("Flox (D4) should have real Exits (it's part of the main connected component, not isolated)")
+	}
+}
+
+// TestLevel2GridD6HasFire pins the round-80 find: a real, previously
+// entirely-missing cell (D6) confirmed via a tight-crop-verified
+// "FIRE!" warning label (see world.Room.Fire's doc comment).
+func TestLevel2GridD6HasFire(t *testing.T) {
+	w := Level2Grid()
+	room := w.Rooms[level2Room("D6")]
+	if room == nil || !room.Fire {
+		t.Errorf("room D6 = %+v, want Fire = true", room)
+	}
+	if len(room.Exits) != 0 {
+		t.Errorf("room D6 Exits = %v, want none (connectivity not confirmed)", room.Exits)
 	}
 }
 

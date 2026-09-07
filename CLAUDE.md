@@ -3280,6 +3280,49 @@ placed, corroborated, or explicitly documented as an open discrepancy
 shipped-4 count mismatch remains the one deliberately-unresolved
 disagreement, recorded honestly rather than forced either way).
 
+### Found and implemented the real Clasp/Fire mechanic, and a real cell (D6) that had been entirely missed
+
+After another Stop-hook rejection, same framing, mined the same CASA
+walkthrough once more for anything new around the already-placed Clasp
+item (Trollwynd). Found a real, previously-uncaptured ability: `"Pick
+up CLASP (this enables you to walk through fire)"`. A follow-up fetch
+tried to pin down a second CLASP-related detail (`"DROP CLASP, Pick up
+KEY"` at Wolfdorp) precisely enough to place it — but the walkthrough
+never names the room this happens in (it falls in an unnamed
+intermediate cell between the last named room and the next), the exact
+same misattribution trap round 64 already taught this project to watch
+for. Correctly left it unplaced rather than guess.
+
+The fire-immunity fact, though, is unambiguous and room-independent —
+worth modeling on its own. Went looking for where fire actually shows
+up in the map data and found it: a tight crop of `heavymap-grid-clean.gif`'s
+Level 2 section confirms a real `"FIRE!"` warning label — but at cell
+**D6**, not E5/E6 as an earlier round's doc comment had said (a
+description slip from that round, not a shipped data bug, since no
+Fire field existed yet to be wrong). More significantly, D6 turned out
+to be a real cell **entirely missing** from `level2_grid.go` — neither
+of its neighbors (D5, D7) had an exit toward it, so it had simply never
+been captured by the original extraction pass at all.
+
+Added `world.Room.Fire` (mirroring `Guards`' "simplest honest reading"
+precedent: no source states what happens without the Clasp beyond
+"enables you to walk through", so this blocks passage rather than
+inventing damage numbers), added D6 to `level2_grid.go` as a new
+isolated cell with `Fire: true`, and wired the check into `game.move` —
+checked *before* calling `World.Move` (unlike `checkNougatWerewolf`,
+which reacts after a successful move), since fire is described as
+blocking passage outright. Updated the stale "60-cell" references to
+61.
+
+Added `TestLevel2GridD6HasFire` and
+`TestHandleFireBlocksMovementWithoutClasp` (a synthetic 2-room world,
+since D6 is currently isolated and unreachable via ordinary movement —
+same "mechanic real, not yet reachable" honesty pattern already used
+for TollItem and the Charms before their items were placed). Ran the
+full `gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2`
+run) clean, and confirmed both `cmd/hotm` and `-level2grid` still run
+live.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

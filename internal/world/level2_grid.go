@@ -217,4 +217,15 @@ var level2Cells = []*Room{
 	{ID: level2Room("G5"), Level: 2, Guards: true},
 	{ID: level2Room("H4"), Level: 2},
 	{ID: level2Room("H5"), Level: 2, Guards: true},
+
+	// D6 (round 80): a real cell entirely missing from the original
+	// extraction pass (D5/D7 both exist with real exits, but neither has
+	// one leading to D6 - genuinely absent, not just a missing name, per
+	// the "check for a named/flagged special room explaining a gap"
+	// technique used throughout this project). Tight-crop-verified real
+	// content: a "FIRE!" warning label (see world.Room.Fire's doc
+	// comment) - added as an isolated cell (no Exits, connectivity not
+	// extracted), same honest convention as every other special cell in
+	// this file.
+	{ID: level2Room("D6"), Level: 2, Fire: true},
 }

@@ -753,6 +753,13 @@ func (g *Game) examine(target string) string {
 }
 
 func (g *Game) move(dir world.Direction) string {
+	if room := g.World.CurrentRoom(); room != nil {
+		if destID, ok := room.Exits[dir]; ok {
+			if dest := g.World.Rooms[destID]; dest != nil && dest.Fire && !g.hasItem("Clasp") {
+				return "Flames block your way. You'd need something to protect you from the fire."
+			}
+		}
+	}
 	if !g.World.Move(dir) {
 		return "You can't go that way."
 	}
@@ -763,6 +770,17 @@ func (g *Game) move(dir world.Direction) string {
 	}
 	return desc
 }
+
+// The Fire check above implements a real, sourced mechanic: the CASA
+// walkthrough states, of the Clasp (a real, already-placed item in
+// Trollwynd), "Pick up CLASP (this enables you to walk through fire)" -
+// see world.Room.Fire's doc comment for the full sourcing (including the
+// tight-crop-verified "FIRE!" map label) and the honesty caveat on what
+// "blocks" without the Clasp actually means (not stated by any source,
+// modeled as the simplest honest reading). Checked BEFORE calling
+// World.Move (unlike checkNougatWerewolf, which reacts after a
+// successful move) since fire is described as blocking passage
+// outright, not something you walk into and then suffer for.
 
 // checkNougatWerewolf implements a real, sourced mechanic: the CASA
 // walkthrough (a second re-read, round 63) states Werewolves are
