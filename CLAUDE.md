@@ -5393,6 +5393,58 @@ separate gating sites (bare INVOKE, ASTAROT teleport, MAGOT locate)
 plus a 4th, easy-to-miss one in the GUI frontend that assumed the old
 behavior.
 
+### Round 132: nailed down the "swap it for" mechanic round 131 flagged as too imprecise to implement — a real, cross-source-confirmed "protected item" reveal
+
+After another Stop-hook rejection, same framing, followed up directly
+on round 131's own flagged next step (the Ball/Pellet, Nougat/Nugget,
+Shell/Egg "swap" tips, left unimplemented pending more precision). A
+second, more targeted `WebFetch` pass on the same World of Spectrum
+plain-text instructions file resolved the exact mechanic: the
+walkthrough section shows the Nougat/Nugget pair as two literal,
+separate commands — "PICK UP NOUGAT" at step 8, then "DROP NOUGAT" and
+"PICK UP NUGGET" at step 19 (with the walkthrough author's own joke,
+"geddit? groan!", about the pun) — not a special `SWAP` verb. Cross-
+checking `numbered_room_contents.go`'s own key list (already-shipped,
+independently-sourced data) found an exact match: entries #12 ("Egg -
+rock, protected"), #31 ("Pellet - rock, protected"), and #49 ("Nugget
+(silver), rock, protected") are the ONLY 3 "protected" entries in the
+entire 102-entry list — precisely the 3 pairs the tips section names.
+Two independent sources (a plain-text instructions file's tips/
+walkthrough, and a completely different fan-made numbered map poster)
+agreeing on the exact same 3 item names is strong, real confirmation
+this is a genuine mechanic, not a walkthrough author's coincidental
+wordplay.
+
+Implemented it as `world.Room.SwapItem`/`RevealItem` (a room can
+require dropping one specific item to reveal another, real-but-hidden
+one) and `game.checkSwapItem`, wired into `drop()` alongside the
+already-real Nougat/Werewolf and Garlic/Vampire drop-triggered checks.
+A one-time reveal (both fields clear after triggering, matching the
+"protected" framing — you don't get the reward twice). Neither field
+is set on any currently-shipped room: the numbered map's cell numbers
+for this triad (#12/#31/#49) haven't been cross-referenced to a
+specific CollodonsPile/LevelNGrid room yet — real, honestly-scoped
+follow-up work, the same "mechanic real, not yet reachable" pattern
+already used for TollItem/Fire/Guards before their first real
+placement (all 3 were shipped mechanic-first, room-second too).
+
+Added `TestHandleSwapItemRevealsRealItem` and
+`TestHandleSwapItemUnrelatedDropDoesNothing` (both using a synthetic
+room, same convention as `TestHandleFireBlocksMovementWithoutClasp`).
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean.
+
+**How to apply**: an "I don't have enough precision to implement this
+safely yet" note from a previous round is a real, actionable TODO, not
+a dead end — a second, more targeted fetch of the SAME source (asking
+specifically for surrounding context and exact command sequences, not
+just the tip text alone) resolved it completely. Cross-checking a
+newly-precise mechanic against an already-shipped, independently-
+sourced dataset (the numbered map's "protected" qualifier) before
+implementing is what turned "3 vague tips" into "a confirmed, cross-
+validated mechanic" — the same discipline this project has applied to
+every other real mechanic before shipping it.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

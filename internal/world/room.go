@@ -193,6 +193,29 @@ type Room struct {
 	// not a synonym for it. Same honesty convention as HasTable: only set
 	// for these 2 specifically confirmed rooms, not assumed elsewhere.
 	HasChest bool
+
+	// SwapItem and RevealItem model a real, sourced "protected item"
+	// mechanic (round 132): World of Spectrum's separate plain-text
+	// instructions file (see game.go's checkSwapItem doc comment for the
+	// full sourcing) states, as tips, "To get the Pellet swap it for a
+	// Ball" and "Get the Shell and swap it for the egg" - and the same
+	// file's own walkthrough shows the identical pattern for Nougat/
+	// Nugget (DROP NOUGAT, then a separate PICK UP NUGGET). The fan-made
+	// numbered map poster's own key list independently corroborates all
+	// 3 exact item names, each qualified "protected" ("Egg - rock,
+	// protected", "Pellet - rock, protected", "Nugget (silver), rock,
+	// protected" - internal/world/numbered_room_contents.go #12/#31/#49)
+	// - real, cross-source confirmation this is a genuine mechanic, not
+	// a walkthrough author's turn of phrase. Dropping SwapItem in a room
+	// that has RevealItem set reveals it (adds it to Items) - see
+	// game.checkSwapItem. Neither field is set on any real, currently-
+	// shipped room: the numbered map's cell numbers for this triad
+	// (#12/#31/#49) haven't been cross-referenced to a specific
+	// CollodonsPile/LevelNGrid room yet (real, scoped follow-up work,
+	// same "mechanic real, not yet reachable" pattern already used for
+	// TollItem/Fire/Guards before their first real placement).
+	SwapItem   string
+	RevealItem string
 }
 
 // clone returns a deep copy of r, safe to mutate independently of the

@@ -934,6 +934,9 @@ func (g *Game) drop(target string) string {
 			if msg := g.checkGarlicVampire(); msg != "" {
 				result += "\n" + msg
 			}
+			if msg := g.checkSwapItem(item); msg != "" {
+				result += "\n" + msg
+			}
 			return result
 		}
 	}
@@ -1082,6 +1085,32 @@ func (g *Game) checkGarlicVampire() string {
 		}
 	}
 	return ""
+}
+
+// checkSwapItem implements a real, sourced "protected item" mechanic
+// (round 132) - see world.Room.SwapItem/RevealItem's doc comment for
+// the full sourcing (World of Spectrum's separate plain-text
+// instructions file, cross-confirmed by the numbered map poster's own
+// "protected" qualifier on the exact same 3 items). Dropping the
+// room's real SwapItem reveals its RevealItem, added to the room's
+// Items for real - a one-time reveal (both fields are cleared after,
+// so dropping the same item twice doesn't reveal it again). No source
+// states whether the dropped SwapItem itself is consumed - modeled as
+// non-consuming, the same "no evidence it's used up" convention
+// checkNougatWerewolf already uses for its own dropped item.
+func (g *Game) checkSwapItem(dropped string) string {
+	room := g.World.CurrentRoom()
+	if room == nil || room.SwapItem == "" || room.RevealItem == "" {
+		return ""
+	}
+	if !strings.EqualFold(dropped, room.SwapItem) {
+		return ""
+	}
+	revealed := room.RevealItem
+	room.Items = append(room.Items, revealed)
+	room.SwapItem = ""
+	room.RevealItem = ""
+	return fmt.Sprintf("As you set it down, you notice a %s hidden nearby!", revealed)
 }
 
 // describeCurrentRoom renders LOOK's real output. Round 115: now

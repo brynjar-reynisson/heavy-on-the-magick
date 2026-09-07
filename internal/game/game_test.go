@@ -266,6 +266,59 @@ func TestHandleFireBlocksMovementWithoutClasp(t *testing.T) {
 	}
 }
 
+// TestHandleSwapItemRevealsRealItem covers round 132's real, sourced
+// "protected item" mechanic (see world.Room.SwapItem's doc comment):
+// dropping the room's real SwapItem reveals its RevealItem. Uses a
+// synthetic room (the exact numbered-map cell this triad corresponds
+// to hasn't been cross-referenced to a shipped room yet) so this real
+// mechanic is exercised end-to-end even though it can't be in the
+// shipped data yet - same pattern as TestHandleFireBlocksMovementWithoutClasp.
+func TestHandleSwapItemRevealsRealItem(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Cache", SwapItem: "Ball", RevealItem: "Pellet"})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	g.Player.Items = append(g.Player.Items, "Ball")
+
+	got := g.Handle(parser.Parse("DROP BALL"))
+	if !strings.Contains(got, "Pellet") {
+		t.Errorf("Handle(DROP BALL) with SwapItem=Ball/RevealItem=Pellet = %q, want it to mention the Pellet", got)
+	}
+	room := g.World.CurrentRoom()
+	found := false
+	for _, item := range room.Items {
+		if item == "Pellet" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("room Items after the swap = %v, want it to include Pellet", room.Items)
+	}
+	if room.SwapItem != "" || room.RevealItem != "" {
+		t.Errorf("SwapItem/RevealItem after the swap = %q/%q, want both cleared (one-time reveal)", room.SwapItem, room.RevealItem)
+	}
+}
+
+// TestHandleSwapItemUnrelatedDropDoesNothing is a regression guard:
+// dropping an item that ISN'T the room's real SwapItem must not
+// trigger a reveal.
+func TestHandleSwapItemUnrelatedDropDoesNothing(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Cache", SwapItem: "Ball", RevealItem: "Pellet"})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	g.Player.Items = append(g.Player.Items, "Grimoire")
+
+	g.Handle(parser.Parse("DROP GRIMOIRE"))
+	room := g.World.CurrentRoom()
+	for _, item := range room.Items {
+		if item == "Pellet" {
+			t.Errorf("dropping an unrelated item revealed Pellet early: room Items = %v", room.Items)
+		}
+	}
+	if room.SwapItem != "Ball" || room.RevealItem != "Pellet" {
+		t.Errorf("SwapItem/RevealItem after an unrelated drop = %q/%q, want both unchanged", room.SwapItem, room.RevealItem)
+	}
+}
+
 func TestHandleMovementValidExit(t *testing.T) {
 	g := New()
 	// Room of Misery --East--> Secunda Porta, per the real (walkthrough-
