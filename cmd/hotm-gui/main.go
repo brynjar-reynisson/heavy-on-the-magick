@@ -741,7 +741,8 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 		// match of any sample here (an actual fireplace scene). Round
 		// 142 adds Methos at zone-level confidence (Level 4's own
 		// A6-A8 Methos zone), same tier as Wolfdorp/Nidus/Trollwynd/
-		// Pilefoot.
+		// Pilefoot. Round 143 adds Morfang, also zone-level (Level 1's
+		// own D1/D2/G1/G2/H1 Morfang zone).
 		return game.New(), "", map[string]image.Image{
 			"Room of Misery": graphics.RoomOfMiserySample(),
 			"Room of Stings": graphics.RoomOfStingsSample(),
@@ -753,6 +754,7 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 			"Trollwynd":      graphics.TrollwyndSample(),
 			"Pilefoot":       graphics.PilefootSample(),
 			"Methos":         graphics.MethosSample(),
+			"Morfang":        graphics.MorfangSample(),
 		}
 	}
 }

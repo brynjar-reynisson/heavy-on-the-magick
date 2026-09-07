@@ -5983,6 +5983,53 @@ check both states (as-is, and with the monster cleared) rather than
 concluding "must be broken" (or, worse, "must be fine") from a single
 screenshot that happens to show something else on top.
 
+### Round 143: a new source type (Computer Gamer magazine review) plus an 11th real room screenshot — Morfang, zone-level confidence
+
+After another Stop-hook rejection, same framing, first found and
+fetched a genuinely new source type: Computer Gamer magazine's own
+1986 review (hosted at everygamegoing.com), never checked before. Two
+real facts came back, both honestly left unactionable rather than
+forced: the dungeon is described as "partially flooded" with "foul
+smelling water... lapping round your ankles" — real, atmospheric,
+sourced, but a direct follow-up fetch confirmed the review states no
+functional gameplay effect at all (no damage, no blocking, no item
+requirement), so nothing to model beyond what's already known; and
+"drink poison" is mentioned as triggering an animation — real, but
+describes a DIFFERENT action (drinking a liquid) than the already-
+modeled poison mechanic (round 128's pickup-triggered "Poison-smeared
+book"), with no specific item to attach it to, so left undocumented
+rather than conflated with the existing mechanic.
+
+Pivoted to graphics: extracted Morfang's real room screenshot at
+zone-level confidence. `heavymap-grid-clean.gif`'s own colored zone
+boundary (viewed directly, full resolution) shows "Morfang" as a real
+cyan zone spanning Level 1's D1/D2/G1/G2/H1. Picked D1 as a
+representative cell, cross-checked BOTH position (the atlas's own
+printed row label "D", plus the cell's real x-position landing almost
+exactly on this project's own already-pixel-exact-confirmed column-1
+origin from round 137/141/142's template matching) AND content (a real
+table with an object on it, matching Morfang's own already-confirmed
+`HasTable` fixture from round 78, even at zone-level confidence).
+
+Added `graphics.MorfangSample()` (own test,
+`TestMorfangSampleDecodesToRealArt`) and wired it into `cmd/hotm-gui`'s
+default-mode room-art map — **CollodonsPile's 11th room with real
+extracted art**. Ran the full `gofmt`/`build`/`vet`/`test` suite (with
+a repeated `-count=2` run) clean, and verified live via a disposable-
+throwaway-repo-copy screenshot (teleported there with the room's
+Vampire cleared, per round 142's lesson about monster-portrait
+priority, confirming the art itself renders correctly).
+
+**How to apply**: a genuinely new source type can still turn up real
+facts even when neither one is immediately actionable — an honest
+"found it, checked it, here's exactly why it's not shippable yet" is
+still real, recorded progress, not a wasted fetch. When a printed
+label near a candidate cell is ambiguous about WHICH axis it confirms
+(a lone letter could be a row label OR something else), cross-check
+against an independently-derived, already-exact pixel position rather
+than trusting the label alone — position AND content agreeing is what
+makes a placement confident, not either alone.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

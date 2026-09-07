@@ -418,3 +418,31 @@ func MethosSample() image.Image {
 	}
 	return img
 }
+
+// assets/morfang_sample.png (round 143) is a sixth zone-level-
+// confidence sample, same standard as Wolfdorp/Nidus/Trollwynd/
+// Pilefoot/Methos above. heavymap-grid-clean.gif's own colored zone
+// boundary (viewed directly at full resolution) shows "Morfang" as a
+// real cyan-colored zone spanning Level 1's D1/D2 and G1/G2/H1. Cell
+// D1 was picked as a representative, unremarkable cell within it - the
+// atlas's own printed row label "D" directly confirms the row, and
+// the cell's real x-position (563, matching this project's own
+// already-exact-pixel-confirmed column-1 origin at 571 almost
+// perfectly) confirms the column, the same cross-check discipline used
+// for every sample in this file (position AND content, not either
+// alone). Content cross-check: shows a real table with an object on
+// it - matching Morfang's own already-confirmed HasTable fixture
+// (CollodonsPile, round 78) even at this zone-level confidence tier.
+//
+//go:embed assets/morfang_sample.png
+var morfangSamplePNG []byte
+
+// MorfangSample decodes the embedded representative Morfang-zone
+// screenshot. Panics on failure, matching CorridorSample() above.
+func MorfangSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(morfangSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded morfang_sample.png: " + err.Error())
+	}
+	return img
+}

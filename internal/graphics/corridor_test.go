@@ -59,6 +59,13 @@ func TestAgileStairSampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, AgileStairSample(), "AgileStairSample()")
 }
 
+// TestMorfangSampleDecodesToRealArt mirrors
+// TestCorridorSampleDecodesToRealArt for round 143's Morfang addition -
+// zone-level confidence, same tier as WolfdorpSample above.
+func TestMorfangSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, MorfangSample(), "MorfangSample()")
+}
+
 // TestMethosSampleDecodesToRealArt mirrors
 // TestCorridorSampleDecodesToRealArt for round 142's Methos addition -
 // zone-level confidence, same tier as WolfdorpSample above.
