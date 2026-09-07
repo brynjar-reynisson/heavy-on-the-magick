@@ -17,20 +17,28 @@ import (
 // been confirmed in the game's data — do not assume it's present until it
 // turns up in the disassembly.
 //
-// OPEN QUESTION (round 91): the real Golden Dawn system also has a
+// OPEN QUESTION (round 91-92): the real Golden Dawn system also has a
 // "Magus" grade between Magister Templi and Ipsissimus - and "MAGUS" IS
 // a real, confirmed word in the game's own extracted 316-word parser
 // vocabulary (parser.Vocabulary). That alone doesn't confirm it's a
 // displayed Grade string though (the vocabulary table is what the
 // parser recognizes as INPUT, a different data source than the RAM
 // string dump that confirmed the other 9 grade names as OUTPUT text).
-// Checked directly: searched all 4 of this repo's .z80 memory snapshots
-// for the literal ASCII bytes "MAGUS" - not found in any of them. This
-// doesn't disprove it (the game's own text uses a custom, not-yet-fully-
-// decoded print engine/encoding - see CLAUDE.md's disassembly notes -
-// so a real string could exist without matching a plain-ASCII search),
-// but it's not enough to confirm the grade either. Left unresolved and
-// NOT added - same "don't assume it's present" discipline as Theoricus.
+// Checked three ways, all inconclusive rather than confirming either
+// way: (1) searched all 4 of this repo's .z80 memory snapshots for the
+// literal ASCII bytes "MAGUS" - not found, but neither were the
+// ALREADY-confirmed grade names, so this just means these particular
+// snapshots don't hold plain-ASCII grade text at all, not evidence
+// against Magus specifically; (2) searched the same snapshots' high-bit-
+// terminated vocabulary-table encoding (see parser/vocabulary.go's doc
+// comment) - found MAGUS there, but that's the already-known INPUT
+// vocabulary table, not a separate Grade OUTPUT string; (3) re-fetched
+// the CASA walkthrough asking specifically about Grade/rank progression
+// beyond the first promotion - it confirms only "your grade is now
+// ZELATOR" (the one promotion already modeled) and never mentions
+// Magus or any grade beyond it. None of these three checks confirm OR
+// rule out Magus. Left unresolved and NOT added - same "don't assume
+// it's present" discipline as Theoricus.
 type Grade int
 
 const (

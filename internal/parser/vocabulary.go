@@ -21,6 +21,24 @@ import (
 // description of the game and the hyphenated NORTH-EAST/SOUTH-EAST/
 // SOUTH-WEST/NORTH-WEST spelling found in the same table).
 //
+// INDEPENDENTLY RE-CONFIRMED (round 92): while chasing an unrelated
+// question (whether "MAGUS" is a displayed character.Grade string),
+// searched this project's .z80 memory snapshots directly for several
+// vocabulary words and found them stored with each byte's high bit set
+// (masking with &0x7F reveals plain ASCII) at addresses 0x6091/0x6364/
+// 0x6430 (24721/25444/25648 decimal) - squarely inside this doc
+// comment's already-documented 24270-26200 range, and matching the
+// "high-bit-terminated-last-letter word encoding" already described
+// elsewhere in ../../CLAUDE.md. A genuinely independent cross-check
+// (memory search + masking, not re-reading the original extraction
+// notes) landed on the exact same table this file already embeds - good
+// confidence that both the address range and the encoding were
+// correctly understood the first time. Did NOT resolve the original
+// question (MAGUS is confirmed to live in this vocabulary table, as
+// vocabulary.json already showed - it does not confirm or rule out
+// being a separate Grade display string; see character.Grade's doc
+// comment for that still-open question).
+//
 //go:embed data/vocabulary.json
 var vocabularyJSON []byte
 

@@ -3735,6 +3735,49 @@ real, verified research: one confirmed cross-validation recorded, one
 plausible-but-unconfirmed hypothesis explicitly flagged rather than
 either silently dropped or guessed into the code.
 
+### Chased the MAGUS grade question three more ways — still genuinely inconclusive, but independently re-confirmed a real technical fact along the way
+
+After another Stop-hook rejection, same framing, kept pulling the
+thread from last round's open "is MAGUS a real Grade" question with
+three more checks:
+
+1. Searched all 4 `.z80` snapshots' `.skool`/`.asm` disassembly text for
+   any of the grade names as literal strings — none of them, including
+   the already-confirmed ones (`NEOPHYTE`, `ZELATOR`, `IPSISSIMUS`),
+   appear anywhere in the disassembled text files at all. This rules
+   out "just grep the skool files" as a path to resolving this, and
+   confirms the original grade-name discovery must have come from a
+   live-memory source (a debugger session) not represented by any
+   static artifact in this repo.
+2. Tried masking each snapshot byte's high bit before searching (`&
+   0x7F`) and got real hits for `MAGUS`/`NEOPHYTE`/`ZELATOR` — but
+   dumping the surrounding bytes showed this is simply the **already-
+   known 316-word parser vocabulary table** (`SKULL SKILL CLASP CHARM
+   TROLL THING DEMON ... MAGUS ...`), landing exactly inside its
+   already-documented `24270-26200` address range, encoded exactly as
+   `parser/vocabulary.go`'s doc comment already describes
+   ("high-bit-terminated-last-letter"). A genuinely independent
+   verification path landing on the exact same answer as the original
+   extraction is good, real confidence that both the address range and
+   the encoding were understood correctly the first time — but it's
+   the vocabulary (INPUT) table, not a separate Grade (OUTPUT) string,
+   so it doesn't touch the actual question.
+3. Re-fetched the CASA walkthrough asking specifically about Grade
+   progression beyond the first promotion — it confirms only `"your
+   grade is now ZELATOR"` (the one promotion this port already models)
+   and never mentions Magus or any higher grade.
+
+Three checks, three honest non-answers — MAGUS as a Grade remains
+exactly as uncertain as last round, correctly left undecided rather
+than guessed into the enum either way. Documented all three attempts
+plainly in `character.Grade`'s doc comment so a future round doesn't
+have to re-discover that these particular paths are dead ends.
+
+No shipped behavior change this round (doc-only), but a real technical
+fact (the vocabulary table's address range and encoding) is now
+independently corroborated rather than resting on a single original
+extraction pass.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
