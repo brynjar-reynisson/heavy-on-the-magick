@@ -60,8 +60,11 @@ var Demons = []Demon{
 // Two more real numbers from the same grimoire section (round 110),
 // not tied to any specific Demon: "the number of Magick is 11; but the
 // number of the Great Abyss is 24" (paraphrased from the manual's
-// prose). Not given a home here since no source found so far ties
-// either number to a specific game mechanic, item, or room — recorded
-// in this comment rather than invented a use for them, so a future
-// round chasing either number knows it's real, sourced content, not
-// something still to find in the manual.
+// prose). "The Great Abyss is 24" still has no confirmed mechanical
+// use anywhere. "The number of Magick is 11" DOES now (round 159): The
+// CRPG Addict's 2016 blog post quotes the real in-game riddle "TO ENTER
+// SAY A NUMBER OF MAGICK WORDS" with the real answer ELEVEN — exactly
+// world.CollodonsPile's already-shipped Pilefoot DoorPasswords entry
+// (round 84). This manual fact IS the reason behind that door's real
+// password — see world.Room.DoorHints, now surfaced in-game via "APEX,
+// DOOR".

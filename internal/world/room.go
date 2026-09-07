@@ -104,6 +104,29 @@ type Room struct {
 	// rooms (no known password puzzle, or none exists there).
 	DoorPasswords []string
 
+	// DoorHints are the real riddle/clue text Apex (or a room's "guard"
+	// pillars) gives for this room's real DoorPasswords, surfaced via
+	// "APEX, DOOR" (round 159; see game.apexDoorHint) — one of the 3
+	// confirmed example commands from the game's own real hint screen
+	// (already quoted verbatim in game.help(), but never actually wired
+	// to a response until now). Source: The CRPG Addict's 2016 blog
+	// post, quoting the actual riddles the game presented and their
+	// real solutions — "CRY AND ENTER DOOR" (answer WOLF, a "cry wolf"
+	// pun), "TO ENTER IS MADNESS" (answer LUNACY), and "TO ENTER SAY A
+	// NUMBER OF MAGICK WORDS" (answer ELEVEN, tying directly back to
+	// the manual's own separately-confirmed "the number of Magick is
+	// 11" fact — round 110 — which had no confirmed mechanical use
+	// until this cross-reference). The riddle CONTENT is real and
+	// sourced; the exact on-screen casing/punctuation is NOT confirmed
+	// to the same pixel-exact standard as game.help()'s screen text
+	// (that was cross-checked against a real screenshot; this is a
+	// blogger's own prose quoting the game from memory/notes), so
+	// stored here in normal sentence case rather than claimed ALL-CAPS
+	// verbatim. Empty for rooms with no confirmed riddle text (most
+	// DoorPasswords rooms, including Secunda Porta's — no riddle for it
+	// has been found by any source checked so far).
+	DoorHints []string
+
 	// TollItem is the item name this room's door requires dropped/placed
 	// to open - real, distinct confirmed mechanic, separate from
 	// DoorPasswords (which are typed words, not carried items). Two
@@ -228,6 +251,9 @@ func (r *Room) clone() *Room {
 	}
 	if r.DoorPasswords != nil {
 		c.DoorPasswords = append([]string(nil), r.DoorPasswords...)
+	}
+	if r.DoorHints != nil {
+		c.DoorHints = append([]string(nil), r.DoorHints...)
 	}
 	if r.Items != nil {
 		c.Items = append([]string(nil), r.Items...)

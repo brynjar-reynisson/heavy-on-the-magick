@@ -290,3 +290,22 @@ func TestCollodonsPileTrollwyndAndSothicComplexHaveScrollNougat(t *testing.T) {
 		}
 	}
 }
+
+// TestCollodonsPileDoorHintsMatchRealPasswords covers round 159's real,
+// sourced riddle text (see Room.DoorHints's doc comment) - Wolfdorp and
+// Pilefoot both have real DoorHints, and every room's hint count should
+// never exceed its own real password count (a hint with no matching
+// password would be a fabrication this project's own discipline
+// wouldn't allow).
+func TestCollodonsPileDoorHintsMatchRealPasswords(t *testing.T) {
+	w := CollodonsPile()
+	for _, id := range []RoomID{roomWolfdorp, roomPilefoot} {
+		room := w.Rooms[id]
+		if len(room.DoorHints) == 0 {
+			t.Errorf("room %q DoorHints is empty, want real riddle text", room.Name)
+		}
+		if len(room.DoorHints) > len(room.DoorPasswords) {
+			t.Errorf("room %q has %d DoorHints but only %d DoorPasswords - a hint with no matching password", room.Name, len(room.DoorHints), len(room.DoorPasswords))
+		}
+	}
+}

@@ -36,6 +36,34 @@ func TestHandleTalkToApex(t *testing.T) {
 	}
 }
 
+// TestHandleApexDoorWithNoHintFallsBackToTalk covers apexDoorHint's
+// honest fallback: a room with no real, sourced DoorHints (like the
+// starting room) gets the same generic response as bare "APEX, TALK",
+// not a fabricated riddle.
+func TestHandleApexDoorWithNoHintFallsBackToTalk(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("APEX, DOOR"))
+	if !strings.Contains(got, "Apex") {
+		t.Errorf("Handle(APEX, DOOR) with no real hint here = %q, want the generic Apex response", got)
+	}
+	if strings.Contains(got, "riddle") {
+		t.Errorf("Handle(APEX, DOOR) with no real hint here = %q, must not fabricate a riddle", got)
+	}
+}
+
+// TestHandleApexDoorGivesRealWolfdorpHints covers round 159's real,
+// sourced riddle content (see world.Room.DoorHints's doc comment) at
+// Wolfdorp, an already-real, reachable CollodonsPile room.
+func TestHandleApexDoorGivesRealWolfdorpHints(t *testing.T) {
+	g := walkToWolfdorp(t)
+	got := g.Handle(parser.Parse("APEX, DOOR"))
+	for _, want := range []string{"Cry and enter door", "To enter is madness"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("Handle(APEX, DOOR) at Wolfdorp = %q, want it to contain the real riddle %q", got, want)
+		}
+	}
+}
+
 func TestHandleSpeakToApexIsSynonymForTalk(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("APEX, SPEAK"))

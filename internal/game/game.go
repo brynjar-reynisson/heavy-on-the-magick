@@ -367,6 +367,10 @@ func (g *Game) Handle(cmd parser.Command) string {
 		return g.talkToApex()
 	}
 
+	if strings.EqualFold(cmd.Target, "APEX") && strings.EqualFold(cmd.Verb, "DOOR") {
+		return g.apexDoorHint()
+	}
+
 	if strings.EqualFold(cmd.Target, "APEX") && cmd.Verb == "THANKS" {
 		return "You thank Apex. He grunts and returns to his business."
 	}
@@ -603,6 +607,32 @@ func (g *Game) punishFailedInvoke(d magic.Demon) string {
 // hint text.
 func (g *Game) talkToApex() string {
 	return "Apex the Ogre eyes you warily, then grunts. He might share what he knows, if you treat him with respect."
+}
+
+// apexDoorHint handles "APEX, DOOR" — one of the 3 confirmed real
+// example commands from the game's own hint screen (game.help; also
+// independently confirmed by Spectrum Computing's instructions file:
+// "a door with a toll sign by it (ask apex)"), but never actually wired
+// to a response until now, despite the hint screen naming it directly.
+// If the current room has real, sourced riddle text (world.Room.
+// DoorHints — round 159, see its own doc comment for sourcing), Apex
+// shares it; otherwise this falls back to the same generic
+// talkToApex response, an honest "he has nothing specific to say about
+// a door here" rather than a fabricated hint.
+func (g *Game) apexDoorHint() string {
+	room := g.World.CurrentRoom()
+	if room == nil || len(room.DoorHints) == 0 {
+		return g.talkToApex()
+	}
+	var b strings.Builder
+	b.WriteString("Apex leans in and whispers a riddle: ")
+	for i, hint := range room.DoorHints {
+		if i > 0 {
+			b.WriteString(" ... ")
+		}
+		fmt.Fprintf(&b, "%q", hint)
+	}
+	return b.String()
 }
 
 // call handles the CALL spell (round 125) — confirmed for the first

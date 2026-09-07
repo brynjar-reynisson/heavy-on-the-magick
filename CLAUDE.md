@@ -6956,6 +6956,71 @@ itself) answers the separate "how many songs total" question directly.
 Worth re-examining an already-obtained source's other structural fields
 before assuming its usefulness is exhausted after the first pass.
 
+### Round 159: mined a new source for real gameplay verbs, found none, but the search itself surfaced real riddle-hint content that closes a wiring gap open since the HELP round
+
+After another Stop-hook rejection, same gameplay-coverage framing, went
+looking for genuinely new verb candidates from the `cmd/vocab-coverage`
+uncovered list (`ENTER`, `SEEK`, `KNOWS`, `DESTROYS`, `HOLDS`, `REACH`,
+`WANT`, `SHOW`, `PLACE`) — the same category of search that found TAKE/
+LIFT/CARRY/GRADE/SPELLS/NAME/ATTACK/KILL in earlier rounds. Fetched the
+CASA walkthrough and World of Spectrum's plain-text instructions file
+with these words as an explicit target list: both came back clean
+negatives — none of the 9 words are used as real player commands
+anywhere in either source (`LOCKED`/`PLACE` did appear, but only inside
+already-known descriptive prose, not as new commands).
+
+Tried a genuinely different source next: The CRPG Addict's 2016 blog
+post (already the source of CALL, the Furnace Room punishment, and
+Garlic/Vampire in earlier rounds) — fetched a THIRD time, this round
+specifically for the same 9-word list. `ENTER` and `KNOWS` did turn up,
+but only inside quoted RIDDLE text, not as working commands — a genuine
+negative for the verb search, but the riddle text itself turned out to
+be real, valuable, previously-uncaptured content:
+
+- `"CRY AND ENTER DOOR"` → answer **WOLF** (a "cry wolf" pun) — matches
+  Wolfdorp's already-shipped `DoorPasswords` entry exactly.
+- `"TO ENTER IS MADNESS"` → answer **LUNACY** — matches Wolfdorp's
+  OTHER already-shipped password exactly.
+- `"TO ENTER SAY A NUMBER OF MAGICK WORDS"` → answer **ELEVEN** — matches
+  Pilefoot's already-shipped password exactly, AND closes a real,
+  previously-unconnected open item: round 110's `magic.Demons` doc
+  comment has recorded "the number of Magick is 11" as a real, sourced,
+  but mechanically-unconnected manual fact since it was found — this
+  riddle IS that connection, now recorded directly in the comment.
+
+Two more real, previously-uncaptured things followed from this: the
+game's own real hint screen (`game.help()`, quoted verbatim since the
+HELP round) has always named `"APEX, DOOR"` as one of its 3 confirmed
+example commands — but `Handle` never actually implemented it, falling
+through to the generic stub the whole time, the exact "hint screen
+names it, nobody wired it" gap this project has caught before for
+other commands. Added `world.Room.DoorHints` (real riddle CONTENT,
+honestly NOT claimed as pixel-exact original screen casing the way
+`help()`'s own text is — this is a blogger's prose quoting the game,
+not a cross-checked screenshot) and `game.apexDoorHint`, wired into
+`"APEX, DOOR"`: a room with real `DoorHints` (Wolfdorp, Pilefoot) has
+Apex share them; any other room falls back to the existing generic
+`talkToApex` response, not a fabricated riddle.
+
+Added `TestHandleApexDoorWithNoHintFallsBackToTalk`,
+`TestHandleApexDoorGivesRealWolfdorpHints`, and
+`TestCollodonsPileDoorHintsMatchRealPasswords` (a real discipline
+check: no room's `DoorHints` count may exceed its own `DoorPasswords`
+count — a hint with no matching password would be a fabrication).
+`Room.clone()` also updated to deep-copy the new field, matching
+`DoorPasswords`' own defensive-copy convention. Ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live via `go run ./cmd/hotm`: walked to Wolfdorp
+and `APEX, DOOR` gave both real riddles.
+
+**How to apply**: a targeted verb search across multiple sources coming
+back a clean negative doesn't mean the round is unproductive — the same
+fetches, read for what they DID contain rather than just what they
+didn't, surfaced real riddle content that closed 2 separate previously-
+open gaps (a hint-screen command nobody wired, and an "unhomed number"
+with no confirmed mechanical use). Worth reading a source's full answer
+even when the specific thing being searched for isn't there.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
