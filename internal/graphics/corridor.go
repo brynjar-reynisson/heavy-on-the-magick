@@ -158,3 +158,48 @@ func RoomOfMiserySample() image.Image {
 	}
 	return img
 }
+
+// assets/room_of_stings_sample.png and assets/room_of_arrows_sample.png
+// are real screenshots of two more CollodonsPile rooms (round 108) —
+// unlike Room of Misery (the world's starting room), these show up
+// whenever the player is actually IN that specific room, wherever it
+// is on the map, thanks to cmd/hotm-gui's round-108 generalization from
+// "art tied to the start room" to "art tied to any room with a known
+// screenshot" (see GUI.roomArt's doc comment).
+//
+// Both are level1_grid.go's own confirmed cell/name pairing (F3 "Room
+// of Stings", F5 "Room of Arrows" — the same two cells whose real
+// names bridge CollodonsPile and Level1Grid, see level1_grid.go's doc
+// comment). Located in the atlas via the same row/column arithmetic as
+// every other sample here (row F = +5 rows, columns 3/5 respectively
+// from the already-calibrated row-A/column-1 origin), pixel-verified
+// rather than trusted from arithmetic alone. Room of Arrows's crop
+// shows an actual bow and arrow leaning against a pedestal — strong
+// content confirmation the column count was right, the same kind of
+// independent check round 105's Sator Square gave for Room of Misery.
+//
+//go:embed assets/room_of_stings_sample.png
+var roomOfStingsSamplePNG []byte
+
+//go:embed assets/room_of_arrows_sample.png
+var roomOfArrowsSamplePNG []byte
+
+// RoomOfStingsSample decodes the embedded real Room-of-Stings
+// screenshot. Panics on failure, matching CorridorSample() above.
+func RoomOfStingsSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(roomOfStingsSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded room_of_stings_sample.png: " + err.Error())
+	}
+	return img
+}
+
+// RoomOfArrowsSample decodes the embedded real Room-of-Arrows
+// screenshot. Panics on failure, matching CorridorSample() above.
+func RoomOfArrowsSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(roomOfArrowsSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded room_of_arrows_sample.png: " + err.Error())
+	}
+	return img
+}

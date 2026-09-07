@@ -40,6 +40,17 @@ func TestRoomOfMiserySampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, RoomOfMiserySample(), "RoomOfMiserySample()")
 }
 
+// TestRoomOfStingsSampleDecodesToRealArt and
+// TestRoomOfArrowsSampleDecodesToRealArt mirror
+// TestCorridorSampleDecodesToRealArt for round 108's two additions.
+func TestRoomOfStingsSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, RoomOfStingsSample(), "RoomOfStingsSample()")
+}
+
+func TestRoomOfArrowsSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, RoomOfArrowsSample(), "RoomOfArrowsSample()")
+}
+
 func assertRealArt(t *testing.T, img image.Image, label string) {
 	t.Helper()
 	bounds := img.Bounds()

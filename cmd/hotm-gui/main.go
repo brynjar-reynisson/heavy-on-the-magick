@@ -68,13 +68,12 @@ var keyDirections = map[ebiten.Key]world.Direction{
 }
 
 type GUI struct {
-	g              *game.Game
-	log            []string
-	audioCtx       *ebitenaudio.Context
-	hud            *ebiten.Image // confirmed rune glyphs, rendered once via graphics.PNGRenderer
-	portraits      map[string]*ebiten.Image
-	startRoomID    world.RoomID
-	corridorSample *ebiten.Image // real extracted room screenshot for the active level's A1 cell, if one exists yet (nil otherwise) - see drawCorridorSample
+	g         *game.Game
+	log       []string
+	audioCtx  *ebitenaudio.Context
+	hud       *ebiten.Image // confirmed rune glyphs, rendered once via graphics.PNGRenderer
+	portraits map[string]*ebiten.Image
+	roomArt   map[string]*ebiten.Image // real extracted room screenshots, keyed by world.Room.Name - see drawCorridorSample
 }
 
 // NewGUI builds a live GUI session around g. Round 97: previously always
@@ -84,19 +83,23 @@ type GUI struct {
 // frontends. Passing the constructed *game.Game in (rather than
 // building it internally) lets main's -levelNgrid flags select which
 // world to play, the same way cmd/hotm's flags already do.
-// corridorArt is the real extracted room screenshot for whichever
-// world's real starting room is active (round 96/98/103/104/105's
-// CorridorSample/Level1CorridorSample/Level3CorridorSample/
-// Level4CorridorSample/RoomOfMiserySample — all 4 level grids AND the
-// default CollodonsPile mode now have one) — see selectGame.
-func NewGUI(g *game.Game, corridorArt image.Image) *GUI {
+// roomArt maps real extracted room screenshots to the specific
+// world.Room.Name they were extracted for (round 108 — previously a
+// single image.Image tied to just the world's starting room; see
+// selectGame for what's populated per mode). This generalization is
+// what let round 108 add Room of Stings/Room of Arrows on top of
+// round 105's Room of Misery-only default mode without another
+// struct-shape change - only selectGame's map literal grew.
+func NewGUI(g *game.Game, roomArt map[string]image.Image) *GUI {
 	gui := &GUI{
-		g:           g,
-		audioCtx:    ebitenaudio.NewContext(hotmaudio.SampleRate),
-		startRoomID: g.World.Current,
+		g:        g,
+		audioCtx: ebitenaudio.NewContext(hotmaudio.SampleRate),
 	}
-	if corridorArt != nil {
-		gui.corridorSample = ebiten.NewImageFromImage(corridorArt)
+	if len(roomArt) > 0 {
+		gui.roomArt = make(map[string]*ebiten.Image, len(roomArt))
+		for name, img := range roomArt {
+			gui.roomArt[name] = ebiten.NewImageFromImage(img)
+		}
 	}
 	gui.appendLog(describeRoom(gui.g))
 	gui.hud = buildHUD()
@@ -512,21 +515,24 @@ func (gui *GUI) drawPortrait(screen *ebiten.Image) {
 }
 
 // drawCorridorSample shows the real extracted room screenshot for the
-// active world's real starting room (round 96/98/103/104/105's
+// player's CURRENT room, if one exists (round 96/98/103/104/105's
 // CorridorSample/Level1CorridorSample/Level3CorridorSample/
-// Level4CorridorSample/RoomOfMiserySample, round 97 GUI wiring) while
-// the player is still AT that real starting room — the first time this
-// port shows actual extracted room-scene art (as opposed to a demon/
+// Level4CorridorSample/RoomOfMiserySample, round 97 GUI wiring; round
+// 108 generalized this from "only the world's starting room" to "any
+// room with real extracted art", adding Room of Stings/Room of Arrows
+// alongside Room of Misery in default mode) — the first time this port
+// shows actual extracted room-scene art (as opposed to a demon/
 // monster/NPC portrait) during live gameplay. Scaled down to fit the
 // corner (the source screenshots are wider than this GUI's whole 512px
 // screen at native size) and skipped whenever a portrait is already
-// showing there, to avoid the two overlapping. As of round 105, every
-// mode (all 4 level grids plus the default CollodonsPile mode) has
-// real art, so gui.corridorSample is never nil in practice today - the
-// nil check just stays as defensive handling for any future mode that
-// doesn't have one yet.
+// showing there, to avoid the two overlapping.
 func (gui *GUI) drawCorridorSample(screen *ebiten.Image) {
-	if gui.corridorSample == nil || gui.g.World.Current != gui.startRoomID {
+	room := gui.g.World.CurrentRoom()
+	if room == nil {
+		return
+	}
+	img, ok := gui.roomArt[room.Name]
+	if !ok {
 		return
 	}
 	if _, ok := gui.currentPortraitName(); ok {
@@ -535,9 +541,9 @@ func (gui *GUI) drawCorridorSample(screen *ebiten.Image) {
 	const scale = 0.35
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(scale, scale)
-	w := float64(gui.corridorSample.Bounds().Dx()) * scale
+	w := float64(img.Bounds().Dx()) * scale
 	op.GeoM.Translate(float64(screenWidth)-w-8, 8)
-	screen.DrawImage(gui.corridorSample, op)
+	screen.DrawImage(img, op)
 }
 
 // monsterGlyphColor maps each confirmed monster name to the real
@@ -649,11 +655,14 @@ func (gui *GUI) Layout(outsideWidth, outsideHeight int) (int, int) {
 // cmd/hotm's text frontend already has (round 97 gave this GUI the same
 // selection, previously CollodonsPile-only) - returns the constructed
 // *game.Game plus a title suffix describing the mode, for the window
-// title/log so it's clear which world is active, plus the real
-// extracted room screenshot for that level's real starting cell, if one
-// exists yet (round 98: Level 1 and 2; round 103: Level 3; round 104:
-// Level 4 - all 4 levels now have one).
-func selectGame() (g *game.Game, modeTitle string, corridorArt image.Image) {
+// title/log so it's clear which world is active, plus a map of real
+// extracted room screenshots keyed by world.Room.Name (round 108
+// generalized this from one image tied to the start room - see
+// GUI.roomArt's doc comment). Each level grid's own real starting cell
+// has one (round 98: Level 1/2; round 103: Level 3; round 104: Level
+// 4); default (CollodonsPile) mode has 3 as of round 108 (Room of
+// Misery, round 105; Room of Stings/Room of Arrows, round 108).
+func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Image) {
 	level1Grid := flag.Bool("level1grid", false, "play the extracted Level 1 grid (64 real cells) instead of CollodonsPile")
 	level2Grid := flag.Bool("level2grid", false, "play the extracted Level 2 grid (50 real, fully-connected cells) instead of CollodonsPile")
 	level3Grid := flag.Bool("level3grid", false, "play the extracted Level 3 grid (47 real cells: 41 fully-connected plus 6 isolated rooms) instead of CollodonsPile")
@@ -662,27 +671,31 @@ func selectGame() (g *game.Game, modeTitle string, corridorArt image.Image) {
 
 	switch {
 	case *level1Grid:
-		return game.NewLevel1Exploration(), " (Level 1 grid)", graphics.Level1CorridorSample()
+		return game.NewLevel1Exploration(), " (Level 1 grid)", map[string]image.Image{"A1": graphics.Level1CorridorSample()}
 	case *level2Grid:
-		return game.NewLevel2Exploration(), " (Level 2 grid)", graphics.CorridorSample()
+		return game.NewLevel2Exploration(), " (Level 2 grid)", map[string]image.Image{"A1": graphics.CorridorSample()}
 	case *level3Grid:
-		return game.NewLevel3Exploration(), " (Level 3 grid)", graphics.Level3CorridorSample()
+		return game.NewLevel3Exploration(), " (Level 3 grid)", map[string]image.Image{"A1": graphics.Level3CorridorSample()}
 	case *level4Grid:
-		return game.NewLevel4Exploration(), " (Level 4 grid)", graphics.Level4CorridorSample()
+		return game.NewLevel4Exploration(), " (Level 4 grid)", map[string]image.Image{"F2": graphics.Level4CorridorSample()}
 	default:
-		// Round 105: CollodonsPile's own real starting room, Room of
-		// Misery, now has a real extracted screenshot too - the first of
-		// these 5 samples to show in the DEFAULT (unflagged) mode rather
-		// than only a -levelNgrid one.
-		return game.New(), "", graphics.RoomOfMiserySample()
+		// Round 108: Room of Stings/Room of Arrows join round 105's Room
+		// of Misery - all 3 are real CollodonsPile rooms with a real
+		// extracted screenshot, shown whenever the player is actually in
+		// that specific room, not just at the start.
+		return game.New(), "", map[string]image.Image{
+			"Room of Misery": graphics.RoomOfMiserySample(),
+			"Room of Stings": graphics.RoomOfStingsSample(),
+			"Room of Arrows": graphics.RoomOfArrowsSample(),
+		}
 	}
 }
 
 func main() {
-	g, modeTitle, corridorArt := selectGame()
+	g, modeTitle, roomArt := selectGame()
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Heavy on the Magick — Go port (live)" + modeTitle)
-	if err := ebiten.RunGame(NewGUI(g, corridorArt)); err != nil {
+	if err := ebiten.RunGame(NewGUI(g, roomArt)); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("bye")

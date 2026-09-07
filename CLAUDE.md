@@ -4376,6 +4376,44 @@ and `INVOKE ASMODEE` went from its old "no suitable Talisman" rejection
 to a real success message. Added `TestCollodonsPileMethosHasErlstone`.
 Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 108: 2 more real room screenshots, and generalized the GUI's art mechanism to "any room", not just the start room
+
+After another Stop-hook rejection, same framing, extended the corridor-
+art thread again — but this time past its previous limit of "only the
+world's starting room." `level1_grid.go`'s own doc comment already
+establishes F3/F5 as CollodonsPile's real "Room of Stings"/"Room of
+Arrows" (the exact fact that bridges CollodonsPile and Level1Grid
+naming). Located both in the atlas via the same row/column arithmetic
+as every prior extraction (row F, columns 3 and 5 from the Level 1
+quadrant's already-calibrated origin), pixel-verified rather than
+trusted from the math alone. Room of Arrows's crop shows an actual bow
+and arrow leaning against a pedestal — a strong, free content
+confirmation the column count was right, the same kind of independent
+check round 105's Sator Square gave for Room of Misery.
+
+Rather than bolt on a second `startRoomID`-shaped special case, changed
+`cmd/hotm-gui`'s mechanism itself: `GUI.corridorSample` (one image) and
+`startRoomID` (one RoomID) became `GUI.roomArt map[string]*ebiten.Image`
+keyed by `world.Room.Name`, and `drawCorridorSample` now checks the
+player's CURRENT room's name against that map instead of comparing
+against a fixed starting RoomID. `NewGUI`/`selectGame` now pass a
+`map[string]image.Image` instead of one `image.Image`. Default
+(CollodonsPile) mode's map now has 3 entries (Room of Misery, Room of
+Stings, Room of Arrows) — real art now follows the player to whichever
+of these 3 rooms they're actually in, not just at the very start.
+
+This is a genuine "easy to extend" payoff in the other direction from
+round 98's earlier generalization (that one widened WHICH LEVEL could
+have art; this one widened WHICH ROOM within a level could) — adding a
+future 4th CollodonsPile room's art, whenever one gets extracted, is
+now a one-line addition to the map literal, not a mechanism change.
+
+Verified two ways: a live throwaway default-mode screenshot confirmed
+Room of Misery still renders correctly after the refactor (no
+regression), and a direct `NewGUI` + `World.Teleport` check confirmed
+both new rooms' art resolves correctly by name. Ran the full
+`gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
