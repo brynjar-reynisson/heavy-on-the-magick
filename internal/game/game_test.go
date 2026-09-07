@@ -252,6 +252,18 @@ func TestHandleLook(t *testing.T) {
 	}
 }
 
+// TestHandleLookShowsLevel pins round 115: world.Room.Level (real data,
+// set since this project's earliest room commits but never shown to
+// the player before) now appears in LOOK's output. Room of Misery is
+// real, confirmed Level 2.
+func TestHandleLookShowsLevel(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("LOOK"))
+	if !strings.Contains(got, "Level 2") {
+		t.Errorf("Handle(LOOK) = %q, want it to show Room of Misery's real Level (2)", got)
+	}
+}
+
 func TestHandleLookShowsRoomItems(t *testing.T) {
 	g := New() // Room of Misery has a real sourced item: Grimoire
 	got := g.Handle(parser.Parse("LOOK"))
@@ -756,6 +768,21 @@ func TestHandleInvokeWithNoTargetShowsCorrespondences(t *testing.T) {
 	got := g.Handle(parser.Parse("INVOKE"))
 	if !strings.Contains(got, "Tourmaline") { // part of Astarot's real Correspondences
 		t.Errorf("Handle(INVOKE) = %q, want it to include demon Correspondences (e.g. Astarot's gem, Tourmaline)", got)
+	}
+}
+
+// TestHandleInvokeWithNoTargetShowsNumberSignAspect pins round 115:
+// magic.Demon's Number/Sign/Aspect fields - real manual facts present
+// since this project's first magic.Demons commit but never referenced
+// by internal/game at all until now - are shown in the bare INVOKE
+// listing too.
+func TestHandleInvokeWithNoTargetShowsNumberSignAspect(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("INVOKE"))
+	for _, want := range []string{"1376", "Sign of Gemini", "Legion"} { // Astarot's real Number/Sign/Aspect
+		if !strings.Contains(got, want) {
+			t.Errorf("Handle(INVOKE) = %q, want it to include %q (Astarot's Number/Sign/Aspect)", got, want)
+		}
 	}
 }
 

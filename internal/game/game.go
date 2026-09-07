@@ -472,13 +472,20 @@ func (g *Game) deathCheck(msg string) string {
 // their real occult Correspondences (magic.Demon.Correspondences,
 // extracted round 110 from the manual's grimoire section but never
 // actually shown anywhere in-game until now) — real, already-sourced
-// data that had no way to be seen in-game before this.
+// data that had no way to be seen in-game before this. Round 115
+// closes the same gap for Number/Sign/Aspect, which were ALSO real,
+// confirmed manual facts (present on every Demon since this project's
+// very first magic.Demons commit) but — unlike Ability/Charm/
+// Correspondences — had never been referenced by internal/game at all,
+// found the same way round 114 was: checking each struct field against
+// what actually reaches the player, not assuming "it's a field, so it
+// must be used somewhere."
 func (g *Game) invoke(target string) string {
 	if target == "" {
 		var b strings.Builder
 		b.WriteString("Known demons and their required Talismans:\n")
 		for _, d := range magic.Demons {
-			fmt.Fprintf(&b, "%s, %s (needs: %s) - %s\n", d.Name, d.Title, d.Charm, d.Correspondences)
+			fmt.Fprintf(&b, "%s, %s (Number %d, %s, Aspect: %s; needs: %s) - %s\n", d.Name, d.Title, d.Number, d.Sign, d.Aspect, d.Charm, d.Correspondences)
 		}
 		return strings.TrimRight(b.String(), "\n")
 	}
@@ -872,6 +879,15 @@ func (g *Game) checkNougatWerewolf() string {
 	return ""
 }
 
+// describeCurrentRoom renders LOOK's real output. Round 115: now
+// includes the room's real Level (1-4, sourced the same way as every
+// other room fact in this project) when it's set - a third instance
+// of the "confirmed but unsurfaced" gap round 114/115 found for
+// magic.Demon's fields: world.Room.Level has been set on every real
+// room since this project's earliest CollodonsPile/LevelNGrid commits,
+// but was never once referenced by internal/game before this, so the
+// player had no way to tell which of the dungeon's 4 levels they were
+// actually on.
 func (g *Game) describeCurrentRoom() string {
 	room := g.World.CurrentRoom()
 	if room == nil {
@@ -882,7 +898,11 @@ func (g *Game) describeCurrentRoom() string {
 		g.Won = true
 		b.WriteString("You have found one of Collodon's Pile's 3 exits and escaped! YOU HAVE WON.\n")
 	}
-	fmt.Fprintf(&b, "%s\n%s\n", room.Name, room.Description)
+	if room.Level != 0 {
+		fmt.Fprintf(&b, "%s (Level %d)\n%s\n", room.Name, room.Level, room.Description)
+	} else {
+		fmt.Fprintf(&b, "%s\n%s\n", room.Name, room.Description)
+	}
 	if room.HasTable {
 		b.WriteString("There is a table here.\n")
 	}

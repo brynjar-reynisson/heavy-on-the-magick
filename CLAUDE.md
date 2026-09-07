@@ -4626,6 +4626,46 @@ MAGOT, the Diviner (needs: Sunflower) - Colour yellow; scent Galbanum; gems Topa
 Added `TestHandleInvokeWithNoTargetShowsCorrespondences`. Ran the full
 `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 115: two more "confirmed but unsurfaced" fields found and closed — demon Number/Sign/Aspect, and room Level
+
+After another Stop-hook rejection, same framing, kept pulling the
+thread round 114 opened: grepped `internal/game` for every reference
+to `magic.Demon`'s other fields and found `Number`/`Sign`/`Aspect`
+were NEVER referenced anywhere — real manual facts present on every
+Demon since this project's very first `magic.Demons` commit, but
+invisible to the player the whole time, same gap as Correspondences
+was before round 114. Extended the same bare-`INVOKE` listing line to
+include them.
+
+While auditing, checked EVERY `world.Room` field the same way and
+found a second, even more consequential instance: `Room.Level` (1-4,
+set on every real room since this project's earliest CollodonsPile/
+LevelNGrid commits) was never referenced by `internal/game` either —
+meaning the player has had no way to tell which of the dungeon's 4
+levels they're actually on, in ANY mode, this whole time. Added it to
+`describeCurrentRoom` (LOOK's real output), gated on `Level != 0` so
+it stays silent for any room that genuinely has no confirmed level
+(none currently shipped, but the field's own doc comment already
+allows for it).
+
+Verified both end-to-end via real `Handle` calls:
+
+```
+LOOK:
+Room of Misery (Level 2)
+(room description not yet extracted from the original game)
+...
+
+INVOKE:
+Known demons and their required Talismans:
+ASMODEE, the Great Destroyer (Number 122, House of Mars, Aspect: Basilisk; needs: Erlstone) - Colour green; plant Nettle; bows to red gems...
+ASTAROT, the Spirit of Assemblage (Number 1376, Sign of Gemini, Aspect: Legion; needs: Sword) - Perfume Wormwood...
+```
+
+Added `TestHandleInvokeWithNoTargetShowsNumberSignAspect` and
+`TestHandleLookShowsLevel`. Ran the full `gofmt`/`build`/`vet`/`test`
+suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
