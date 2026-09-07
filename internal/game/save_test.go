@@ -83,6 +83,27 @@ func TestHandleOptionsSaveAndRestoreGame(t *testing.T) {
 	}
 }
 
+// TestHandleSaveCostsStamina pins the real, sourced mechanic (round 86):
+// the manual states "Saving a game will deplete your Stamina, so that a
+// Save cannot be used as an easy way of getting round difficult
+// choices!" Restoring should NOT cost Stamina (would defeat the point).
+func TestHandleSaveCostsStamina(t *testing.T) {
+	withTempSaveDir(t)
+	g := New()
+	before := g.Player.Stamina
+
+	g.Handle(parser.Parse("O SAVE GAME"))
+	if g.Player.Stamina != before-saveStaminaCost {
+		t.Errorf("Stamina after Save Game = %d, want %d (before %d minus saveStaminaCost %d)", g.Player.Stamina, before-saveStaminaCost, before, saveStaminaCost)
+	}
+
+	afterSave := g.Player.Stamina
+	g.Handle(parser.Parse("O RESTORE GAME"))
+	if g.Player.Stamina != afterSave {
+		t.Errorf("Stamina after Restore Game = %d, want unchanged %d (restoring shouldn't cost Stamina)", g.Player.Stamina, afterSave)
+	}
+}
+
 func TestRestoreGameMissingFile(t *testing.T) {
 	withTempSaveDir(t)
 	g := New()

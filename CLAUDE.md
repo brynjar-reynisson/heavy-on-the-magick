@@ -3506,6 +3506,36 @@ new response), ran the full `gofmt`/`build`/`vet`/`test` suite (with a
 repeated `-count=2` run) clean, and verified live: `H` and `Z` both now
 give precise, manual-accurate responses.
 
+### Wired a real, stated mechanic from the manual that had been sitting unread: Saving costs Stamina
+
+After another Stop-hook rejection, same framing, went back through the
+full manual text pulled in last round's re-read for anything not yet
+acted on. Found a sentence that had been quoted in this project's own
+CLAUDE.md commentary but never actually implemented: *"Saving a game
+will deplete your Stamina, so that a Save cannot be used as an easy way
+of getting round difficult choices!"* — a real, explicit, unambiguous
+game-balance mechanic, distinct from (and previously overshadowed by)
+the more attention-grabbing demon/charm facts from the same manual
+page.
+
+Added `saveStaminaCost` (an honest placeholder amount, deliberately
+smaller than `combatStaminaCost` to match the manual's own relative
+framing — *"Combat will reduce your Stamina a lot, most other actions
+will reduce it a little"*), charged on both `Save Game` and `Save
+Axil` (not `Restore`, which isn't stated to cost anything and would
+defeat a Save's own stated point if it did). Wired through
+`deathCheck` for consistency with every other Stamina-costing action,
+so a save that drops Stamina to 0 is handled the same honest way BLAST/
+FREEZE already are.
+
+Added `TestHandleSaveCostsStamina` (confirms the exact deduction on
+Save, and confirms Restore doesn't double-charge or cost anything of
+its own), ran the full `gofmt`/`build`/`vet`/`test` suite (with a
+repeated `-count=2` run) clean — including the pre-existing save-related
+tests, which needed no changes since they call `SaveGame`/`SaveAxil`
+directly rather than through `Handle` — and verified live via `OPTIONS`
+→ `O SAVE GAME`.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

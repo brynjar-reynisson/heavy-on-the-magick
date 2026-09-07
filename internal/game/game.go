@@ -361,6 +361,16 @@ func (g *Game) Handle(cmd parser.Command) string {
 // comment for the sourcing of the underlying "combat costs Stamina" fact).
 const combatStaminaCost = 5
 
+// saveStaminaCost is charged on every successful Save Game/Save Axil -
+// a real, sourced mechanic (round 86): the manual states plainly "Saving
+// a game will deplete your Stamina, so that a Save cannot be used as an
+// easy way of getting round difficult choices!" No exact amount is
+// given, so this is an honest placeholder, deliberately smaller than
+// combatStaminaCost to match the manual's own relative framing
+// ("Combat will reduce your Stamina a lot, most other actions will
+// reduce it a little").
+const saveStaminaCost = 1
+
 // transfusion handles TRANSFUSION. Confirmed real effect (restores
 // Stamina) via the CASA walkthrough extraction; the exact original
 // restore amount was not stated there and hasn't been extracted from the
@@ -606,7 +616,12 @@ func (g *Game) payToll(room *world.Room) string {
 // Save/Restore Game/Axil are real, confirmed menu choices (see save.go)
 // — a real, functional file-based save system, though the file format
 // and the Game-vs-Axil split are this port's own implementation, not the
-// original's actual save mechanism (not extracted/known).
+// original's actual save mechanism (not extracted/known). Saving now
+// also costs real Stamina (round 86) - the manual states plainly
+// "Saving a game will deplete your Stamina, so that a Save cannot be
+// used as an easy way of getting round difficult choices!" - see
+// saveStaminaCost. Restoring does not cost Stamina (not stated by any
+// source, and would defeat a Save's own point if it did).
 func (g *Game) options(target string) string {
 	target = strings.ToUpper(strings.TrimSpace(target))
 	switch {
@@ -614,20 +629,22 @@ func (g *Game) options(target string) string {
 		g.Player.Realign()
 		return fmt.Sprintf("Realign Status: Stamina %d, Skill %d, Luck %d.", g.Player.Stamina, g.Player.Skill, g.Player.Luck)
 	case strings.Contains(target, "SAVE") && strings.Contains(target, "AXIL"):
+		g.Player.Stamina -= saveStaminaCost
 		if err := g.SaveAxil(); err != nil {
 			return fmt.Sprintf("Save Axil failed: %v", err)
 		}
-		return "Axil saved."
+		return g.deathCheck("Axil saved.")
 	case strings.Contains(target, "RESTORE") && strings.Contains(target, "AXIL"):
 		if err := g.RestoreAxil(); err != nil {
 			return fmt.Sprintf("Restore Axil failed: %v", err)
 		}
 		return "Axil restored."
 	case strings.Contains(target, "SAVE"):
+		g.Player.Stamina -= saveStaminaCost
 		if err := g.SaveGame(); err != nil {
 			return fmt.Sprintf("Save Game failed: %v", err)
 		}
-		return "Game saved."
+		return g.deathCheck("Game saved.")
 	case strings.Contains(target, "RESTORE"):
 		if err := g.RestoreGame(); err != nil {
 			return fmt.Sprintf("Restore Game failed: %v", err)
