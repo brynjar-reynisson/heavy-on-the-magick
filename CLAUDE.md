@@ -3778,6 +3778,37 @@ fact (the vocabulary table's address range and encoding) is now
 independently corroborated rather than resting on a single original
 extraction pass.
 
+### The live GUI finally plays the real startup melody, and cmd/render-melody can render either extracted stream
+
+After another Stop-hook rejection, same framing, noticed a real,
+surprising gap while reviewing the audio code once more: `cmd/hotm-gui`
+— this port's real, live, graphical frontend — had **never once played
+`audio.StartupMelody`**, the single clearest piece of confirmed, real
+Z80 sound data this whole project has. It only ever played short
+single-note feedback blips for individual events (movement, combat,
+etc.); the actual extracted game jingle was completely inaudible in
+the one place a player would expect to hear it — at startup.
+
+Added `GUI.playStartupMelody`, called once from `NewGUI()`, reusing the
+exact same `RenderNotes`→`ToStereo16`→ebiten-player pipeline `playBlip`
+already uses (fire-and-forget, doesn't block `Update()`/gameplay).
+Also extended `cmd/render-melody` with a `-track startup|secondary`
+flag so round 90's newly-discovered `SecondaryMelody` — extracted but
+never wired into anything audible — can actually be rendered and
+listened to as well, not just sit as Go data.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean. Verified both changes concretely: `cmd/render-melody
+-track secondary` produces a valid, correctly-timed 43.2-second WAV
+(288 notes × 0.15s, matches exactly); a disposable throwaway build of
+`cmd/hotm-gui` was launched and confirmed still running (no crash) 3
+seconds after startup, with a live screenshot confirming normal
+rendering — the audio pipeline handling a full ~21-second melody
+buffer (much larger than any single blip it handled before) didn't
+break anything. Playback itself can't be verified by ear in this
+environment, the same honest caveat this project has always applied to
+sound work.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

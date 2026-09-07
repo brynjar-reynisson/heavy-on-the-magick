@@ -84,7 +84,21 @@ func NewGUI() *GUI {
 	for _, name := range graphics.PortraitNames {
 		gui.portraits[name] = ebiten.NewImageFromImage(graphics.Portrait(name))
 	}
+	gui.playStartupMelody()
 	return gui
+}
+
+// playStartupMelody plays the real, extracted audio.StartupMelody once
+// when the GUI starts up (round 93) — previously this port's live GUI
+// never played the melody at all, only individual event blips; the one
+// piece of confirmed, real Z80 sound data this project has was
+// completely unheard in the actual graphical game. Fire-and-forget,
+// same as playBlip - doesn't block Update()/gameplay while it plays.
+func (gui *GUI) playStartupMelody() {
+	samples := hotmaudio.RenderNotes(hotmaudio.StartupMelody, 0.15, hotmaudio.SampleRate)
+	pcm := hotmaudio.ToStereo16(samples)
+	player := gui.audioCtx.NewPlayerFromBytes(pcm)
+	player.Play()
 }
 
 // buildHUD renders the confirmed rune glyphs (internal/graphics.RuneGlyphs)
