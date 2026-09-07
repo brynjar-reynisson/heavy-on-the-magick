@@ -109,6 +109,48 @@ func TestRenderNotesHeldNoteHasContinuousPhase(t *testing.T) {
 	}
 }
 
+// TestMixNotesAveragesBothStreams covers the basic mixing math: two
+// identical single-note streams should average back to the exact same
+// waveform (a==b means (a+b)/2==a for every sample), and the result
+// should be exactly as long as RenderNotes would produce for that one
+// note (both inputs the same length here, so no padding is exercised).
+func TestMixNotesAveragesBothStreams(t *testing.T) {
+	notes := []byte{5}
+	solo := RenderNotes(notes, 0.01, SampleRate)
+	mixed := MixNotes(notes, notes, 0.01, SampleRate)
+	if len(mixed) != len(solo) {
+		t.Fatalf("len(mixed) = %d, want %d", len(mixed), len(solo))
+	}
+	for i := range mixed {
+		if mixed[i] != solo[i] {
+			t.Fatalf("mixed[%d] = %v, want %v (averaging two identical streams should reproduce the same waveform)", i, mixed[i], solo[i])
+		}
+	}
+}
+
+// TestMixNotesPadsShorterStream covers the length-mismatch case real
+// StartupMelody/SecondaryMelody hit (different lengths): the shorter
+// stream must be silence-padded, not truncate the mix, so the longer
+// stream's tail still plays (just alone, at half amplitude from the
+// averaging).
+func TestMixNotesPadsShorterStream(t *testing.T) {
+	short := []byte{5}
+	long := []byte{5, 5, 5}
+	mixed := MixNotes(short, long, 0.01, SampleRate)
+	wantLen := len(RenderNotes(long, 0.01, SampleRate))
+	if len(mixed) != wantLen {
+		t.Fatalf("len(mixed) = %d, want %d (padded to the longer stream)", len(mixed), wantLen)
+	}
+	longSolo := RenderNotes(long, 0.01, SampleRate)
+	tailStart := len(RenderNotes(short, 0.01, SampleRate))
+	for i := tailStart; i < len(mixed); i++ {
+		want := longSolo[i] / 2
+		if mixed[i] != want {
+			t.Fatalf("mixed[%d] = %v, want %v (long stream's tail, halved, once the short stream has run out)", i, mixed[i], want)
+		}
+	}
+}
+
 func TestWriteWAVProducesValidHeader(t *testing.T) {
 	samples := SquareWave(440, 0.001, SampleRate)
 	var buf bytes.Buffer

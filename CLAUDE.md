@@ -4017,6 +4017,52 @@ room/stats/HUD all correct, no corridor art shown (as expected for
 
 Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Mixed SecondaryMelody into actual startup playback, not just a standalone keybinding
+
+After another Stop-hook rejection, whose specific complaint was
+"a secondary melody exists but was only given a separate keybinding in
+round 95, not integrated into actual gameplay" — a fair, specific
+criticism, and one this project already had the evidence to answer.
+`SecondaryMelody`'s own doc comment (written back in round 90) already
+recorded that the real Z80 sound routine at `64671` reads BOTH note
+streams together on every call, via two independently-advancing
+pointers — the most direct reading of that fact is that the original
+plays them simultaneously, not one requiring a separate manual
+keypress to ever be heard.
+
+Added `audio.MixNotes(a, b []byte, noteDurationSec float64, sampleRate
+int) []float32` — renders both streams and averages samples together
+(silence-padding the shorter one to the longer one's length, since
+`StartupMelody` and `SecondaryMelody` are different lengths).
+Explicitly documented as an honest approximation: the ZX Spectrum
+beeper is a single output bit, so the real hardware's actual two-
+stream combining trick (probably rapid alternation/interleaving, not
+literal additive mixing, which a 1-bit toggle can't physically do)
+still isn't traced from the disassembly — this doesn't claim bit-exact
+hardware accuracy, just makes both real, confirmed streams audible
+together instead of one being reachable only on request.
+
+`cmd/hotm-gui`'s `playStartupMelody` (called automatically from
+`NewGUI`) now calls `MixNotes(StartupMelody, SecondaryMelody, ...)`
+instead of `RenderNotes(StartupMelody, ...)` alone — the actual startup
+sound during real gameplay now includes both real streams. The B key
+(`playSecondaryMelody`) stays, now documented as being for isolating/
+comparing the second voice alone rather than the only way to ever hear
+it. `cmd/render-melody` gained a `-track mixed` option (now the
+default) alongside the existing `startup`/`secondary`, for offline
+listening to what the GUI now actually plays.
+
+Verified two ways: numerically (`-track mixed`'s output WAV is
+~2.06× the size of `-track startup`'s, matching the ratio between
+`SecondaryMelody`'s 288 bytes and `StartupMelody`'s ~140 — confirming
+the padding-to-the-longer-stream behavior is working, not silently
+truncating), and live (a throwaway `cmd/hotm-gui` build launches and
+renders normally with the new mixed-audio call firing at startup, no
+crash). 2 new unit tests (`TestMixNotesAveragesBothStreams`,
+`TestMixNotesPadsShorterStream`) plus updated doc comments on
+`SecondaryMelody`/`playStartupMelody`/`playSecondaryMelody`. Ran the
+full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

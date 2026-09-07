@@ -83,12 +83,17 @@ var StartupMelody = []byte{
 // terminator value routine 64636 checks for explicitly, so this is a
 // real, well-defined stream boundary, not an arbitrary cutoff.
 //
-// Not yet wired into any live playback (that's real, scoped follow-up
-// work) - what a two-simultaneous-stream sound routine actually PRODUCES
-// audibly (alternating single-channel "fake polyphony," a true harmony
-// line, something else) isn't confirmed, only that this second stream
-// exists, decodes to musically coherent values under the same NoteIndex
-// rule as StartupMelody, and is real extracted game data, not invented.
+// Round 93 gave this a standalone live keybinding (cmd/hotm-gui's B
+// key); round 99 went further and wired it into ACTUAL gameplay
+// playback too — since the source routine reads both streams together
+// on every call (see above), the GUI's startup sound now mixes this
+// with StartupMelody (see audio.MixNotes) rather than requiring a
+// separate manual press to ever hear it during real play. What a
+// two-simultaneous-stream sound routine actually PRODUCES audibly on
+// real hardware (alternating single-channel "fake polyphony," a true
+// harmony line, something else) still isn't confirmed — MixNotes's
+// simple sample-averaging is this port's own honest approximation, not
+// a proven-faithful reproduction of the real combining trick.
 var SecondaryMelody = []byte{
 	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
 	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,

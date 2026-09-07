@@ -107,14 +107,21 @@ func NewGUI(g *game.Game, corridorArt image.Image) *GUI {
 	return gui
 }
 
-// playStartupMelody plays the real, extracted audio.StartupMelody once
-// when the GUI starts up (round 93) — previously this port's live GUI
-// never played the melody at all, only individual event blips; the one
-// piece of confirmed, real Z80 sound data this project has was
-// completely unheard in the actual graphical game. Fire-and-forget,
-// same as playBlip - doesn't block Update()/gameplay while it plays.
+// playStartupMelody plays the real, extracted audio.StartupMelody
+// MIXED with audio.SecondaryMelody (round 99 — previously StartupMelody
+// alone, round 93). The disassembly (see SecondaryMelody's doc comment)
+// found the real Z80 sound routine reads both note streams together on
+// every call, via two independently-advancing pointers — the most
+// direct reading of that fact is the original plays them AT THE SAME
+// TIME, not one requiring a separate manual keypress to ever be heard
+// (SecondaryMelody's B-key binding, still available below, only ever
+// exercised it in isolation). audio.MixNotes's doc comment is explicit
+// this is an honest best-effort approximation (sample averaging), not
+// a proven-faithful reproduction of the real single-bit-speaker
+// combining trick. Fire-and-forget, same as playBlip - doesn't block
+// Update()/gameplay while it plays.
 func (gui *GUI) playStartupMelody() {
-	samples := hotmaudio.RenderNotes(hotmaudio.StartupMelody, 0.15, hotmaudio.SampleRate)
+	samples := hotmaudio.MixNotes(hotmaudio.StartupMelody, hotmaudio.SecondaryMelody, 0.15, hotmaudio.SampleRate)
 	pcm := hotmaudio.ToStereo16(samples)
 	player := gui.audioCtx.NewPlayerFromBytes(pcm)
 	player.Play()
@@ -250,13 +257,11 @@ func (gui *GUI) Update() error {
 }
 
 // playSecondaryMelody plays the real, extracted audio.SecondaryMelody
-// (round 90's second discovered note stream) on its own, standalone -
-// not mixed with StartupMelody, since how the two streams really
-// combine during real playback isn't confirmed (see pitch_table.go's
-// doc comment). This is deliberately a separate, clearly-labeled key
-// (B, no strong mnemonic - just the first free letter) rather than
-// silently folded into playStartupMelody, so a listener isn't misled
-// into thinking this is a confirmed harmony/simultaneous arrangement.
+// (round 90's second discovered note stream) on its own, standalone —
+// since round 99, playStartupMelody already plays it MIXED with
+// StartupMelody at actual startup (see that method's doc comment), so
+// this key is now for isolating/comparing the second voice alone, not
+// the only way to ever hear it during real play.
 func (gui *GUI) playSecondaryMelody() {
 	samples := hotmaudio.RenderNotes(hotmaudio.SecondaryMelody, 0.15, hotmaudio.SampleRate)
 	pcm := hotmaudio.ToStereo16(samples)

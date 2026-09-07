@@ -100,6 +100,44 @@ func RenderNotes(notes []byte, noteDurationSec float64, sampleRate int) []float3
 	return out
 }
 
+// MixNotes renders two note streams (see RenderNotes) and combines them
+// into one PCM buffer by averaging samples — round 98's Stop-hook
+// feedback specifically flagged SecondaryMelody as "not integrated into
+// actual gameplay," just a separate manual keybinding. That framing
+// undersold a fact already on file (see SecondaryMelody's doc comment):
+// the real Z80 sound routine at 64671 reads BOTH StartupMelody's and
+// SecondaryMelody's streams on every single call, via two independently-
+// advancing pointers — the most direct reading of that is that the
+// original plays both AT THE SAME TIME, not one after another or only
+// on request. This is this port's best-effort reproduction of that:
+// genuinely simultaneous playback, not a proven-faithful one — the ZX
+// Spectrum beeper is a single output bit, so the real hardware's exact
+// two-stream combining trick (probably some form of rapid alternation/
+// interleaving, not literal additive mixing, which isn't physically
+// what a 1-bit toggle can do) hasn't been traced from the disassembly.
+// Averaging is an honest, simple stand-in that at least makes both
+// streams audible together, not a claim of bit-exact hardware accuracy.
+// The shorter stream is silence-padded to the longer one's length so
+// both play to completion (StartupMelody and SecondaryMelody are
+// different lengths).
+func MixNotes(a, b []byte, noteDurationSec float64, sampleRate int) []float32 {
+	sa := RenderNotes(a, noteDurationSec, sampleRate)
+	sb := RenderNotes(b, noteDurationSec, sampleRate)
+	n := max(len(sb), len(sa))
+	out := make([]float32, n)
+	for i := range out {
+		var va, vb float32
+		if i < len(sa) {
+			va = sa[i]
+		}
+		if i < len(sb) {
+			vb = sb[i]
+		}
+		out[i] = (va + vb) / 2
+	}
+	return out
+}
+
 // WriteWAV encodes PCM samples (in [-1, 1]) as a 16-bit mono PCM WAV file.
 func WriteWAV(w io.Writer, samples []float32, sampleRate int) error {
 	var pcm bytes.Buffer
