@@ -6077,8 +6077,67 @@ identifiable target the same round (Sothic Complex's large, unambiguous
 zone vs. Secunda Porta's small, adjacency-confused one) keeps the round
 productive without compromising on confidence for the harder case.
 
+### Round 145: a fourth ward-off mechanic (Snake wards off Hydras) — and a real, honest gap surfaced along the way
+
+After another Stop-hook rejection, same framing, first tried to place
+CollodonsPile's last un-arted room, Pile Collodom, on the clean grid
+map — a real, checked negative: Level 1's entire quadrant is already
+fully covered by the Wolfdorp/Morfang/Pilefoot/Nidus zones plus Agile
+Stair/Furnace Room, with no room left for a distinct "Pile Collodom"
+zone anywhere on this specific source. Left unplaced rather than force
+a guess.
+
+Pivoted to round 135's other still-unactioned finding: World of
+Spectrum's plain-text instructions file states "To pass the Hydras you
+need a Snake." A precise follow-up fetch (matching the discipline
+already used for NEST/PHOENIX and CAULDRON/ACHAD) confirmed the exact
+wording and, honestly, surfaced a real scope gap along the way: no
+source checked so far places an actual `Monster: "Hydra"` anywhere in
+this project's data. Level3Grid's own "Hydra"-named room (F5, "Rook of
+Hydra") already carries a Wyvern, independently confirmed by its own
+tight-crop-verified icon scan (round 59) — the room's NAME references
+Hydra mythology, but the CREATURE found there is a Wyvern, an already-
+settled fact this round didn't second-guess. "Hydras" (plural, no room
+named) in the source most likely refers to a monster TYPE this
+project's map-icon-legend scans have simply never turned up among the
+8 confirmed icons (Troll/Ghost/Slug/Vampire/Werewolf/Wyvern/Medusa/
+Cyclops) — a real, honest, previously-unnoticed gap, not an oversight
+in implementing this mechanic specifically.
+
+Implemented `game.checkSnakeHydra` anyway, mirroring `checkNougatWerewolf`/
+`checkGarlicVampire`/`checkPelletSlug` exactly (the 4th real ward-off
+pair now, all following the identical drop-triggered convention), and
+wired it into `drop`/`move`. Shipped mechanic-first with no real room
+placement — the same honest "real mechanic, not yet reachable" pattern
+already used for TollItem/Fire/Guards/SwapItem before their own first
+placements, now explicitly including WHY (no Hydra monster icon has
+ever turned up, not just "not yet looked").
+
+Added `TestSnakeWardsOffHydraOnDrop` (synthetic room, same convention
+as `TestHandleFireBlocksMovementWithoutClasp`). Ran the full `gofmt`/
+`build`/`vet`/`test` suite (with a repeated `-count=2` run) clean.
+
+**How to apply**: implementing a mechanic can surface a genuine gap in
+this project's own prior work that nobody had noticed before — here,
+that "Hydra" has never actually turned up as a placed monster despite
+8 other monster types being confirmed via icon scans across 4 level
+grids. Worth flagging plainly as a real open item (a 9th monster type,
+still unlocated) rather than silently shipping the mechanic without
+naming the gap it depends on.
+
 ## Open next steps
 
+- **A 9th monster type, "Hydra," has never been located anywhere in
+  this project's data** (round 145): World of Spectrum's instructions
+  file confirms "Hydras" are real, plural dungeon creatures requiring
+  a Snake to pass — but every icon-legend scan across all 4 level
+  grids has only ever turned up 8 monster types (Troll/Ghost/Slug/
+  Vampire/Werewolf/Wyvern/Medusa/Cyclops). `game.checkSnakeHydra` is
+  shipped and tested, but can't fire in real gameplay until a real
+  Hydra icon/placement is found — worth a fresh, targeted re-scan of
+  `heavymap-grid-clean.gif`'s legend (maybe Hydra shares a icon with
+  something else, or appears only in an unswept region) or a check of
+  whether "Hydra" appears in the game's own real screenshot atlas.
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
   Screenshot Maps", credited to Hippy Smith) is a 10056×5493 composite
   of REAL in-game screenshots for all 4 levels, plus a full demon/

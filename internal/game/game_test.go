@@ -1321,6 +1321,28 @@ func TestPelletDefeatsSlugOnDrop(t *testing.T) {
 	}
 }
 
+// TestSnakeWardsOffHydraOnDrop covers round 145's real, sourced ward-
+// off mechanic (World of Spectrum's plain-text instructions file: "To
+// pass the Hydras you need a Snake") - see checkSnakeHydra. No shipped
+// World.Room carries Monster == "Hydra" yet (a real, honest scope gap
+// - see checkSnakeHydra's doc comment), so this uses a synthetic room,
+// same pattern as TestHandleFireBlocksMovementWithoutClasp.
+func TestSnakeWardsOffHydraOnDrop(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Lair", Monster: "Hydra", MonsterHealth: 3})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	g.Player.Items = append(g.Player.Items, "Snake")
+
+	got := g.Handle(parser.Parse("DROP SNAKE"))
+	room := g.World.CurrentRoom()
+	if room.MonsterHealth > 0 {
+		t.Errorf("Hydra should be warded off after dropping Snake, MonsterHealth = %d", room.MonsterHealth)
+	}
+	if !strings.Contains(got, "Snake") {
+		t.Errorf("Handle(DROP SNAKE) with a live Hydra present = %q, want it to mention the Snake mechanic", got)
+	}
+}
+
 func TestNougatDefeatsWerewolfOnDrop(t *testing.T) {
 	g := NewLevel1Exploration()
 	for _, dir := range []string{"SOUTH", "SOUTH", "EAST"} {

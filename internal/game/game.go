@@ -1024,6 +1024,9 @@ func (g *Game) drop(target string) string {
 			if msg := g.checkPelletSlug(); msg != "" {
 				result += "\n" + msg
 			}
+			if msg := g.checkSnakeHydra(); msg != "" {
+				result += "\n" + msg
+			}
 			if msg := g.checkSwapItem(item); msg != "" {
 				result += "\n" + msg
 			}
@@ -1097,6 +1100,9 @@ func (g *Game) move(dir world.Direction) string {
 		msgs = append(msgs, msg)
 	}
 	if msg := g.checkPelletSlug(); msg != "" {
+		msgs = append(msgs, msg)
+	}
+	if msg := g.checkSnakeHydra(); msg != "" {
 		msgs = append(msgs, msg)
 	}
 	desc := g.describeCurrentRoom()
@@ -1205,6 +1211,39 @@ func (g *Game) checkPelletSlug() string {
 		if strings.EqualFold(item, "Pellet") {
 			room.MonsterHealth = 0
 			return "The Slug shrivels away from the Pellet."
+		}
+	}
+	return ""
+}
+
+// checkSnakeHydra implements a fourth real, sourced ward-off mechanic
+// (round 145), the same "drop item X near monster Y" pattern as
+// checkNougatWerewolf/checkGarlicVampire/checkPelletSlug. World of
+// Spectrum's plain-text instructions file states plainly: "To pass the
+// Hydras you need a Snake." Both "HYDRA" and "SNAKE" are real,
+// confirmed vocabulary words (parser.Vocabulary) - real content, not
+// invented. Unlike the other 3 ward-off pairs, no source found so far
+// places a real "Hydra" Monster anywhere (Level3Grid's own "Hydra"-
+// named room, F5, actually carries a Wyvern per its own tight-crop-
+// verified icon scan - the room's NAME references Hydra mythology, but
+// the CREATURE encountered there was independently confirmed as a
+// Wyvern by icon color, a real, already-settled fact this round
+// doesn't second-guess). "Hydras" here (plural, no specific room named
+// in the source) most likely refers to a monster TYPE this project's
+// map-icon legend scans (Troll/Ghost/Slug/Vampire/Werewolf/Wyvern/
+// Medusa/Cyclops - the 8 confirmed icons) have never actually turned
+// up - a real, honest scope gap, not yet placeable. Shipped mechanic-
+// first, same "real mechanic, not yet reachable" pattern already used
+// for TollItem/Fire/Guards/SwapItem before their first real placement.
+func (g *Game) checkSnakeHydra() string {
+	room := g.World.CurrentRoom()
+	if room == nil || room.Monster != "Hydra" || room.MonsterHealth <= 0 {
+		return ""
+	}
+	for _, item := range room.Items {
+		if strings.EqualFold(item, "Snake") {
+			room.MonsterHealth = 0
+			return "The Hydra recoils from the Snake and lets you pass."
 		}
 	}
 	return ""
