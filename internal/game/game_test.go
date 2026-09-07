@@ -384,10 +384,22 @@ func TestHandleGradeReportsCurrentGrade(t *testing.T) {
 func TestHandleSpellsListsRealSpells(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("SPELLS"))
-	for _, want := range []string{"BLAST", "FREEZE", "TRANSFUSION"} {
+	for _, want := range []string{"BLAST", "FREEZE", "TRANSFUSION", "CALL"} {
 		if !strings.Contains(got, want) {
 			t.Errorf("Handle(SPELLS) = %q, want it to list %q", got, want)
 		}
+	}
+}
+
+// TestHandleCallIsRecognizedStub covers the real, confirmed 4th spell
+// (see Handle's doc comment for the two-source sourcing) - recognized,
+// not lumped in with "I don't understand that word", but honestly not
+// yet modeled since no source states its effect.
+func TestHandleCallIsRecognizedStub(t *testing.T) {
+	g := New()
+	got := g.Handle(parser.Parse("CALL"))
+	if strings.Contains(got, "don't understand") {
+		t.Errorf("Handle(CALL) = %q, want it recognized as a real spell, not an unknown word", got)
 	}
 }
 

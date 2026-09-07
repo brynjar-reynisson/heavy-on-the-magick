@@ -2852,6 +2852,33 @@ placement just to have shipped code.
 No code changes this round - three real, checked leads, all correctly
 ruled out rather than forced.
 
+### Recognized CALL, a real 4th spell that had been sitting confirmed but completely unwired
+
+After another Stop-hook rejection, same framing, went back to a fact
+this project has had on file since very early (the numbered map
+poster's key list: "#22, Scroll (CALL spell)") but had never actually
+wired anywhere - "CALL" is also a real word in `parser.Vocabulary`, but
+had been falling into the generic "I recognize that word, but don't
+know what it does yet" bucket the whole time, same as any of the other
+~290 un-modeled vocabulary words, despite being independently confirmed
+as a genuine SPELL by name, not just a vocabulary entry.
+
+Added it as a real, recognized, honest stub - the same convention
+already established for SWAP (a confirmed real command with no source
+detailed enough to model its actual effect). `SPELLS` now lists it
+alongside BLAST/FREEZE/TRANSFUSION as "confirmed real, effect unknown"
+rather than silently omitting a spell this project already knows is
+real. This is a small, honestly-scoped fix, not a new mechanic - it
+moves one specific, already-sourced fact from "generic unknown word"
+to "correctly identified as a real spell, content not yet known",
+which is the more accurate state of knowledge to reflect in the code.
+
+Added `TestHandleCallIsRecognizedStub` and extended
+`TestHandleSpellsListsRealSpells`, ran the full `gofmt`/`build`/`vet`/
+`test` suite (with a repeated `-count=2` run) clean, and verified live:
+`SPELLS` lists CALL, and `CALL` itself gets a real, honest response
+instead of the generic unknown-word message.
+
 ## Open next steps
 
 - **Level 1's connectivity has been extracted AND is playable**

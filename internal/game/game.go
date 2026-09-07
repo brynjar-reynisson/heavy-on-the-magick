@@ -205,6 +205,13 @@ func NewLevel4Exploration() *Game {
 // response — the manual's own table entry ("swap Window 1") isn't
 // detailed enough to model the underlying dual-window/spell-hand display.
 //
+// CALL is a real, confirmed 4th spell (parser.Vocabulary has the word;
+// the numbered map poster's key list independently has "Scroll (CALL
+// spell)" at one of its numbered cells) with an honest stub response —
+// no source found so far states what it actually does, unlike BLAST/
+// FREEZE/TRANSFUSION. SPELLS lists it as confirmed-but-unmodeled rather
+// than omitting it.
+//
 // OPTIONS shows the confirmed real Option Screen menu items, and its
 // "Realign Status" choice actually rerolls the player's Stamina/Skill/
 // Luck (character.Player.Realign) — a real, functional effect, not just
@@ -254,6 +261,8 @@ func (g *Game) Handle(cmd parser.Command) string {
 		return g.spells()
 	case "SWAP":
 		return "You SWAP windows. (Merphish 'Z' - confirmed real command, but the underlying dual-window/spell-hand display isn't modeled yet.)"
+	case "CALL":
+		return "You start to CALL... (a real confirmed spell - the numbered map poster's key list has \"Scroll (CALL spell)\" - but no source found so far states what it actually does, so this is an honest stub, not invented behavior.)"
 	case "INVOKE":
 		return g.invoke(cmd.Target)
 	case "OPTIONS":
@@ -545,7 +554,7 @@ Finally, if in a panic, BLAST without an object!`
 // but not as a single "SPELLS" menu), so this is this project's own
 // aggregation of already-confirmed real spells, not fabricated content.
 func (g *Game) spells() string {
-	return "Known spells: BLAST (combat), FREEZE (combat), TRANSFUSION (restore Stamina)."
+	return "Known spells: BLAST (combat), FREEZE (combat), TRANSFUSION (restore Stamina), CALL (confirmed real, effect unknown)."
 }
 
 // inventory lists the player's carried items. "INVENTORY" is a real,
