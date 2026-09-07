@@ -115,6 +115,16 @@ package world
 // other special room/monster in this file - connectivity for row A
 // wasn't extracted.
 //
+// ROUND 79: zone_monsters.go's independently-sourced ZoneMonsterSightings
+// also records "Doubt of Rabak: Vampire x1" (using this project's
+// current name for the creature, since round 74's rename) - a real,
+// separate entry from "Methos: Vampire x1" (already corroborated by
+// A6, round 72) that had sat unaddressed. Doubt of Rabak is already a
+// real, named, isolated cell in this file (D3) - added the confirmed
+// Vampire to it directly, same convention as every other zone_monsters.go
+// cross-reference in this project (Sothic Complex/Ghost and Rook of
+// Hydra/Wyvern in Level3Grid, round 71).
+//
 // Item icon placements were NOT extracted for this file (real
 // follow-up work, same as Levels 1-3), and room descriptions use the
 // same placeholder convention as everywhere else.
@@ -175,7 +185,7 @@ var level4Cells = []*Room{
 	// connectivity not extracted) same as every other special room in
 	// this project's grid files.
 	{ID: level4Room("D2"), Name: "Scales", Level: 4},
-	{ID: level4Room("D3"), Name: "Doubt of Rabak", Level: 4},
+	{ID: level4Room("D3"), Name: "Doubt of Rabak", Level: 4, Monster: "Vampire", MonsterHealth: 2},
 	{ID: level4Room("E5"), Level: 4, Monster: "Wyvern", MonsterHealth: 3},
 	{ID: level4Room("F1"), Name: "The Crypt", Level: 4},
 	{ID: level4Room("G2"), Name: "Exit", Level: 4},

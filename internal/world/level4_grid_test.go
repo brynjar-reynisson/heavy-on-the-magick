@@ -75,6 +75,12 @@ func TestLevel4GridIsolatedNamedRooms(t *testing.T) {
 			t.Errorf("room %s Exits = %v, want none (connectivity not confirmed)", code, room.Exits)
 		}
 	}
+	// Round 79: zone_monsters.go's "Doubt of Rabak: Vampire x1" sighting,
+	// a separate entry from Methos's (already corroborated via A6).
+	d3 := w.Rooms[level4Room("D3")]
+	if d3.Monster != "Vampire" || d3.MonsterHealth <= 0 {
+		t.Errorf("Doubt of Rabak (D3) Monster = %q (health %d), want a live Vampire", d3.Monster, d3.MonsterHealth)
+	}
 }
 
 func TestLevel4GridExitsAreReciprocal(t *testing.T) {

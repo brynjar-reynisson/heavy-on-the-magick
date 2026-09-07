@@ -3254,6 +3254,32 @@ room), ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
 `-count=2` run) clean, and verified live: `LOOK`/`EXAMINE CHEST` in
 Wolfdorp both correctly acknowledge the real chest.
 
+### Closed the last open zone_monsters.go discrepancy: Doubt of Rabak's Vampire
+
+After another Stop-hook rejection, same framing, went back through
+`zone_monsters.go`'s `ZoneMonsterSightings` one more time looking for
+anything still unaddressed after 3 rounds of steady cross-referencing
+(rounds 71/72/77 placed Methos, Sothic Complex, Rook of Hydra,
+Wormring's 4 Wyverns, and Sunflower's zone). Found one real, genuine
+gap left: `"Doubt of Rabak: Vampire x1"` — a separate entry from
+`"Methos: Vampire x1"` (already corroborated via Level4Grid's A6, round
+72), not the same sighting counted twice. Doubt of Rabak is already a
+real, named, isolated cell in `level4_grid.go` (D3) with no monster —
+added the confirmed Vampire directly, the identical cross-reference
+convention used every previous time this file's data source was
+leveraged. Added a regression test, ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean, and
+confirmed the `-level4grid` exploration mode still runs (D3 is
+isolated, so — same honest convention as every other isolated-cell
+addition in this project — verified via unit test, not a live
+walkthrough).
+
+With this, every entry in `zone_monsters.go` has now been either
+placed, corroborated, or explicitly documented as an open discrepancy
+(Wraithvale and Wormring are fully resolved; Morfang's Wraith×3-vs-
+shipped-4 count mismatch remains the one deliberately-unresolved
+disagreement, recorded honestly rather than forced either way).
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
