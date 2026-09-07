@@ -3323,6 +3323,38 @@ full `gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2`
 run) clean, and confirmed both `cmd/hotm` and `-level2grid` still run
 live.
 
+### Closed a real gap that had existed since the toll mechanic was first built: Room of Stings' Key finally has a source
+
+After another Stop-hook rejection, same framing, mined the CASA
+walkthrough once more for anything unresolved around Scroll/Loaf/Bag/
+Poison/Book. This surfaced a much fuller verbatim passage than any
+previous round had pulled — covering several repeat visits to Wolfdorp/
+Room of Arrows/Morfang in sequence — which unambiguously shows
+`"(Wolfdorp on level 1) ... EXAMINE TABLE, Pick up KEY"`. This had never
+been captured before: Room of Stings' `TollItem "Key"` (placed back in
+round 64) has had **no confirmed pickup source anywhere in
+CollodonsPile** this whole time — a real, previously-undocumented gap,
+not a fabricated placement now being invented.
+
+Carefully distinguished this from the ALREADY-known fact that Key gets
+*dropped* (as a toll payment) at up to 4 different rooms with no single
+location — that ambiguity was always about where Key is *spent*, not
+where it's *found*; the two facts don't conflict. The same fuller
+passage also re-confirmed Room of Arrows' existing Slat TollItem
+exactly, and showed a second `"DROP KEY"` at Room of Arrows on a later
+revisit — consistent with (not contradicting) Key's already-documented
+drop ambiguity, correctly left as-is rather than treated as a new fact
+needing action.
+
+Added `"Key"` to Wolfdorp's Items — the same "satisfying pickup-then-use
+chain" pattern already established for Bag (Wolfdorp → Morfang) and Slat
+(Morfang → Room of Arrows). Added `TestCollodonsPileWolfdorpHasKey`, ran
+the full `gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2`
+run) clean, and verified live end-to-end: picked up the real Key at
+Wolfdorp, walked to Room of Stings, and `DROP KEY` correctly opened the
+door — a complete, working puzzle chain that had been broken (missing
+its source item) since the mechanic was first implemented.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

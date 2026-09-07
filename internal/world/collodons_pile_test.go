@@ -95,6 +95,24 @@ func TestCollodonsPileWolfdorpHasSword(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileWolfdorpHasKey pins the real Key pickup location
+// (round 81) - see CollodonsPile's doc comment for the fuller CASA
+// passage that confirmed it, closing the gap where Room of Stings'
+// TollItem "Key" had no confirmed source anywhere in this file.
+func TestCollodonsPileWolfdorpHasKey(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomWolfdorp]
+	found := false
+	for _, item := range room.Items {
+		if item == "Key" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Wolfdorp Items = %v, want it to include \"Key\"", room.Items)
+	}
+}
+
 // TestCollodonsPileSothicComplexHasSunflower pins the real, cross-
 // referenced Sunflower placement (Magot's confirmed Charm) - see
 // CollodonsPile's doc comment for the numbered-map-plus-zone-banner

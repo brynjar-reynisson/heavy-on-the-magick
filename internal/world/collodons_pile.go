@@ -114,6 +114,24 @@ package world
 // the same way HasTable already is - same honest "only these 2
 // specifically confirmed rooms" convention, not assumed elsewhere.
 //
+// Wolfdorp's "Key" (round 81): a much fuller verbatim CASA passage than
+// any previous round had pulled (covering several repeat visits to
+// Wolfdorp/Room of Arrows/Morfang in sequence) unambiguously shows
+// "(Wolfdorp on level 1) ... EXAMINE TABLE, Pick up KEY" - a single,
+// clear pickup location, distinct from the already-known fact that Key
+// gets DROPPED (as a toll payment) at up to 4 different rooms with no
+// single drop location (see the round-63 note below - that ambiguity
+// was always about where Key is spent, not where it's found). This
+// closes a real, previously-undocumented gap: Room of Stings' TollItem
+// "Key" had no confirmed source anywhere in CollodonsPile until now - a
+// genuine, satisfying pickup-then-use chain, the same pattern already
+// established for Bag (Wolfdorp -> Morfang) and Slat (Morfang -> Room
+// of Arrows). The same fuller passage also re-confirmed Room of Arrows'
+// existing Slat TollItem exactly, and showed a "DROP KEY" repeated at
+// Room of Arrows on a later revisit - consistent with (not contradicting)
+// Key's already-documented multi-room drop ambiguity, not a new fact
+// needing action.
+//
 // TollItem placements (round 64): the same fresh, more detailed CASA
 // walkthrough re-read found the real drop-to-open-door mechanic (see
 // world.Room.TollItem's doc comment) recurring at 3 more rooms, each
@@ -196,7 +214,7 @@ func CollodonsPile() *World {
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget"}, HasTable: true, Monster: "Vampire", MonsterHealth: 2},
 		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower"}, HasTable: true},
-		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true, HasChest: true},
+		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, Items: []string{"Garlic", "Bag", "Loaf", "Sword", "Key"}, HasTable: true, HasChest: true},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key", HasTable: true},
 		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Items: []string{"Slat"}, TollItem: "Bag", HasTable: true, HasChest: true},
 		{ID: roomArrows, Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{East: roomNidus, North: roomWolfdorp}, TollItem: "Slat", HasTable: true},
