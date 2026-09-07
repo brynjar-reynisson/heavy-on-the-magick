@@ -289,6 +289,24 @@ package world
 // Nickel") - which exact Sign this is (if any specific zodiac one)
 // isn't confirmed, so only the bare fact of a Sign being present is
 // added, not a guessed Zodiac/metal-key association.
+//
+// Round 148 THIRD corroboration: reading heavymap-levels1-2.jpg's own
+// Level Two maze grid at full resolution (the same official poster
+// this project has mined since round 9, previously only read from
+// smaller crops - see round 147) shows a real, hand-labeled "SIGN"
+// cell sitting DIRECTLY ADJACENT to the cell labeled "GRIMOIRE BOOK" -
+// Room of Misery's own already-confirmed exact position on this same
+// poster (the Grimoire, already real, already-shipped data, is this
+// project's most solid anchor point on this specific source). This
+// poster's own maze-drawing orientation doesn't necessarily map onto
+// real compass directions 1:1 (a documented limitation - see
+// level_items.go's doc comment on why exact connectivity isn't modeled
+// from this source), so this is positional corroboration, not a
+// contradiction of the walkthrough's own "East" - but a THIRD
+// independent source (manual narrative + walkthrough path + now this
+// poster's own cell adjacency) all agreeing Secunda Porta is real and
+// immediately next to Room of Misery is a genuine, if modest, further
+// strengthening of an already-shipped placement.
 // Furnace Room (round 126): a real, sourced punishment destination, not
 // a normal explorable room - The CRPG Addict's first-hand playthrough
 // account (the same source round 125 used to confirm CALL's effect)

@@ -6251,6 +6251,64 @@ existing tests assume a free heal), the safe default is to surface the
 fact honestly without changing the tested behavior, not force an
 integration around missing pieces.
 
+### Round 148: a quiet, documentation-only round — a third corroboration for Secunda Porta's placement, several honest negatives, no forced code
+
+After another Stop-hook rejection, same framing, kept reading
+`heavymap-levels1-2.jpg` (round 147's newly-legible source) at full
+resolution, looking for more of the same kind of win. Level One's and
+Level Two's own maze grids turned out to be entirely ALREADY-KNOWN
+content — every single item label matches `level_items.go`'s
+`LevelOneItems`/`LevelTwoItems` list exactly (extracted from this same
+poster back in round 10-12), just now visually confirmed at a
+legibility this project never had before. Two small annotations
+(door-password hints "(ELEVEN)" and "(WOLF)" printed directly beneath
+specific cells) turned out to be real positional confirmations of
+already-known facts (Pilefoot's/Wolfdorp's real door passwords), not
+new ones.
+
+One genuine, if modest, new finding: a real, hand-labeled "SIGN" cell
+sits DIRECTLY ADJACENT to the cell labeled "GRIMOIRE BOOK" — Room of
+Misery's own already-confirmed exact position on this same poster (the
+Grimoire is this project's most solid anchor point on this specific
+source). This poster's maze orientation doesn't necessarily map onto
+real compass directions (a known limitation, per `level_items.go`'s
+own doc comment), so this isn't a contradiction of the walkthrough's
+confirmed "East" direction to Secunda Porta — but it's a genuine THIRD
+independent source (manual narrative + walkthrough path + now this
+poster's own cell adjacency) all agreeing Secunda Porta is real and
+immediately next to Room of Misery, a real strengthening of an
+already-shipped placement. Added this corroboration to
+`collodons_pile.go`'s doc comment.
+
+Everything else chased this round came back a checked negative: the
+"TALK WITH ___" fragment at the banner's own right edge is genuinely
+illegible even at high magnification (the same honest resolution
+limit round 138/147 already established, not a new technique
+failure); speculative item-to-room placements suggested purely by
+visual proximity on the maze grid (e.g. "Tin Key" sitting in the same
+visual cluster as Wolfdorp's already-confirmed items) were deliberately
+NOT added — visual clustering alone is weaker evidence than this
+project's established bar (an exact name/password match, a zone
+banner, or a precise pixel position), and forcing it would risk
+presenting a guess as fact.
+
+No gameplay/graphics code changed this round — a legitimate outcome
+per established precedent (rounds 82/91/117/134/138/145): real,
+verified confirmatory research and several honest negatives, not a
+forced code change just to have shipped something. Ran the full
+`gofmt`/`build`/`vet`/`test` suite clean (doc-only change, verified
+anyway).
+
+**How to apply**: not every re-read of a rich source yields a NEW
+mechanic — round 147 struck gold on the first careful look at this
+poster's footer banner, but a further, more thorough read of the SAME
+poster's own maze grids this round mostly re-confirmed already-shipped
+data. That's still worth doing once (confirming a source is genuinely
+exhausted, not just assumed to be), but recognize when a source has
+moved from "actively yielding new facts" to "already fully mined" and
+resist manufacturing a placement from weaker evidence (visual
+proximity) just to keep the round's "shipped code" streak going.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
