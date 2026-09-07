@@ -66,10 +66,11 @@ var keyDirections = map[ebiten.Key]world.Direction{
 }
 
 type GUI struct {
-	g        *game.Game
-	log      []string
-	audioCtx *ebitenaudio.Context
-	hud      *ebiten.Image // confirmed rune glyphs, rendered once via graphics.PNGRenderer
+	g            *game.Game
+	log          []string
+	audioCtx     *ebitenaudio.Context
+	hud          *ebiten.Image // confirmed rune glyphs, rendered once via graphics.PNGRenderer
+	apexPortrait *ebiten.Image // real extracted Apex the Ogre art, see graphics.ApexPortrait
 }
 
 func NewGUI() *GUI {
@@ -79,6 +80,7 @@ func NewGUI() *GUI {
 	}
 	gui.appendLog(describeRoom(gui.g))
 	gui.hud = buildHUD()
+	gui.apexPortrait = ebiten.NewImageFromImage(graphics.ApexPortrait())
 	return gui
 }
 
@@ -166,6 +168,9 @@ func (gui *GUI) Update() error {
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
 		gui.handleAndPlay("GUARDS, DOOR")
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
+		gui.appendLog(gui.g.Handle(parser.Parse("APEX, TALK")))
 	}
 	return nil
 }
@@ -296,6 +301,7 @@ func (gui *GUI) Draw(screen *ebiten.Image) {
 	gui.drawMonster(screen)
 	gui.drawGuards(screen)
 	gui.drawItems(screen)
+	gui.drawApexPortrait(screen)
 
 	statsOpts := &etext.DrawOptions{}
 	statsOpts.GeoM.Translate(8, 76) // just below the 64px-tall HUD row (drawn at y=8)
@@ -311,7 +317,34 @@ func (gui *GUI) Draw(screen *ebiten.Image) {
 	helpOpts := &etext.DrawOptions{}
 	helpOpts.GeoM.Translate(8, screenHeight-20)
 	helpOpts.ColorScale.ScaleWithColor(grey)
-	etext.Draw(screen, "WASD/arrows+QEZC=move  L=look  M=map  V=examine  SPACE=blast  F=freeze  T=transfusion  P=pickup  O=drop  I=invoke  G=pass guards  ALT+ENTER=fullscreen", face, helpOpts)
+	etext.Draw(screen, "WASD/arrows+QEZC=move  L=look  M=map  V=examine  SPACE=blast  F=freeze  T=transfusion  P=pickup  O=drop  I=invoke  G=pass guards  K=talk to Apex  ALT+ENTER=fullscreen", face, helpOpts)
+}
+
+// apexPortraitShouldShow reports whether the most recent log line is a
+// talkToApex response ("APEX, TALK"/"APEX, SPEAK") — split out from
+// drawApexPortrait so this decision is testable without a real ebiten
+// image. Checks the LAST line specifically (not the whole log) so the
+// portrait only appears right after actually talking to Apex, not
+// forever once it's scrolled into log history.
+func apexPortraitShouldShow(log []string) bool {
+	if len(log) == 0 {
+		return false
+	}
+	return strings.Contains(log[len(log)-1], "Apex the Ogre")
+}
+
+// drawApexPortrait shows the real extracted Apex the Ogre portrait (see
+// graphics.ApexPortrait's doc comment for sourcing) right after a
+// successful "APEX, TALK" (the K key) — the first place this port
+// displays actual extracted 1986 game art instead of a custom-drawn
+// approximation.
+func (gui *GUI) drawApexPortrait(screen *ebiten.Image) {
+	if gui.apexPortrait == nil || !apexPortraitShouldShow(gui.log) {
+		return
+	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(screenWidth-gui.apexPortrait.Bounds().Dx()-8), 8)
+	screen.DrawImage(gui.apexPortrait, op)
 }
 
 // monsterGlyphColor maps each confirmed monster name to the real

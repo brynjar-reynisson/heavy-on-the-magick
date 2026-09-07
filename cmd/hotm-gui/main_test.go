@@ -72,6 +72,21 @@ func TestInvokeCommandForPicksCarriedCharm(t *testing.T) {
 	}
 }
 
+// TestApexPortraitShouldShow covers the K key's real portrait-display
+// logic (see drawApexPortrait's doc comment): the portrait only appears
+// right after a real "APEX, TALK" response, not for unrelated log lines.
+func TestApexPortraitShouldShow(t *testing.T) {
+	if apexPortraitShouldShow(nil) {
+		t.Error("apexPortraitShouldShow(nil) = true, want false: no log yet")
+	}
+	if apexPortraitShouldShow([]string{"Room of Misery", "Exits: East"}) {
+		t.Error("apexPortraitShouldShow with an unrelated last line = true, want false")
+	}
+	if !apexPortraitShouldShow([]string{"Room of Misery", "Apex the Ogre eyes you warily, then grunts. He might share what he knows, if you treat him with respect."}) {
+		t.Error("apexPortraitShouldShow after a real talkToApex response = false, want true")
+	}
+}
+
 // TestStatsLine constructs a bare *GUI directly (not via NewGUI, which
 // touches ebiten's audio/image APIs and needs a real display/audio
 // device) since statsLine only reads gui.g.Player - a pure formatting

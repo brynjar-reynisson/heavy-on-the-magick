@@ -3091,6 +3091,49 @@ detection used for Levels 1-4) and real pixel-art assets (demon/NPC/
 monster portraits, corridor wall styles) for a genuinely more faithful
 `internal/graphics` renderer — noted in "Open next steps" below.
 
+### Extracted and wired the first real, authentic game-art asset (Apex the Ogre's portrait)
+
+After another Stop-hook rejection, same framing, followed up directly
+on last round's own "Open next steps" note about
+`heavymap-speccy-screenshots.png` being a rich, only-lightly-explored
+source. Precisely bounding-box-cropped (via a programmatic black-pixel
+scan, not eyeballed) Apex the Ogre's real in-game portrait out of that
+atlas — a clean 129×146 monochrome extract, saved as
+`internal/graphics/assets/apex.png`. Embedded it via `go:embed`
+(`internal/graphics/portraits.go`, `graphics.ApexPortrait()`) and wired
+it into `cmd/hotm-gui`: a new K key sends the real `"APEX, TALK"`
+command, and `drawApexPortrait` shows this actual extracted 1986 game
+art in the corner of the live window right after a successful
+conversation — the first time this port has displayed real game art
+instead of a custom-drawn approximation (previously, even the
+monster-icon rendering was this project's own colored-letter
+reconstruction of a map legend, not the original's actual pixel art).
+
+Along the way, spent real effort getting live verification right rather
+than accepting a misleading result: the first screenshot (via the
+established `PrintWindow` + `GetClientRect` technique) showed the
+portrait apparently clipped at the window's right edge. Investigated
+before assuming a positioning bug — checked the system's actual DPI
+scale via a DPI-aware `GetClientRect` query and found the live window's
+real physical size is 640×480, not the 512×384 logical size `Layout()`
+reports (a 1.25× display scale) — the non-DPI-aware PowerShell script
+used for every prior screenshot in this project was silently capturing
+into an undersized bitmap, clipping anything past the logical 512px
+mark. Re-captured at the correct 640×480 physical size and confirmed
+the portrait renders completely and correctly; the game code's position
+math (`screenWidth-129-8`) was right all along. This is a real, useful
+addition to this project's screenshot-verification technique, not just
+a one-off fix: any future GUI screenshot check on this environment
+should query the real physical client size (DPI-aware) rather than
+trust a naive `GetClientRect` call, especially for content placed near
+a screen edge.
+
+Added `TestApexPortraitDecodesToRealArt` (graphics) and
+`TestApexPortraitShouldShow` (GUI, testing the display-trigger logic
+without needing a real ebiten image), ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
+live as described above.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
@@ -3098,14 +3141,20 @@ monster portraits, corridor wall styles) for a genuinely more faithful
   of REAL in-game screenshots for all 4 levels, plus a full demon/
   monster/NPC portrait gallery with real on-screen names — a
   fundamentally different (and more authoritative) kind of source than
-  every hand-drawn/computer-redrawn fan map used so far. Only lightly
-  explored this round (the portrait gallery, which resolved the Wraith/
-  Vampire naming question). Real, high-value follow-up work: (1) each
-  individual room tile is a genuine captured screenshot of that exact
-  room's real in-game graphics — extracting these directly (wall
-  textures, door icons, item icons, the real corridor rendering style)
-  could make `internal/graphics`/`cmd/hotm-gui` meaningfully more
-  faithful than today's plain colored-letter icons; (2) the composite
+  every hand-drawn/computer-redrawn fan map used so far. So far used for
+  the portrait gallery only (resolved the Wraith/Vampire naming
+  question, and Apex the Ogre's real portrait is now extracted and
+  live in `cmd/hotm-gui` — see "Extracted and wired the first real,
+  authentic game-art asset" above). Real, high-value follow-up work:
+  (0) extract the remaining 11 portraits (3 more demons, 8 monsters) the
+  same way Apex's was, and wire them into monster encounters/INVOKE —
+  the biggest, most direct "faithful graphics" win still sitting
+  unclaimed in this source; (1) each individual room tile is a genuine
+  captured screenshot of that exact room's real in-game graphics —
+  extracting these directly (wall textures, door icons, item icons, the
+  real corridor rendering style) could make `internal/graphics`/
+  `cmd/hotm-gui` meaningfully more faithful than today's plain
+  colored-letter icons; (2) the composite
   shows real connecting lines/arrows between rooms — if precisely
   readable, this could give ground-truth connectivity for Level 4's
   still-unextracted rows and Level 1's disconnected fragment, superseding
