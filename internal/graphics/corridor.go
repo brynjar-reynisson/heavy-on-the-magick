@@ -203,3 +203,36 @@ func RoomOfArrowsSample() image.Image {
 	}
 	return img
 }
+
+// assets/wolfdorp_sample.png (round 109) is a real screenshot from
+// within CollodonsPile's Wolfdorp room, but with an honestly LOWER
+// confidence level than the samples above: Room of Misery/Room of
+// Stings/Room of Arrows each had an exact, independently-confirmed
+// cell (level2_grid.go's F4, level1_grid.go's F3/F5) established
+// BEFORE this project ever tried extracting art for them. Wolfdorp has
+// no such single named cell — CollodonsPile's "Wolfdorp" is a zone
+// abstraction spanning roughly 18-24 real per-cell rooms (heavymap-
+// grid-clean.gif's own colored zone boundary, viewed directly at full
+// resolution: the magenta area covering row A columns 1-6, all of rows
+// B and C, and part of row D). Cell A2 was picked as a representative,
+// unremarkable cell WITHIN that zone (not overlapping any of the
+// zone's own specially-labeled sub-cells, and distinct in content from
+// Level1Grid's own A1 art — a decorative wall rosette and pedestal,
+// not A1's chest) — located in the atlas via the same row/column
+// arithmetic as every other sample (row A, column 2), pixel-verified.
+// Shown honestly as "representative Wolfdorp-zone art," not a claim
+// this is THE definitive Wolfdorp screenshot the way the exact-cell
+// samples above are.
+//
+//go:embed assets/wolfdorp_sample.png
+var wolfdorpSamplePNG []byte
+
+// WolfdorpSample decodes the embedded representative Wolfdorp-zone
+// screenshot. Panics on failure, matching CorridorSample() above.
+func WolfdorpSample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(wolfdorpSamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded wolfdorp_sample.png: " + err.Error())
+	}
+	return img
+}

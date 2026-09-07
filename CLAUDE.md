@@ -4414,6 +4414,36 @@ regression), and a direct `NewGUI` + `World.Teleport` check confirmed
 both new rooms' art resolves correctly by name. Ran the full
 `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 109: a 4th CollodonsPile room gets real art, this time at honest zone-level (not exact-cell) confidence
+
+After another Stop-hook rejection, same framing, viewed
+`heavymap-grid-clean.gif` at full resolution for the first time in
+many rounds specifically looking for zone BOUNDARIES (not just the
+special-named sub-cells this project has mined from it before) — and
+found the "Wolfdorp" zone's colored (magenta) area spans a large,
+precisely-visible region: row A columns 1-6, all of rows B and C, and
+part of row D. Unlike Room of Misery/Room of Stings/Room of Arrows
+(each an exact, independently pre-established single-cell match), no
+single cell is "the" Wolfdorp room — CollodonsPile's "Wolfdorp" is a
+zone abstraction over roughly 18-24 real per-cell rooms.
+
+Rather than skip it for lack of exact-cell precision, applied the same
+zone-level-confidence standard this project already accepted for
+Mantis (round 103, "placed on the zone's first cell") and Erlstone
+(round 107, zone-banner match): picked cell A2 — plain, unlabeled,
+inside the zone, and visually distinct from Level1Grid's own A1 art
+(a decorative wall rosette + pedestal, not A1's chest) — located it in
+the screenshot atlas via the same row/column arithmetic as every prior
+sample, pixel-verified. Documented explicitly and honestly as
+"representative Wolfdorp-zone art," clearly distinguished from the
+exact-cell samples, not a claim of the same precision.
+
+Wired into `cmd/hotm-gui`'s default-mode room-art map (round 108's
+generalized `map[string]image.Image` mechanism made this a 2-line
+addition — no new plumbing). Verified via a direct `NewGUI` +
+`World.Teleport` check that Wolfdorp resolves its art correctly. Ran
+the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

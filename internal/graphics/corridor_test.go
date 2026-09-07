@@ -51,6 +51,13 @@ func TestRoomOfArrowsSampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, RoomOfArrowsSample(), "RoomOfArrowsSample()")
 }
 
+// TestWolfdorpSampleDecodesToRealArt mirrors
+// TestCorridorSampleDecodesToRealArt for round 109's Wolfdorp-zone
+// sample.
+func TestWolfdorpSampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, WolfdorpSample(), "WolfdorpSample()")
+}
+
 func assertRealArt(t *testing.T, img image.Image, label string) {
 	t.Helper()
 	bounds := img.Bounds()
