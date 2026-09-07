@@ -9,7 +9,7 @@ func TestDemonsConfirmedFour(t *testing.T) {
 	names := map[string]bool{}
 	for _, d := range Demons {
 		names[d.Name] = true
-		if d.Title == "" || d.Number == 0 || d.Charm == "" {
+		if d.Title == "" || d.Number == 0 || d.Charm == "" || d.Correspondences == "" {
 			t.Errorf("Demon %+v missing expected fields", d)
 		}
 	}

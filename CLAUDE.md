@@ -4444,6 +4444,46 @@ addition — no new plumbing). Verified via a direct `NewGUI` +
 `World.Teleport` check that Wolfdorp resolves its art correctly. Ran
 the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 110: found the manual PDF has a real text layer — a much better extraction method than visual page-reading, plus new demon correspondence data
+
+After another Stop-hook rejection, same framing, first tried (and
+ruled out) a hypothesis for round 100's still-open Level1Grid merge
+blocker: maybe Room of Stings's real North exit (E3) is itself an
+unnamed intermediate cell on the way to Morfang, the same "unnamed
+room between two named ones" pattern round 64/82 already caught twice
+elsewhere — checked E3's own exits (North→D3, West→E2) and neither
+leads anywhere near Morfang's zone (columns 1-2 per the clean grid
+map), so the hypothesis doesn't hold. A quick, honest negative, not
+worth its own section.
+
+The real find: `HeavyOnTheMagick.pdf` has a genuine, machine-readable
+text layer (`PyMuPDF`'s `page.get_text()`) — every prior round that
+"read the manual" (including round 85's full read) rendered pages to
+images and read them visually. Extracting the full 12-page text
+directly is far more precise (no risk of misreading hand-drawn-style
+scan text) and instantly searchable. Re-ran it end to end and found
+one genuinely new, previously-uncaptured section: the grimoire's
+"Names and Natures of the Princes" gives each of the 4 demons a real
+occult correspondence set (colour, plant/creature reverence, favoured
+perfume/scent, and a bowed-to gem) beyond what `magic.Demons` already
+had (Title/Number/Sign/Aspect/Ability/Charm) — e.g. Astarot: "perfume
+Wormwood; favours the Orchid and the Magpie; gem Tourmaline." Added a
+new `Demon.Correspondences` field, condensed to bare facts (not the
+manual's own copyrighted prose), for all 4. Also noted two more real,
+un-homed numbers from the same section ("the number of Magick is 11;
+... the Great Abyss is 24") — recorded in a doc comment as real,
+sourced content with no confirmed mechanical tie yet, rather than
+inventing one.
+
+Cross-checked the rest of the extracted text against everything
+already shipped (Merphish keyword table, conversation grammar, the
+Unlocking/TollItem mechanic, Stamina/Skill/Luck status text) — all
+matched exactly, good validation that the years of visual-reading
+extraction work was accurate; this round's value is a strictly better
+METHOD for any future manual re-reads, not a correction of old ones.
+Extended `TestDemonsConfirmedFour` to require `Correspondences` too.
+Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
