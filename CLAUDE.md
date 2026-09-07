@@ -4148,6 +4148,55 @@ thing).
 
 Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 102: precisely quantified "most verbs unimplemented" instead of leaving it vague
+
+After another Stop-hook rejection whose complaint again listed ~20
+specific verbs (CALL, READ, SEARCH, OPEN, WEAR, CLIMB, PUSH, PULL,
+LISTEN, SMELL, THROW, WAVE, RUB, LIGHT, BURN, EAT, DRINK, KISS, SHOUT,
+WAIT, SLEEP) as evidence of an unfaithful port, checked each one
+against the real, extracted 316-word vocabulary first — **19 of those
+20 aren't real game vocabulary at all** (only CALL is; it's already a
+confirmed real spell with an honest stub — see round 87). Implementing
+the other 19 wouldn't be porting anything; it would be inventing verbs
+the original parser never recognized. Also re-confirmed via 2 more
+targeted CASA re-fetches (ENTER/SEEK/REACH/WANT) that none of those
+appear as player commands in that walkthrough either — consistent with
+this round's earlier finding that the walkthrough is likely near-
+exhausted for "which verb does what" questions (it documents one
+minimal path through the game, not an exhaustive verb tour).
+
+Given that, built the tool needed to answer the REAL version of the
+complaint precisely instead of arguing about which specific words are
+real: `cmd/vocab-coverage`. It calls the actual `game.Handle` (not a
+hand-maintained mirror list that could drift out of sync) once per
+unique vocabulary word, in a fresh `game.New()` each time to avoid
+movement/combat ordering side effects, and classifies each by whether
+the response is the generic "don't know what it does yet" stub.
+Result, now exactly measured rather than estimated: of 313 unique real
+vocabulary words (316 table entries; `IRON`/`LOOKS`/`MANTIS` genuinely
+repeat across length buckets — a small, previously-unremarked real
+fact about the original table), 30 have modeled `Handle` behavior (22
+real verbs/synonyms plus the 8 direction words) and 275 fall through
+to the generic stub. The tool's own doc comment is upfront about its
+one known blind spot: 8 words (APEX/ASTAROT/MAGOT/GUARDS/DOOR/TALK/
+SPEAK/THANKS) are only recognized as `cmd.Target` paired with a
+specific companion verb, which this tool's simpler `cmd.Verb`-only
+check can't detect — explicitly excluded and listed rather than
+silently miscounted.
+
+Skimming the 275-word uncovered list confirms what was already
+suspected but never precisely shown: the overwhelming majority are
+NOUN content (room/item/monster/demon names already used throughout
+`world/*.go`/`magic/demons.go`, or description-text adjectives like
+"TASTY"/"HORRIBLY"/"CUNNING"), not unimplemented verbs — the real
+actionable-verb gap is much smaller than "most of 313 words" makes it
+sound, though a few genuine verb candidates (ENTER, SEEK, KNOWS,
+DESTROYS, HOLDS) are visible in the list for a future round to chase
+if a better source than CASA turns up. 4 new tests (dedup/sort logic,
+generic-response classification, a regression pin on known-implemented
+words, and a check that every excluded blind-spot word really is real
+vocabulary). Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
