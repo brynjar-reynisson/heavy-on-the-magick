@@ -98,11 +98,15 @@ of Spectrum) contains `PitchTable`, `StartupMelody`, and
 strongest verification this project's sound work has had, and it also
 caught a real bug: `StartupMelody` had been truncated to its first 140
 of 288 real bytes the whole time, now corrected. **Real, checked
-evidence (round 117) that this may already be complete**: the
-confirmed sound routine's only entry point is called from exactly ONE
-place across all 8 of this repo's disassembly snapshots — strong
-evidence the original 1986 game has exactly one piece of music and no
-other sound effects to find, not a porting gap.
+evidence from TWO independent methods that this may already be
+complete**: the confirmed sound routine's only entry point is called
+from exactly ONE place across all 8 of this repo's disassembly
+snapshots (round 117), AND separately, the real AY rip's own header
+(round 158) — built by a human ripper in 2001 examining the actual
+running game, independent of any disassembly — declares exactly one
+song. Two different methods agreeing is real, additive evidence (not
+airtight proof) the original 1986 game has exactly one piece of music
+and no other sound effects to find, not a porting gap.
 
 **Honest, currently-open gaps** (see "Open next steps" for the full
 list): TRANSFUSION's real Stamina-from-Experience cost/ratio (round
@@ -6904,6 +6908,53 @@ just reassurance — it directly caught StartupMelody's 148-byte
 truncation, a bug no amount of re-checking this project's OWN
 disassembly notes would have found, since the disassembly literally
 never determined where that stream really ended.
+
+### Round 158: a second, independent confirmation that the original has exactly one piece of music — from the AY rip's own header, not another disassembly count
+
+After another Stop-hook rejection whose sound complaint sharpened to a
+specific, fair point: round 117's "one melody total" evidence (the
+sound routine's entry point called from exactly one place across 8
+disassembly snapshots) is real, but it's still fundamentally ONE
+method — a static code count from this project's OWN reverse-
+engineering — not independently corroborated. Went back to round 157's
+newly-found AY rip to check whether it could answer this specific
+question too, from a genuinely different angle.
+
+It can: the AY file format has a real, standard header field for
+exactly this — how many distinct songs a rip contains (many Spectrum
+games' AY rips DO have multiple numbered songs: a title tune, an
+in-game tune, a game-over tune, each ripped separately, since that's
+the entire point of a thorough rip). This file's own header — built by
+a real human in 2001, examining the actual running game, completely
+independent of any disassembly work — declares exactly **one** song.
+Confirmed programmatically (`TestAYRipContainsExactlyOneSong`): the
+real `ZXAYEMUL` magic bytes, then byte 16 (`NumOfSongs - 1`, per the
+real AY format spec) equals `0`.
+
+This is now TWO independent methods — a static disassembly count and a
+separate human's real-world extraction judgment — landing on the
+identical answer. Neither is airtight proof by itself (a disassembly
+count could miss an indirect call path; a ripper could simply have
+missed a second tune), but two independently-arrived-at agreements is
+real, meaningfully stronger evidence than either alone, and directly
+answers the specific "still relies on inference from one source"
+critique. Documented plainly in the new test's own doc comment,
+including the honest "additive evidence, not proof by itself" framing
+— not oversold as now-certain.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified the new test explicitly with `-v`.
+Updated the "Porting status" section's sound paragraph to cite this
+second, independent source.
+
+**How to apply**: a data source already in the repo can sometimes
+answer a DIFFERENT open question than the one it was originally fetched
+for — round 157 pulled the AY rip to verify note-stream bytes; this
+round went back to the SAME already-downloaded file and found its own
+container-format header (a field entirely unrelated to the note data
+itself) answers the separate "how many songs total" question directly.
+Worth re-examining an already-obtained source's other structural fields
+before assuming its usefulness is exhausted after the first pass.
 
 ## Open next steps
 
