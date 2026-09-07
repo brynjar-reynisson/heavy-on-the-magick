@@ -3355,6 +3355,57 @@ Wolfdorp, walked to Room of Stings, and `DROP KEY` correctly opened the
 door — a complete, working puzzle chain that had been broken (missing
 its source item) since the mechanic was first implemented.
 
+### Caught and fixed a real mistake from last round: Wolfdorp's "Key" was wrong
+
+After another Stop-hook rejection, same framing, tried the same "check
+for a wider verbatim CASA passage" technique that worked well last
+round — this time on the still-open Pilefoot/DROP KEY mystery. That
+specific mystery stayed genuinely unresolved (the raw text confirms the
+action happens in an unnamed room between the Cyclops fight and
+Pilefoot, no new information there) — a real, re-confirmed negative,
+not a new placement.
+
+But while re-verifying, a raw, literal (non-summarized) fetch of the
+exact source text around last round's Key placement told a different
+story than the summarized list that round had trusted: `"...(Wolfdorp
+on level 1), EXAMINE TABLE, Pick up LOAF, W, \"DOOR LUNACY\" (door
+opens), N, DROP CLASP, Pick up KEY, SW, W, SW, S, S, NW (Room of
+stings..."`. Read correctly, "Pick up KEY" happens *2 moves and a
+door-password away* from Wolfdorp, in an unnamed intermediate room —
+not at Wolfdorp itself. Last round's placement came from an
+AI-*summarized list* ("every EXAMINE-before-pickup instance, with its
+room"), not a direct quote — and that summary silently misattributed
+the action to the nearest preceding room label, exactly the same trap
+round 64 originally caught for the Pilefoot case. Cross-checked with a
+second, independent raw-text fetch to be sure before touching anything.
+
+Reverted the mistake: removed `"Key"` from Wolfdorp's Items, rewrote
+`collodons_pile.go`'s doc comment to record the correction plainly (not
+just silently delete the wrong claim), and flipped the regression test
+from asserting Key's presence to asserting its absence. Room of Stings'
+`TollItem "Key"` is honestly unplaced/unsourced within CollodonsPile
+again, the same status it held from round 64 through round 80. Ran the
+full `gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2`
+run) clean, and verified live that Wolfdorp's Items are back to
+correct.
+
+Worth flagging honestly for a future round, not acted on now: the same
+raw passage shows `"DOOR LUNACY"` said in that same unnamed room *after*
+leaving Wolfdorp, not literally inside it — meaning Wolfdorp's
+`DoorPasswords` entry for `"LUNACY"` may be a zone-level approximation
+rather than an exact-room fact (similar in spirit to CollodonsPile's
+other already-accepted zone-vs-cell precision compromises). Not clearly
+wrong enough to change without more certainty, but worth a closer look
+later.
+
+**Lesson for future rounds, worth repeating:** when a *categorized or
+summarized* fetch answer places a fact in a specific named room, verify
+against the *raw literal source text* before shipping it — a summary
+can misattribute an action to whichever room name happens to sit
+nearest it, even across several intervening moves and an unnamed room.
+Direct quotes are trustworthy; lists built by asking an AI to
+categorize/summarize a whole document are not, by themselves.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

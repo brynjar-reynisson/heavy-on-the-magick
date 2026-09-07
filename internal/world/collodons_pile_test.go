@@ -95,21 +95,22 @@ func TestCollodonsPileWolfdorpHasSword(t *testing.T) {
 	}
 }
 
-// TestCollodonsPileWolfdorpHasKey pins the real Key pickup location
-// (round 81) - see CollodonsPile's doc comment for the fuller CASA
-// passage that confirmed it, closing the gap where Room of Stings'
-// TollItem "Key" had no confirmed source anywhere in this file.
-func TestCollodonsPileWolfdorpHasKey(t *testing.T) {
+// TestCollodonsPileWolfdorpDoesNotHaveKey pins the round-82 correction:
+// round 81 placed "Key" in Wolfdorp's Items based on a misread
+// AI-summarized list, not the raw source text - the raw text shows the
+// real pickup happens in an unnamed room reached by leaving Wolfdorp
+// (the same "unnamed intermediate room" trap round 64 already caught
+// once for Pilefoot). See CollodonsPile's doc comment for the full
+// correction writeup. Room of Stings' TollItem "Key" is honestly
+// unplaced/unsourced within CollodonsPile again, as it was from round
+// 64 through round 80.
+func TestCollodonsPileWolfdorpDoesNotHaveKey(t *testing.T) {
 	w := CollodonsPile()
 	room := w.Rooms[roomWolfdorp]
-	found := false
 	for _, item := range room.Items {
 		if item == "Key" {
-			found = true
+			t.Errorf("Wolfdorp Items = %v, want it to NOT include \"Key\" (round-82 correction - see doc comment)", room.Items)
 		}
-	}
-	if !found {
-		t.Errorf("Wolfdorp Items = %v, want it to include \"Key\"", room.Items)
 	}
 }
 
