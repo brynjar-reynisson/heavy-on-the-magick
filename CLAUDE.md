@@ -3406,6 +3406,36 @@ nearest it, even across several intervening moves and an unnamed room.
 Direct quotes are trustworthy; lists built by asking an AI to
 categorize/summarize a whole document are not, by themselves.
 
+### Recognized LEFT/RIGHT, two real, frequently-used commands that had been sitting unwired
+
+After another Stop-hook rejection, same framing, noticed something
+while re-reading CASA walkthrough passages during last round's Key
+correction: `"LEFT"` and `"RIGHT"` appear constantly throughout the
+walkthrough text (`"LEFT, EXAMINE OBJECT, Pick up NOUGAT"`, `"RIGHT,
+EXAMINE TABLE, DROP BAG"`, etc.), and both turned out to be real,
+already-extracted vocabulary words with their own Merphish keyword
+abbreviations (`"L"`/`"R"`, already in `parser/keywords.go` since very
+early in the project) — but neither was ever wired to anything in
+`game.Handle`, silently falling into the generic "recognized word, no
+behavior yet" bucket the whole time.
+
+Asked the CASA walkthrough directly whether it explains what LEFT/RIGHT
+do, and whether they're used instead of a compass direction or just to
+turn without moving — no explicit explanation is given anywhere, but
+every example shows them used standalone, never paired with a compass
+direction in the same beat, consistent with "turn without moving."
+Given this port's movement model is purely 8-compass-direction based
+with no facing-direction state to turn, modeled the honest stub: same
+convention already established for SWAP (recognized, not lumped into
+the unknown-word bucket, but explicit that no turn mechanic is invented
+since there's no facing state to turn).
+
+Added `TestHandleLeftRightRecognized`, ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean, and verified
+live: both the full words and the `L`/`R` keyword abbreviations are now
+recognized with an honest, specific response instead of the generic
+stub message.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

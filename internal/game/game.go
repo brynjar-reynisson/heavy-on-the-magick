@@ -213,6 +213,14 @@ func NewLevel4Exploration() *Game {
 // FREEZE/TRANSFUSION. SPELLS lists it as confirmed-but-unmodeled rather
 // than omitting it.
 //
+// LEFT and RIGHT (round 83, Merphish keywords "L"/"R") are real,
+// frequently-used commands in the CASA walkthrough - appearing to turn
+// the player without moving them (no compass direction accompanies most
+// uses), but this port's movement model is purely 8-compass-direction
+// based with no facing-direction state to turn, so - same honest-stub
+// convention as SWAP - these are recognized rather than lumped into the
+// generic unknown-word bucket, without inventing a turn mechanic.
+//
 // OPTIONS shows the confirmed real Option Screen menu items, and its
 // "Realign Status" choice actually rerolls the player's Stamina/Skill/
 // Luck (character.Player.Realign) — a real, functional effect, not just
@@ -264,6 +272,8 @@ func (g *Game) Handle(cmd parser.Command) string {
 		return "You SWAP windows. (Merphish 'Z' - confirmed real command, but the underlying dual-window/spell-hand display isn't modeled yet.)"
 	case "CALL":
 		return "You start to CALL... (a real confirmed spell - the numbered map poster's key list has \"Scroll (CALL spell)\" - but no source found so far states what it actually does, so this is an honest stub, not invented behavior.)"
+	case "LEFT", "RIGHT":
+		return "You turn " + strings.ToLower(cmd.Verb) + ". (Merphish keywords L/R - real, frequently-used CASA walkthrough commands, appearing to turn the player without moving them - but this port has no facing-direction state to turn, so this is an honest stub rather than an invented turn mechanic.)"
 	case "INVOKE":
 		return g.invoke(cmd.Target)
 	case "OPTIONS":
