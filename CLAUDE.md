@@ -4484,6 +4484,53 @@ METHOD for any future manual re-reads, not a correction of old ones.
 Extended `TestDemonsConfirmedFour` to require `Correspondences` too.
 Ran the full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 111: actually cycle-counted the beeper loop — a real, derived T-state calibration and a genuinely traced 2-stream combining mechanism
+
+After another Stop-hook rejection noting round 110's work "did not
+advance the port's coverage percentage in any of the three core
+domains," went after the single most-repeated remaining SOUND gap
+directly: `tStatesPerPeriodUnit` had been an admittedly-guessed
+placeholder (58.0) since the audio work began, explicitly flagged as
+needing "full control-flow simulation to pin down precisely" — never
+attempted, because the beeper loop (Z80 64733-64781) branches on
+register wraparound. Read the actual disassembly (`hotm.skool`) for
+that whole loop instruction-by-instruction and hand-summed real Z80
+T-state costs along its dominant ("neither counter wraps") path: NOP×2,
+EX AF,AF', DEC E, OUT, JR NZ (taken), JR Z (not taken), EX AF,AF',
+DEC L, JP Z (not taken), OUT, NOP×2, DJNZ (taken) = 96 T-states per
+iteration.
+
+This trace also resolved something bigger than just the number: the
+loop toggles TWO independently-clocked counters (E, reloaded from the
+FIRST note stream's pitch; L, reloaded from the SECOND stream's, via
+`LD H,(HL)` pulling straight from `PitchTable` in routine 64649) and
+only actually flips the speaker bit (`XOR D`, a single-bit toggle mask)
+when one of them wraps to zero — most iterations just re-output the
+same value. This is the real 2-stream "combining trick" round 99/111's
+`MixNotes` had been honestly guessing at ("probably alternation, not
+literal additive mixing") — it's neither: real bit-level XOR
+interleaving of two independently-clocked counters on one shared
+output bit, closer to a beat-frequency/interference pattern. Updated
+`MixNotes`'s and `SecondaryMelody`'s doc comments to describe the now-
+KNOWN mechanism precisely, rather than the old open guess (the
+sample-averaging implementation itself is unchanged — reproducing the
+exact bit-interleave in the PCM renderer is separate, harder, not
+attempted here).
+
+A full audible cycle needs L to wrap twice (one edge each way), so
+`tStatesPerPeriodUnit` = 96 × 2 = **192**, replacing the guessed 58.
+Sanity-checked the resulting absolute pitch range: 71.5 Hz (lowest
+note) to 1519 Hz (highest) — a musically ordinary chiptune-melody
+range, versus the old constant's 236 Hz-5028 Hz (skewed noticeably
+high/shrill for a startup jingle). Still honestly labeled an
+approximation (uses the dominant no-wrap path uniformly, ignoring the
+smaller E-wrap perturbation; not verified against live/emulated
+audio) — but now a properly derived value, not a guess. Relative pitch
+between notes (already confirmed via the semitone-ratio check) is
+unaffected either way. Ran the full `gofmt`/`build`/`vet`/`test` suite
+clean — no test hardcoded the old absolute-frequency value, so nothing
+broke.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

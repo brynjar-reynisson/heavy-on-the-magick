@@ -13,18 +13,51 @@ const SampleRate = 44100
 // cpuHz is the ZX Spectrum 48K's Z80 clock speed.
 const cpuHz = 3_500_000.0
 
-// tStatesPerPeriodUnit is a ROUGH APPROXIMATION, not a confirmed value.
-// The real beeper loop (Z80 addresses 64733-64781, see pitch_table.go's
-// doc comment) branches between multiple paths depending on register E/L
-// wraparound, so its exact T-state cost per PitchTable unit needs full
-// control-flow simulation to pin down precisely — not yet done. This
-// constant is a plausible order-of-magnitude estimate (typical ZX
-// Spectrum beeper routines run somewhere in the tens-of-T-states-per-unit
-// range) good enough to hear the melody's real relative pitch shape
-// (which IS confirmed correct — see PitchTable's semitone-ratio check),
-// but the absolute Hz/octave placement here should not be trusted as
-// faithful until the loop is fully cycle-counted.
-const tStatesPerPeriodUnit = 58.0
+// tStatesPerPeriodUnit (round 111): a real, hand-cycle-counted value —
+// previously a guessed placeholder (58.0, "a plausible order-of-
+// magnitude estimate"), now actually derived by tracing the beeper
+// loop's real Z80 instructions (addresses 64733-64781, disassembly in
+// hotm.skool) and summing their documented T-state costs.
+//
+// The loop toggles two INDEPENDENT counters per DJNZ iteration: E
+// (reloaded from IXh — the note byte from the FIRST stream,
+// StartupMelody, via the 64716-64731 setup) and L (reloaded from H —
+// the SECOND stream's, SecondaryMelody's, PitchTable lookup result;
+// see routine 64649: `LD H,(HL)` loads H directly from
+// PitchTable[index]). The speaker line only actually changes state
+// (`XOR D` at 64743/64752, D=16 = a single output-bit toggle mask) when
+// one of these counters wraps to zero — most DJNZ iterations, where
+// NEITHER counter wraps, just re-output the SAME A value via `OUT
+// (254),A` (audibly a no-op). This is a genuinely traced structural
+// fact, not a guess: SecondaryMelody's mixing into the output is real
+// bit-level XOR interleaving of two independently-clocked toggle
+// counters on one shared speaker bit — closer to a beat-frequency/
+// interference pattern than either "true 2-channel mixing" or
+// MixNotes's sample-averaging approximation (see MixNotes's doc
+// comment — that simplification still stands; this finding explains
+// WHY it's a simplification, but reproducing the real bit-interleave
+// exactly is a separate, not-yet-attempted task).
+//
+// Cycle count for the DOMINANT path (a "no-wrap" iteration — the most
+// common case for typical PitchTable values, since they're mostly
+// larger than a single-iteration granularity): NOP(4) NOP(4)
+// EX AF,AF'(4) DEC E(4) OUT(11) JR NZ,taken(12) JR Z,not-taken(7)
+// EX AF,AF'(4) DEC L(4) JP Z,not-taken(10) OUT(11) NOP(4) NOP(4)
+// DJNZ,taken(13) = 96 T-states per iteration. A full audible square-
+// wave cycle needs L to wrap TWICE (one edge each way), so
+// full-cycle T-states ≈ PitchTable_value × 96 × 2 = PitchTable_value ×
+// 192 — hence 192.0 here, not 58.0.
+//
+// Still an approximation, not a live-verified value: this uses the
+// dominant no-wrap path's cost uniformly, ignoring the slightly
+// different cost of the rarer E-wrap iterations (a real but small
+// perturbation — E's own wrap period, from the paired stream's current
+// note, is usually much larger than one DJNZ iteration, so this
+// shouldn't shift the result by more than a few percent) and hasn't
+// been checked against a live emulator's actual audio output. Relative
+// pitch between notes remains independently confirmed correct (see
+// PitchTable's semitone-ratio check, unaffected by this constant).
+const tStatesPerPeriodUnit = 192.0
 
 // PeriodToFrequency converts a PitchTable period value into an
 // approximate frequency in Hz. See tStatesPerPeriodUnit's doc comment for
@@ -110,16 +143,21 @@ func RenderNotes(notes []byte, noteDurationSec float64, sampleRate int) []float3
 // advancing pointers — the most direct reading of that is that the
 // original plays both AT THE SAME TIME, not one after another or only
 // on request. This is this port's best-effort reproduction of that:
-// genuinely simultaneous playback, not a proven-faithful one — the ZX
-// Spectrum beeper is a single output bit, so the real hardware's exact
-// two-stream combining trick (probably some form of rapid alternation/
-// interleaving, not literal additive mixing, which isn't physically
-// what a 1-bit toggle can do) hasn't been traced from the disassembly.
-// Averaging is an honest, simple stand-in that at least makes both
-// streams audible together, not a claim of bit-exact hardware accuracy.
-// The shorter stream is silence-padded to the longer one's length so
-// both play to completion (StartupMelody and SecondaryMelody are
-// different lengths).
+// genuinely simultaneous playback, not a proven-faithful one.
+//
+// Round 111 traced the real combining trick from the disassembly (see
+// tStatesPerPeriodUnit's doc comment): it's bit-level XOR interleaving
+// of two independently-clocked toggle counters on the beeper's one
+// output bit — not literal additive mixing (physically impossible for
+// a 1-bit toggle, as already suspected) and not simple alternation
+// either, closer to a beat-frequency/interference pattern between the
+// two streams' current pitches. Averaging here is still an honest,
+// simple stand-in (reproducing the exact bit-interleave in the PCM
+// renderer is a separate, not-yet-attempted task) — but now a
+// documented simplification of a KNOWN mechanism, not a guess at an
+// unknown one. The shorter stream is silence-padded to the longer
+// one's length so both play to completion (StartupMelody and
+// SecondaryMelody are different lengths).
 func MixNotes(a, b []byte, noteDurationSec float64, sampleRate int) []float32 {
 	sa := RenderNotes(a, noteDurationSec, sampleRate)
 	sb := RenderNotes(b, noteDurationSec, sampleRate)

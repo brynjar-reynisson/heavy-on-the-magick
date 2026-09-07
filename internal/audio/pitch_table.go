@@ -88,12 +88,20 @@ var StartupMelody = []byte{
 // playback too — since the source routine reads both streams together
 // on every call (see above), the GUI's startup sound now mixes this
 // with StartupMelody (see audio.MixNotes) rather than requiring a
-// separate manual press to ever hear it during real play. What a
-// two-simultaneous-stream sound routine actually PRODUCES audibly on
-// real hardware (alternating single-channel "fake polyphony," a true
-// harmony line, something else) still isn't confirmed — MixNotes's
-// simple sample-averaging is this port's own honest approximation, not
-// a proven-faithful reproduction of the real combining trick.
+// separate manual press to ever hear it during real play.
+//
+// Round 111 actually TRACED what the two-stream combining produces on
+// real hardware (see synth.go's tStatesPerPeriodUnit doc comment for
+// the full cycle-count derivation): it's real bit-level XOR
+// interleaving of two independently-clocked toggle counters on ONE
+// shared speaker output bit (E's period from StartupMelody's current
+// note, L's from SecondaryMelody's) — not simple alternation and not
+// true multi-channel mixing, closer to a beat-frequency/interference
+// pattern. MixNotes's sample-averaging remains this port's own
+// simplification of that (reproducing the exact bit-interleave is a
+// separate, not-yet-attempted task), but it's now a documented
+// simplification of a KNOWN real mechanism, not a guess at an unknown
+// one.
 var SecondaryMelody = []byte{
 	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
 	26, 24, 27, 24, 29, 24, 31, 24, 32, 24, 31, 24, 27, 24, 31, 24,
