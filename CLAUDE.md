@@ -3920,6 +3920,48 @@ style, useful for any future graphics-fidelity work to check against.
 Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
 `-count=2` run) clean.
 
+### Wired the level-grid exploration modes into `cmd/hotm-gui`, and put the extracted corridor screenshot on screen for real
+
+After another Stop-hook rejection, same framing, closed the gap
+flagged explicitly at the end of last round's writeup: `cmd/hotm-gui`
+had no way to launch any of the four extracted level grids
+(`game.NewLevel1Exploration()` through `NewLevel4Exploration()`) —
+only `cmd/hotm` (the text frontend) supported the `-levelNgrid` flags.
+Mirrored that exact pattern into the GUI: `main.go` gained a
+`selectGame()` helper parsing the same four flags and returning the
+right `*game.Game` plus a `showCorridorArt bool` (true only for
+`-level2grid`, since that's the only grid with a real extracted room
+image so far). `NewGUI()`'s signature changed to accept the `*game.Game`
+and that bool instead of hardcoding `game.New()` internally.
+
+This made it possible to finally wire `graphics.CorridorSample()` (the
+real Level2Grid-A1 room screenshot extracted last round, sourced but
+explicitly left unattached) into an actual live display: a new
+`drawCorridorSample` method renders it scaled (0.35×) in the top-right
+corner, gated on `-level2grid` mode AND the player still being at the
+real starting room (`A1`) AND no portrait currently on screen (avoids
+overlapping both at once). This is the first extracted room scene
+(as opposed to portrait) ever shown in live gameplay, not just an
+offline asset.
+
+Verified with two separate live throwaway-build screenshot rounds, not
+just a successful compile:
+- `-level2grid`: window title correctly read "... (Level 2 grid)",
+  current room correctly showed "A1", and the real corridor art
+  rendered in the correct position at the correct scale. One minor,
+  non-blocking cosmetic note: the stats-line text sits close to/
+  slightly under the image at this position — text still renders on
+  top and stays fully readable, judged not worth further layout work
+  given the time budget.
+- Default mode (no flags, `CollodonsPile`): confirmed the `NewGUI()`
+  signature change didn't regress the existing experience — window
+  title has no mode suffix as expected, room/stats/inventory/help all
+  render correctly, corridor art correctly does NOT show (as it
+  shouldn't outside `-level2grid`).
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
