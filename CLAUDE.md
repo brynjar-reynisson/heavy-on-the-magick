@@ -5814,6 +5814,40 @@ giving no context for a specific fact (SORONOROS/LONG/LAZA's rooms)
 is a real, checkable negative worth confirming from a SECOND source
 too before accepting it as a genuine limit, not just one fetch's gap.
 
+### Round 139: wired CAULDRON, ACHAD — round 136's other deliberately-deferred ritual, now genuinely implemented
+
+After another Stop-hook rejection, same framing, went back to the
+one item round 136 explicitly deferred ("CAULDRON, ACHAD... needs a
+genuinely different mechanism... not attempted this round") and
+actually designed it. The real insight that unblocked it: no NEW
+`world.Room` field is needed at all — a "cauldron's contents" is
+already just that room's real `Items` slice, the exact same data
+`checkSwapItem`/`checkPelletSlug` already read from and write to.
+`game.cauldronAchad` checks, directly against
+`g.World.CurrentRoom().Items` via the existing `g.roomHasItem`
+helper (round 131): the room is really named "Cauldron"; the Scroll
+numbered_room_contents.go's #50 already says it starts with ("Cauldron
+of cold iron (scroll inside)") has been removed (picked up) first, per
+the source's own "(You'll have to take out the scroll first)"; and all
+3 of Ulna/Thigh/Skull have been dropped there. Once satisfied, the
+same honest "confirmed real, effect unknown" stub NEST/PHOENIX and
+(much earlier) CALL used before their own eventual resolutions.
+
+Added `TestHandleCauldronAchadRequiresRealCauldron` and
+`TestHandleCauldronAchadFullRitual` (all 3 gating steps individually
+checked — Scroll still inside, 2-of-3 bones, then all 3 — using a
+synthetic "Cauldron" room, same convention as `TestHandleNestPhoenixFullRitual`).
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean, and verified live via `go run ./cmd/hotm`:
+`CAULDRON, ACHAD` outside the real cauldron room correctly says so.
+
+**How to apply**: "needs a genuinely different mechanism" doesn't
+always mean a new data model is required — before adding a new
+`world.Room` field, check whether an already-existing, general-purpose
+one (here, plain `Items`) already models the concept precisely enough.
+A multi-item gate is just several single-item checks in a row against
+the same slice, not a fundamentally new kind of state.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

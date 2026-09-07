@@ -275,6 +275,52 @@ func TestHandleNestPhoenixFullRitual(t *testing.T) {
 	}
 }
 
+// TestHandleCauldronAchadRequiresRealCauldron covers round 139's real,
+// sourced ritual command (see game.cauldronAchad's doc comment):
+// saying "CAULDRON, ACHAD" anywhere that isn't really named "Cauldron"
+// is an honest rejection.
+func TestHandleCauldronAchadRequiresRealCauldron(t *testing.T) {
+	g := New() // starts in Room of Misery, not the Cauldron
+	got := g.Handle(parser.Parse("CAULDRON, ACHAD"))
+	if !strings.Contains(got, "no cauldron here") {
+		t.Errorf("Handle(CAULDRON, ACHAD) outside the real cauldron = %q, want an honest rejection", got)
+	}
+}
+
+// TestHandleCauldronAchadFullRitual covers the real ritual succeeding
+// once every confirmed requirement is met: real room name, the
+// Scroll removed, and Ulna/Thigh/Skull all dropped. Uses a synthetic
+// room (no shipped World.Room is named "Cauldron" yet) - same pattern
+// as TestHandleNestPhoenixFullRitual.
+func TestHandleCauldronAchadFullRitual(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Cauldron", Items: []string{"Scroll"}})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("CAULDRON, ACHAD"))
+	if !strings.Contains(got, "take the Scroll out") {
+		t.Errorf("Handle(CAULDRON, ACHAD) with the Scroll still inside = %q, want the take-the-Scroll-out hint", got)
+	}
+
+	g.Handle(parser.Parse("PICKUP SCROLL"))
+	got = g.Handle(parser.Parse("CAULDRON, ACHAD"))
+	if !strings.Contains(got, "needs more bones") {
+		t.Errorf("Handle(CAULDRON, ACHAD) with the Scroll out but no bones = %q, want the needs-more-bones hint", got)
+	}
+
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Ulna", "Thigh")
+	got = g.Handle(parser.Parse("CAULDRON, ACHAD"))
+	if !strings.Contains(got, "needs more bones") {
+		t.Errorf("Handle(CAULDRON, ACHAD) with only 2 of 3 bones = %q, want it to still be missing bones", got)
+	}
+
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Skull")
+	got = g.Handle(parser.Parse("CAULDRON, ACHAD"))
+	if !strings.Contains(got, "ritual succeeds") {
+		t.Errorf("Handle(CAULDRON, ACHAD) with every requirement met = %q, want the ritual to succeed", got)
+	}
+}
+
 // TestHandleFireBlocksMovementWithoutClasp covers the real, sourced
 // Fire mechanic (see world.Room.Fire's doc comment): the CASA
 // walkthrough states the Clasp "enables you to walk through fire" -
