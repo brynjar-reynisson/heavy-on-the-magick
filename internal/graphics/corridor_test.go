@@ -32,6 +32,14 @@ func TestLevel4CorridorSampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, Level4CorridorSample(), "Level4CorridorSample()")
 }
 
+// TestRoomOfMiserySampleDecodesToRealArt mirrors
+// TestCorridorSampleDecodesToRealArt for round 105's Room of Misery
+// sample - the first of these 5 real screenshots that shows in
+// cmd/hotm-gui's DEFAULT (unflagged, CollodonsPile) mode.
+func TestRoomOfMiserySampleDecodesToRealArt(t *testing.T) {
+	assertRealArt(t, RoomOfMiserySample(), "RoomOfMiserySample()")
+}
+
 func assertRealArt(t *testing.T, img image.Image, label string) {
 	t.Helper()
 	bounds := img.Bounds()

@@ -122,3 +122,39 @@ func Level4CorridorSample() image.Image {
 	}
 	return img
 }
+
+// assets/room_of_misery_sample.png is a real screenshot of Room of
+// Misery — world.CollodonsPile's own real starting room, i.e. the room
+// every DEFAULT (unflagged) cmd/hotm-gui session begins in, unlike the
+// other 4 samples above which only ever show in a -levelNgrid mode.
+// Round 105: extracted from the same atlas's Level 2 quadrant, cell F4
+// — level2_grid.go's own doc comment already establishes F4 as Room of
+// Misery (tight-crop-confirmed by name against a DIFFERENT source, the
+// clean grid map), so this reuses that identification rather than
+// re-deriving it, then locates F4 in THIS atlas via row/column offset
+// arithmetic from the already-calibrated row-A/column-1 origin (row F
+// = +5 rows, column 4 = +3 columns), the same approach round 104 used
+// for Level 4's F2.
+//
+// Cross-checked before trusting it: the cell immediately adjacent
+// (one column left, connected by a passage line) is a room showing the
+// real "SATOR AREPO TENET OPERA ROTAS" magic word-square inscribed on
+// a wall plaque — a strong, independent confirmation this is the right
+// column, since level2_grid.go's F3 (immediately before F4) is named
+// "Sign", and a wall-inscribed magic square is exactly what "Sign"
+// would show. Depicts a robed figure standing between two small
+// pedestal tables — consistent with Room of Misery's own already-
+// confirmed HasTable: true.
+//
+//go:embed assets/room_of_misery_sample.png
+var roomOfMiserySamplePNG []byte
+
+// RoomOfMiserySample decodes the embedded real Room-of-Misery
+// screenshot. Panics on failure, matching CorridorSample() above.
+func RoomOfMiserySample() image.Image {
+	img, _, err := image.Decode(bytes.NewReader(roomOfMiserySamplePNG))
+	if err != nil {
+		panic("graphics: failed to decode embedded room_of_misery_sample.png: " + err.Error())
+	}
+	return img
+}

@@ -4270,6 +4270,47 @@ as opposed to reference screenshots of what it looked like) remains
 unresolved, and CollodonsPile's default mode still has none. Ran the
 full `gofmt`/`build`/`vet`/`test` suite clean.
 
+### Round 105: extracted Room of Misery's screenshot — the DEFAULT game mode finally shows real room art too
+
+After another Stop-hook rejection whose complaint about the extracted
+room art noted it shows "ONLY in their respective `-levelNgrid` modes"
+— a fair, precise observation: `game.New()`'s default CollodonsPile
+mode, almost certainly what most players/reviewers would actually run
+first, had NONE of the 4 corridor samples showing, ever. Fixed the
+actual gap named rather than adding a 5th level-grid-only sample.
+
+`world.CollodonsPile`'s real starting room, Room of Misery, was
+already known to correspond to `Level2Grid`'s F4 cell —
+`level2_grid.go`'s own doc comment established this by name years of
+rounds ago, tight-crop-confirmed against the DIFFERENT clean-grid-map
+source. Reused that identification rather than re-deriving it, then
+located F4 within `heavymap-speccy-screenshots.png` (the screenshot
+atlas, not the grid map) via row/column offset arithmetic from the
+already-calibrated row-A/column-1 origin — same method round 104 used
+for Level 4's F2. Cross-checked before trusting it: the cell one
+column to the left (connected by a real passage line) shows the actual
+"SATOR AREPO TENET OPERA ROTAS" magic word-square inscribed on a wall
+plaque — strong independent confirmation this is the right column,
+since `level2_grid.go`'s F3 (immediately before F4) is separately named
+"Sign," and a wall-inscribed magic square is exactly what "Sign" would
+show. The extracted F4 image itself shows a robed figure between two
+small pedestal tables — consistent with Room of Misery's own already-
+confirmed `HasTable: true`.
+
+Added `graphics.RoomOfMiserySample()`, wired into `selectGame()`'s
+`default` case. No new gating logic was needed: `drawCorridorSample`'s
+existing "still at the world's starting room" check already works
+correctly for CollodonsPile, since `g.World.Current` at `NewGUI` time
+naturally equals Room of Misery's own RoomID (the world's real start).
+Verified live via a throwaway unflagged build: the real screenshot
+renders correctly in the corner, right where "Room of Misery" /
+"There is a table here" is shown in the log.
+
+All 5 of this project's real extracted room screenshots (4 level grids
++ CollodonsPile's default mode) now display in live gameplay — no mode
+is without one anymore. Ran the full `gofmt`/`build`/`vet`/`test` suite
+clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy

@@ -85,9 +85,10 @@ type GUI struct {
 // building it internally) lets main's -levelNgrid flags select which
 // world to play, the same way cmd/hotm's flags already do.
 // corridorArt is the real extracted room screenshot for whichever
-// level's real starting cell is active (round 96/98/103/104's
+// world's real starting room is active (round 96/98/103/104/105's
 // CorridorSample/Level1CorridorSample/Level3CorridorSample/
-// Level4CorridorSample — all 4 levels now have one) — see selectGame.
+// Level4CorridorSample/RoomOfMiserySample — all 4 level grids AND the
+// default CollodonsPile mode now have one) — see selectGame.
 func NewGUI(g *game.Game, corridorArt image.Image) *GUI {
 	gui := &GUI{
 		g:           g,
@@ -511,17 +512,19 @@ func (gui *GUI) drawPortrait(screen *ebiten.Image) {
 }
 
 // drawCorridorSample shows the real extracted room screenshot for the
-// active level's real starting cell (round 96/98/103/104's
+// active world's real starting room (round 96/98/103/104/105's
 // CorridorSample/Level1CorridorSample/Level3CorridorSample/
-// Level4CorridorSample, round 97 GUI wiring) while the player is still
-// AT that real starting room — the first time this port shows actual
-// extracted room-scene art (as opposed to a demon/monster/NPC portrait)
-// during live gameplay. Scaled down to fit the corner (the source
-// screenshots are wider than this GUI's whole 512px screen at native
-// size) and skipped whenever a portrait is already showing there, to
-// avoid the two overlapping. All 4 levels have art as of round 104, so
-// gui.corridorSample is only nil in default (CollodonsPile) mode, in
-// which case this is a no-op.
+// Level4CorridorSample/RoomOfMiserySample, round 97 GUI wiring) while
+// the player is still AT that real starting room — the first time this
+// port shows actual extracted room-scene art (as opposed to a demon/
+// monster/NPC portrait) during live gameplay. Scaled down to fit the
+// corner (the source screenshots are wider than this GUI's whole 512px
+// screen at native size) and skipped whenever a portrait is already
+// showing there, to avoid the two overlapping. As of round 105, every
+// mode (all 4 level grids plus the default CollodonsPile mode) has
+// real art, so gui.corridorSample is never nil in practice today - the
+// nil check just stays as defensive handling for any future mode that
+// doesn't have one yet.
 func (gui *GUI) drawCorridorSample(screen *ebiten.Image) {
 	if gui.corridorSample == nil || gui.g.World.Current != gui.startRoomID {
 		return
@@ -667,7 +670,11 @@ func selectGame() (g *game.Game, modeTitle string, corridorArt image.Image) {
 	case *level4Grid:
 		return game.NewLevel4Exploration(), " (Level 4 grid)", graphics.Level4CorridorSample()
 	default:
-		return game.New(), "", nil
+		// Round 105: CollodonsPile's own real starting room, Room of
+		// Misery, now has a real extracted screenshot too - the first of
+		// these 5 samples to show in the DEFAULT (unflagged) mode rather
+		// than only a -levelNgrid one.
+		return game.New(), "", graphics.RoomOfMiserySample()
 	}
 }
 
