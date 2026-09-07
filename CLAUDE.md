@@ -7834,6 +7834,65 @@ and "checked whether LOOK/MAP both mention it" as one paired habit
 going forward, the same way this project already treats new commands
 and `cmd/vocab-coverage` updates as paired (rounds 140/165/169).
 
+### Round 173: attempted a GUI Water indicator, caught a real visual regression live, correctly declined to ship it
+
+After another Stop-hook rejection, same framing, checked whether
+`cmd/hotm-gui` needed the same treatment round 151 gave `HasTable`/
+`HasChest` and round 164's own writeup implicitly called for: does the
+GUI visually surface `Guards` (it does, `drawGuards`) but not the newer
+`Water` hazard (round 169)? It didn't — a real, genuine gap, the same
+"confirmed but unsurfaced in the live GUI" class this project has
+closed several times before.
+
+Implemented `drawWater` (a plain, honestly-caveated stand-in color,
+since — unlike `Guards`' clean-grid-map-legend-confirmed red icon — no
+source gives `Water` a confirmed icon color) and placed it in the
+existing right-column indicator stack (`Monster`/`Guards`/`Items`/
+`Fixtures`). First attempt (appended below the existing 4, at y=80)
+looked fine in isolation but a disposable-throwaway-repo-copy
+screenshot at the real `Water` cell showed it visually colliding with
+the stats line (`statsLine`'s own text runs wide enough to reach that
+column at a similar row). Tried tightening the whole column's spacing
+to fit a 5th item with real clearance — re-screenshotted at the
+`Water` cell and confirmed THAT specific collision was fixed.
+
+**Then checked the change against the default `CollodonsPile` mode
+too, not just the one room being added** — and found the tightened
+spacing broke something that was already fine: Room of Misery's real,
+longer `Items` list (`"Grimoire, Poison-smeared book"`) plus its real
+`HasTable` fixture, now squeezed into a narrower vertical band,
+visibly overlapped each other and bled into the stats line — a real
+regression in an already-shipped, already-verified default-mode
+screen, not a hypothetical risk. Rather than keep adjusting numbers
+speculatively (the same trap a purely-arithmetic fix would fall into),
+`git checkout --` reverted `cmd/hotm-gui/main.go` cleanly back to its
+last committed, verified-good state — no `drawWater` indicator
+shipped this round, confirmed via `go build`/`go test` that the repo
+is exactly at round 172's state with nothing left half-applied.
+
+The underlying real gameplay fact isn't lost: round 172's `LOOK`-time
+hint (`"Standing water blocks your way here."`) already appears in
+`cmd/hotm-gui`'s own log area too, since both frontends render the
+exact same `Handle` output — a player using the GUI already sees the
+Water hazard mentioned, just via the shared log text rather than a
+dedicated glyph. A missing HUD icon is a real, smaller gap than a
+missing hint entirely, and forcing a cramped 5th slot into an already-
+tight column risked (and, on the first honest check, DID) break
+something that already worked.
+
+**How to apply**: when adding a new item to an already-crowded fixed-
+layout UI area, verify the change against the MOST DEMANDING existing
+content (Room of Misery's real, longer Items string), not just the
+new room being added — a fix that looks clean for the new case can
+still regress an old one if the two were never checked together. When
+a live screenshot reveals a real problem the arithmetic didn't
+predict, prefer reverting cleanly to a known-good state over further
+speculative number-tweaking without re-verifying every affected
+screen. A well-tested revert with an honest writeup is real, valuable
+work, not a wasted round — it prevents a regression that a
+less-careful round might have shipped on the strength of one
+screenshot alone.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
