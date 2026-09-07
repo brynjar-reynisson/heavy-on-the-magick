@@ -564,10 +564,15 @@ func TestHandleGradeReportsCurrentGrade(t *testing.T) {
 	}
 }
 
+// TestHandleSpellsListsRealSpells pins round 118: INVOKE joined this
+// list because the manual's own explicit "Spells:" heading groups
+// exactly I (Invoke), B (Blast), F (Freeze) - INVOKE was missing from
+// this port's SPELLS listing entirely before, a real sourced omission,
+// not just an incomplete aggregation.
 func TestHandleSpellsListsRealSpells(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("SPELLS"))
-	for _, want := range []string{"BLAST", "FREEZE", "TRANSFUSION", "CALL"} {
+	for _, want := range []string{"INVOKE", "BLAST", "FREEZE", "TRANSFUSION", "CALL"} {
 		if !strings.Contains(got, want) {
 			t.Errorf("Handle(SPELLS) = %q, want it to list %q", got, want)
 		}

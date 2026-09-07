@@ -4740,6 +4740,33 @@ already knowing to look.
 Ran the full `gofmt`/`build`/`vet`/`test` suite clean (doc-only change,
 but verified anyway).
 
+### Round 118: fixed a real omission in SPELLS — INVOKE was missing, despite the manual's own explicit "Spells:" heading naming it
+
+After another Stop-hook rejection, same framing (now with the sound
+domain conceded as "as complete as the original itself" — good
+confirmation round 117's finding landed), went looking for gameplay-
+domain gaps instead. Re-checked round 110's PDF-text-layer extraction
+of the manual and found something the earlier "SPELLS is this port's
+own aggregation, no source groups them as a menu" doc comment had
+actually gotten wrong: the manual DOES have its own explicit "Spells:"
+heading, grouping exactly three keywords — **I (Invoke)**, B (Blast),
+F (Freeze) — verbatim: "I – (Object) Invoke the named Demon. B –
+(Object) Blast... F – (Object) Freeze...". `game.spells()`'s response
+listed BLAST/FREEZE/TRANSFUSION/CALL but never INVOKE — a real,
+sourced omission (not just an incomplete invented aggregation), missed
+because the manual re-reads before round 110 were all visual, and
+round 110's own audit focused on the grimoire's demon section, not
+this earlier keyword-table section.
+
+Added INVOKE to the listing, corrected the doc comment (TRANSFUSION/
+CALL are still real confirmed spells, just sourced from a different
+part of the manual — the Grimoire section, per the manual's own "fuller
+details... in the section on the Grimoire" line — not this specific
+three-keyword grouping, so they stay in the listing on their own
+footing). Verified via a real `Handle("SPELLS")` call. Extended
+`TestHandleSpellsListsRealSpells` to require INVOKE too. Ran the full
+`gofmt`/`build`/`vet`/`test` suite clean.
+
 ## Open next steps
 
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
