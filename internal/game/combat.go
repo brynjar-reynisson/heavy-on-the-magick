@@ -121,9 +121,14 @@ func (g *Game) awardVictoryPoints() int {
 
 // deathCheck appends a death notice if the just-applied Stamina cost
 // killed the player (see Handle's doc comment - confirmed real mechanic).
+// "You die horribly!" is the real game's own exact death message,
+// confirmed via a direct frame-by-frame review of real gameplay footage
+// (a Let's Play video) - this port's own wording is kept alongside it
+// for clarity (context on WHY, which the original's own short exclamation
+// doesn't state) rather than replaced outright.
 func (g *Game) deathCheck(msg string) string {
 	if g.Player.IsDead() {
-		return msg + "\nYour Stamina gives out. You are dead. (GAME OVER)"
+		return msg + "\nYour Stamina gives out. You die horribly! (GAME OVER)"
 	}
 	return msg
 }

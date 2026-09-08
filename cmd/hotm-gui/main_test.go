@@ -213,6 +213,53 @@ func TestWrapLineBreaksOnWordBoundaries(t *testing.T) {
 	}
 }
 
+// TestInventoryPanelLines covers the left panel's third real mode (see
+// showInventory's doc comment) - a direct frame-by-frame video review
+// confirmed the real screen text "IN YOUR POUCH:" plus each item with
+// its grammatical article.
+func TestInventoryPanelLines(t *testing.T) {
+	g := game.New()
+	g.Player.Items = []string{"Grimoire", "Bag"}
+	got := strings.Join(inventoryPanelLines(g), "\n")
+	for _, want := range []string{"IN YOUR POUCH:", "A GRIMOIRE", "A BAG"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("inventoryPanelLines() = %q, want it to contain %q", got, want)
+		}
+	}
+}
+
+// TestArticle covers the a/an grammatical-article helper.
+func TestArticle(t *testing.T) {
+	cases := map[string]string{"Grimoire": "a", "Bag": "a", "Erlstone": "an", "": "a"}
+	for item, want := range cases {
+		if got := article(item); got != want {
+			t.Errorf("article(%q) = %q, want %q", item, got, want)
+		}
+	}
+}
+
+// TestMonsterStatsLines covers a real, video-confirmed addition to the
+// right stats panel (see monsterStatsLines's doc comment): a live
+// monster/NPC's name and Stamina figure, shown alongside the player's
+// own stats.
+func TestMonsterStatsLines(t *testing.T) {
+	if got := monsterStatsLines(nil); got != nil {
+		t.Errorf("monsterStatsLines(nil) = %v, want nil", got)
+	}
+	if got := monsterStatsLines(&world.Room{}); got != nil {
+		t.Errorf("monsterStatsLines(no monster) = %v, want nil", got)
+	}
+	if got := monsterStatsLines(&world.Room{Monster: "Vampire", MonsterHealth: 0}); got != nil {
+		t.Errorf("monsterStatsLines(defeated monster) = %v, want nil", got)
+	}
+	got := strings.Join(monsterStatsLines(&world.Room{Monster: "Vampire", MonsterHealth: 2}), "\n")
+	for _, want := range []string{"VAMPIRE", "STAMINA 2"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("monsterStatsLines(live Vampire) = %q, want it to contain %q", got, want)
+		}
+	}
+}
+
 // TestStatsPanelLines covers the right status-bar panel's real
 // confirmed Stamina/Skill/Luck/XP content, matching the real reference
 // SpecEmu screenshot's own green STAMINA/SKILL/LUCK panel (see

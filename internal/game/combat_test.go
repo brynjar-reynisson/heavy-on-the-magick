@@ -217,8 +217,8 @@ func TestHandleCombatCanKillPlayer(t *testing.T) {
 	if !g.Player.IsDead() {
 		t.Fatalf("Player.Stamina = %d after BLAST, want <= 0 (dead)", g.Player.Stamina)
 	}
-	if !strings.Contains(got, "dead") {
-		t.Errorf("Handle(BLAST) that reduces Stamina to 0 = %q, want it to mention death", got)
+	if !strings.Contains(got, "die horribly") {
+		t.Errorf("Handle(BLAST) that reduces Stamina to 0 = %q, want the real confirmed death message", got)
 	}
 
 	got = g.Handle(parser.Parse("EAST"))

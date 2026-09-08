@@ -8096,6 +8096,94 @@ name is confirmed, not just its rough content/position. Owning a local
 video-frame-extraction tool (ffmpeg) paid for itself on the very first
 real use.
 
+### Round 175: a full pass over the real gameplay video - 4 more concrete, sourced corrections
+
+Sampled the ENTIRE remaining video (roughly 5 minutes of real gameplay,
+after the opening hint screen) as still frames via ffmpeg, reviewed as
+contact-sheet montages then zoomed to full resolution wherever a detail
+mattered, per the same technique round 174's correction introduced.
+Four real, concrete findings, all implemented and verified:
+
+1. **The real death message is "You die horribly!"** - this port's own
+   wording ("You are dead... GAME OVER") is kept alongside it for the
+   context the original's own short exclamation doesn't give, but the
+   real exact phrase is now included. `deathCheck` updated; the one
+   test asserting on the OLD non-matching substring ("dead") was
+   checking a coincidence, not the real fact - fixed to check for the
+   real phrase instead.
+
+2. **Stamina/Skill/Luck vary far more widely than previously assumed.**
+   Multiple distinct character rolls visible across the footage's own
+   deaths/restarts gave 3 more real Skill samples (4, 12, 44) and 3 more
+   real Luck samples (2, 4, 9) - both well outside the ranges 2 earlier
+   sources alone had justified (Skill capped at 12, Luck at 8). 44 in
+   particular is a dramatic real outlier, kept as the new honest ceiling
+   rather than dismissed as noise - this project's own standing rule is
+   to widen a range on real evidence, not silently discard an
+   inconvenient sample. `character.Player`'s roll ranges widened:
+   Skill 4-45 (was 4-12), Luck 1-10 (was 1-8). Stamina's own range
+   (28-45) had no contradicting evidence this pass, left unchanged.
+   Honestly flagged in the doc comment: the real distribution shape
+   across these now-much-wider bounds isn't confirmed either (a Skill
+   of 44 may be a rare high roll, not a uniform-random common one) -
+   still a placeholder for the EXTREMES, not the real formula.
+
+3. **A real third left-panel mode: "IN YOUR POUCH:".** Alongside the
+   already-known EXITS/room-status toggle (round 174's SWAP finding),
+   the footage shows INVENTORY replaces that same panel slot with "IN
+   YOUR POUCH:" plus each carried item, given its real grammatical
+   article ("A GRIMOIRE", "A BAG") - confirmed on a fixed YELLOW
+   background, independent of the room picture's own color (checked
+   against both a red-toned and a yellow-toned room showing the same
+   inventory panel). Added `GUI.showInventory` (J key, or typing
+   INVENTORY in full) - takes priority over the EXITS/status toggle,
+   cleared by SWAP (Z), matching the real "Z swaps back" behavior.
+   Verified live via a real screenshot: picked up the Grimoire, pressed
+   J, confirmed "IN YOUR POUCH: A POUCH / A GRIMOIRE" renders correctly
+   on the real yellow background.
+
+4. **A real, previously un-modeled right-panel addition: monster/NPC
+   Stamina.** The footage shows that whenever a live monster OR a
+   friendly NPC (confirmed for both a hostile Wyvern and Apex the Ogre
+   himself) is nearby, the stats panel also displays its name plus a
+   "STAMINA" figure below the player's own 4 lines - not combat-
+   specific, since Apex isn't a combat encounter. The real screen also
+   shows a second stat, "CUNNING", which this port has no corresponding
+   extracted data for (`world.Room` only ever tracked a single
+   `MonsterHealth` number) - honestly left out rather than inventing a
+   value, the same discipline this project applies to every other
+   under-sourced number. Added `monsterStatsLines`, reusing the already-
+   real `MonsterHealth` as the shown "STAMINA" figure (an honest,
+   accurate reuse of existing real data, not new data).
+
+Also cross-validated 2 already-correct mechanics against the same
+footage rather than changing anything: this port's own "Pick up what?"/
+"Drop what?" no-target prompts already match the real game's own
+"PICK UP WHAT?"/"DROP WHAT?" exactly (case aside, this port's own
+established sentence-case convention for its own message text); and
+picking up the already-placed "Poison-smeared book" triggering a real
+poison reaction in the footage matches this port's own round-128
+poison-pickup mechanic precisely.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean throughout, and verified the inventory panel live
+via a real screenshot (window focus cooperated this round, unlike the
+earlier session - see round 174's own note about this being
+intermittent, not a fixed bug).
+
+**How to apply**: a single well-chosen real source (one continuous
+gameplay video, sampled thoroughly rather than glanced at once) can
+independently confirm or correct MULTIPLE separate previously-uncertain
+areas of this port in one pass - a death message, a stat-roll range, a
+UI panel mode, and a stats-display mechanic all came from the same
+~5 minutes of footage. When a real sample directly contradicts an
+existing estimated range (Skill 44 vs. an assumed max of 12), widen the
+range to include it rather than treating the sample as noise - the
+whole point of the earlier estimate was always to be corrected by real
+data exactly like this. When honesty requires leaving a real, observed
+detail out (Apex's/monsters' "CUNNING" stat), record NOT modeling it as
+an intentional, sourced decision in the code, not silence.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the

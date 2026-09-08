@@ -138,24 +138,31 @@ func (p *Player) HasItem(name string) bool {
 // Stat roll ranges. The original randomizes Stamina/Skill/Luck within
 // some bounds at game start (confirmed by the manual and by observing a
 // live rolled character), but the exact original bounds haven't been
-// extracted — these are estimated ranges centered on the one confirmed
-// sample (Stamina 36, Skill 8, Luck 4), deliberately kept from rolling
-// too low a Stamina (an unplayably-short game) since a real player
-// mentioned that's implausible for the original. Not extracted fact,
-// just a reasonable placeholder pending the real formula.
+// extracted — these are estimated ranges centered on real observed
+// samples, not the real original formula.
 //
 // Round 126 cross-validation: The CRPG Addict's first-hand playthrough
 // account (the same source that resolved CALL's effect and INVOKE's
 // furnace-room punishment) gives two more real example rolls in
 // Stamina-Skill-Luck order — "very high, moderate, and very low, like
-// 38-9-2 or 35-7-1" — both of which land cleanly inside these
-// independently-estimated ranges (28-45 / 4-12 / 1-8), a real,
-// unplanned confirmation that the estimate was reasonable, not proof
-// of the exact original bounds.
+// 38-9-2 or 35-7-1".
+//
+// Widened again after a direct frame-by-frame review of a real Let's
+// Play video (multiple separate character rolls visible across deaths/
+// restarts): real observed Skill values of 4, 12, AND 44, and Luck
+// values of 2, 4, and 9 - both well outside the ranges those 2 sources
+// alone had justified (Skill up to 12, Luck up to 8). 44 in particular
+// is a dramatic real outlier - kept as the new real ceiling rather than
+// dismissed, since this project's own standing rule is to widen a range
+// on real evidence, not silently discard an inconvenient sample. Skill
+// and Luck's true real distribution might not be uniform across these
+// new, much wider bounds (a Skill of 44 may be a rare high roll, not a
+// common one) - this remains an honest placeholder for the shape of the
+// roll, not just its extremes, pending the real formula.
 const (
 	minStamina, maxStamina = 28, 45
-	minSkill, maxSkill     = 4, 12
-	minLuck, maxLuck       = 1, 8
+	minSkill, maxSkill     = 4, 45
+	minLuck, maxLuck       = 1, 10
 )
 
 // NewPlayer creates Axil at the start of a game, at the lowest grade, with

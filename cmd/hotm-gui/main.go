@@ -92,6 +92,7 @@ var (
 	zxCyan     = color.RGBA{0, 214, 214, 255}
 	zxGreen    = color.RGBA{0, 214, 0, 255}
 	zxMagenta  = color.RGBA{214, 0, 214, 255}
+	zxYellow   = color.RGBA{214, 214, 0, 255}
 	zxWhite    = color.RGBA{214, 214, 214, 255} // the real ZX "white" (214, not 255) - the message panel's background
 )
 
@@ -141,6 +142,15 @@ type GUI struct {
 	// of what SWAP's "Window 1" actually shows - previously an honest
 	// stub with the display "not modeled yet" (see game.go's SWAP case).
 	showRoomStatus bool
+	// showInventory shows the left panel's THIRD real mode - "IN YOUR
+	// POUCH:" plus each carried item - confirmed via a direct frame-by-
+	// frame review of real gameplay footage (a Let's Play video):
+	// triggered by INVENTORY, it replaces EXITS/room-status in that same
+	// panel slot rather than appearing as message-log text. Takes
+	// priority over showRoomStatus when both would apply; SWAP (Z)
+	// clears it, returning to whichever of EXITS/room-status it was
+	// showing before - matching the real "Z swaps back" behavior.
+	showInventory bool
 }
 
 // NewGUI builds a live GUI session around g. Round 97: previously always
@@ -315,6 +325,7 @@ func (gui *GUI) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyZ) {
 		gui.appendLog(gui.g.Handle(parser.Parse("SWAP")))
 		gui.showRoomStatus = !gui.showRoomStatus
+		gui.showInventory = false
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyT) {
 		gui.handleAndPlay("TRANSFUSION")
@@ -330,6 +341,7 @@ func (gui *GUI) Update() error {
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
 		gui.appendLog(gui.g.Handle(parser.Parse("INVENTORY")))
+		gui.showInventory = true
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyY) {
 		gui.playSecondaryMelody()
@@ -361,11 +373,15 @@ func (gui *GUI) updateTyping() {
 		if echo, result := submitTypedCommand(gui.g, raw); echo != "" {
 			gui.appendLog(echo)
 			gui.appendLog(result)
-			// See showRoomStatus's doc comment: SWAP toggles the left
-			// status panel, whether triggered by the Z quick-key (Update)
-			// or typed out here in full.
-			if parser.Parse(raw).Verb == "SWAP" {
+			// See showRoomStatus's/showInventory's doc comments: SWAP and
+			// INVENTORY both affect the left panel, whether triggered by
+			// their Z/J quick-keys (Update) or typed out here in full.
+			switch parser.Parse(raw).Verb {
+			case "SWAP":
 				gui.showRoomStatus = !gui.showRoomStatus
+				gui.showInventory = false
+			case "INVENTORY":
+				gui.showInventory = true
 			}
 		}
 		return
@@ -595,7 +611,10 @@ func (gui *GUI) Draw(screen *ebiten.Image) {
 	panelH := statusBarHeight - 2*borderThickness
 
 	leftBG := zxCyan
-	if gui.showRoomStatus {
+	switch {
+	case gui.showInventory:
+		leftBG = zxYellow // see showInventory's doc comment - the real INVENTORY panel is yellow, confirmed independent of the room picture's own color
+	case gui.showRoomStatus:
 		leftBG = zxGreen // see showRoomStatus's doc comment - the real swapped panel is green, not cyan
 	}
 	fillPanel(screen, leftX, panelY, leftPanelWidth, panelH, leftBG)
@@ -711,11 +730,44 @@ func roomStatusLines(g *game.Game) []string {
 	return lines
 }
 
+// inventoryPanelLines is the left panel's THIRD real mode (see
+// showInventory's doc comment) - "IN YOUR POUCH:" plus each carried
+// item, prefixed with its grammatical article ("A GRIMOIRE", "A BAG"),
+// matching the real observed screen text exactly. An empty pouch still
+// shows the header line, honestly - no real source confirms what the
+// original shows for a genuinely empty pouch, so nothing is guessed.
+func inventoryPanelLines(g *game.Game) []string {
+	lines := []string{"IN YOUR POUCH:"}
+	for _, item := range g.Player.Items {
+		lines = append(lines, strings.ToUpper(article(item)+" "+item))
+	}
+	return lines
+}
+
+// article picks "a"/"an" for item's own grammatical article, matching
+// the real screen text's own convention (confirmed for consonant-
+// starting items like "A GRIMOIRE"/"A BAG" - no vowel-starting real
+// item has been directly observed yet, so the "an" half of this rule is
+// the standard English convention, not itself independently confirmed).
+func article(item string) string {
+	if item == "" {
+		return "a"
+	}
+	switch item[0] {
+	case 'A', 'E', 'I', 'O', 'U', 'a', 'e', 'i', 'o', 'u':
+		return "an"
+	}
+	return "a"
+}
+
 func (gui *GUI) drawLeftPanelText(screen *ebiten.Image, x, y int) {
 	var lines []string
-	if gui.showRoomStatus {
+	switch {
+	case gui.showInventory:
+		lines = inventoryPanelLines(gui.g)
+	case gui.showRoomStatus:
 		lines = roomStatusLines(gui.g)
-	} else {
+	default:
 		lines = exitsPanelLines(gui.g.World.CurrentRoom())
 	}
 	opts := &etext.DrawOptions{}
@@ -741,12 +793,30 @@ func statsPanelLines(g *game.Game) []string {
 	}
 }
 
+// monsterStatsLines is a real, previously-unmodeled addition to the
+// right stats panel: a direct frame-by-frame video review showed that
+// whenever a live monster/NPC is nearby, this same panel ALSO displays
+// its name plus a "STAMINA" figure, below the player's own 4 lines
+// (confirmed for both a hostile Wyvern and the friendly Apex the Ogre -
+// this isn't combat-specific). The real screen also shows a second
+// stat, "CUNNING", which this port has no corresponding extracted data
+// for (world.Room only tracks a single MonsterHealth number) - honestly
+// omitted rather than inventing a value, the same discipline this
+// project applies to every other under-sourced number.
+func monsterStatsLines(room *world.Room) []string {
+	if room == nil || room.Monster == "" || room.MonsterHealth <= 0 {
+		return nil
+	}
+	return []string{"", strings.ToUpper(room.Monster), fmt.Sprintf("STAMINA %d", room.MonsterHealth)}
+}
+
 func (gui *GUI) drawRightPanelText(screen *ebiten.Image, x, y int) {
+	lines := append(statsPanelLines(gui.g), monsterStatsLines(gui.g.World.CurrentRoom())...)
 	opts := &etext.DrawOptions{}
 	opts.GeoM.Translate(float64(x+6), float64(y+6))
 	opts.LineSpacing = 16
 	opts.ColorScale.ScaleWithColor(textOnLite)
-	etext.Draw(screen, strings.Join(statsPanelLines(gui.g), "\n"), face, opts)
+	etext.Draw(screen, strings.Join(lines, "\n"), face, opts)
 }
 
 // wrapLine breaks s into whole-word lines no wider than maxChars -
