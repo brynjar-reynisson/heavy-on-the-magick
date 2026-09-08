@@ -8373,8 +8373,170 @@ room's CONTENTS, not necessarily its real display NAME - the same
 (Sign vs. Sothic Complex, round 174's correction) - real gameplay
 footage showing the actual status-panel text is the tiebreaker.
 
+### Round 178: finished the full pass over the third video - the CAULDRON, ACHAD ritual's real location and "AI" mystery resolved, a 4th Grade-promotion door, a 6th ward-off mechanic, and a Sword relocation
+
+Completed the frame-by-frame review of the ~74-minute third video (all
+7 contact-sheet montages, 444 frames) that round 177 left partway
+through. Several real, sourced findings:
+
+1. **Round 177's "Room of Nani" guess for CAULDRON, ACHAD was wrong -
+   corrected to the real location, "Kitchen of Ai".** Further review of
+   the same footage found the actual ritual room a few moves later than
+   Room of Nani: "YOU ARE IN THE KITCHEN OF AI ON LEVEL 3" - a real,
+   distinct room (not just the zone label round 66 already knew about),
+   with a real, examinable Cauldron whose response is the game's own
+   exact text, "COLD IRON: IT HOLDS A SCROLL" (matching the numbered
+   map's own "#50 Cauldron of cold iron (scroll inside)" verbatim), and
+   a real riddle overheard there: "FOR AI IS DEAD, SEEK ARM, LEG, HEAD
+   IN POT, DISPLAY, AND ONE WORD SAY". This also resolves the 39-round-
+   old "who/what is AI" mystery: Apex's own real dialogue near this room
+   answers directly - "APEX: AI" / "'COLD AND DEAD'" - AI is a real,
+   dead character the ritual is meant to resurrect. Added `world.Room.HasCauldron`
+   (mirroring HasTable/HasChest), a new isolated Level3Grid cell (H2,
+   "Kitchen of Ai", zone-level confidence - H2 itself wasn't
+   individually pixel-verified back in round 66), and corrected
+   `game.cauldronAchad`'s room-name check from "Room of Nani" to
+   "Kitchen of Ai". Room of Nani's own rename (round 177, to its real
+   full name) stands on its own separate evidence and is unaffected.
+
+2. **A real, previously-unplaced door password location: "LAZA" opens
+   Kitchen of Ai's own door** ("AI: PARADISE" / "LAZA TO THE DOOR") -
+   round 135 had found "LAZA" as a real, confirmed password with no
+   known room; noted in the Kitchen of Ai writeup but not wired as a
+   `DoorPasswords` entry this round (Kitchen of Ai has no Exits yet, so
+   there's no reachable neighboring door to attach it to without
+   guessing connectivity).
+
+3. **A 4th real Grade-promotion door: Tertia Porta raises Zelator to
+   Practicus.** The same footage shows "YOU ARE IN TERTIA PORTA...
+   AXIL THE ABLE YOU ARE RAISED TO THE GRADE OF PRACTICUS IN THE OUTER
+   ORDER" - the exact same mechanic as Secunda Porta's Neophyte-to-
+   Zelator promotion (round 9), now confirmed for a second door.
+   **A 5th was found too**: "YOU ARE IN QUADRA PORTA... RAISED TO THE
+   GRADE OF PHILOSOPHUS" - so Secunda/Tertia/Quadra Porta form a real,
+   complete Neophyte→Zelator→Practicus→Philosophus promotion sequence,
+   matching all 4 "Porta" room names already known
+   (`known_room_names.go`) and character.Grade's own existing enum
+   exactly. Only Tertia Porta's promotion was wired into `game.Handle`
+   this round (Quadra Porta's promotion-to-Philosophus was NOT added -
+   round 147's own already-shipped "must be Philosophus to find an
+   Exit" win-condition note means adding an actual Philosophus-granting
+   door needs more careful thought about how it interacts with that
+   existing check, deliberately left for a future round rather than
+   rushed). Neither door is placed at an exact cell in any dataset yet -
+   both are known real room names with real confirmed mechanics, same
+   "mechanic real, not yet reachable" pattern as many others in this
+   project.
+
+4. **A 6th real ward-off/instant-kill mechanic: the Mirror destroys
+   Medusa.** Real combat text at "The Pit" (Level 4, an already-real
+   zone_monsters.go-sourced Medusa placement) reads "THE MIRROR
+   DESTROYS MEDUSA" - a thematically apt mechanic (Perseus's mirror
+   shield against Medusa's gaze) that happens to use round 177's own
+   newly-placed Mirror item (Trollwynd). Implemented `game.checkMirrorMedusa`,
+   the same drop-triggered pattern as the other 5 ward-off mechanics.
+   Mirror (CollodonsPile) and Medusa (Level4Grid's H5) are 2 different,
+   unmerged datasets, so - the same honest cross-dataset-barrier pattern
+   as Pellet/Slug and Snake/Hydra - not reachable in one playthrough yet.
+
+5. **A real correction: the Sword is at Sothic Complex, not Wolfdorp.**
+   Round 52's original placement was a zone-banner cross-reference
+   inference (numbered map poster's #65, "Wolfdorp" zone). Direct live
+   gameplay footage shows the actual pickup happening with the status
+   panel reading "YOU ARE IN THE SOTHIC COMPLEX" - "YOU TAKE THE SWORD:
+   IT'S INSCRIBED WITH A GREAT NUMBER". Live gameplay text outranks the
+   earlier zone-level inference, so the Sword moved from Wolfdorp's
+   Items to Sothic Complex's. Astarot's teleport-then-invoke mechanic is
+   unaffected (it only requires the Charm dropped in the CURRENT room,
+   wherever that is) - just the real pickup location changed.
+
+6. **Belezbar's reveal wording corrected to the game's own exact
+   phrasing.** The invented "The X reveals its true nature - it is
+   really a Y!" replaced with the real, confirmed format: "<Object> is
+   inscribed with the word <Word>." (live footage: "BELEZBAR: PEBBLE" /
+   "IT'S INSCRIBED WITH THE WORD LICHGATE"). Also surfaced a real,
+   unresolved data conflict: this specific Pebble's real reveal is
+   "Lichgate" (a separately-confirmed real zone name), not "Erlstone" as
+   round 164's one confirmed mapping assumed - Pebble is evidently a
+   generic name with multiple distinct real instances, and this
+   project's current single name-to-disguise mapping can't represent
+   both without an exact room to distinguish them. Left as an honest,
+   documented conflict (kept the existing Erlstone entry, which has its
+   own independent numbered-map sourcing) rather than guessing which is
+   "more correct" or forcing a resolution.
+
+7. **`game.passWater`'s response corrected to the game's own exact
+   word.** Real live text: "WATER, FALL" → "TRICKLE" (this port's own
+   invented "The water falls away and lets you pass" replaced).
+
+8. Also confirmed real, already-known content along the way without
+   needing changes: Rook of Hydra's Wyvern (matches Level3Grid F5),
+   real Mantis/Sword inscription flavor text ("inscribed with the
+   number twenty" / "a great number" - decorative, not wired to
+   anything), and a real, previously-unplaced room name "Room of Rains"
+   (Level 3, already known via `known_room_names.go` but not
+   confidently placeable at an exact cell from this footage alone -
+   left unplaced).
+
+The user separately flagged something worth recording even though a
+matching frame wasn't caught in this pass's 10-second sampling
+interval: real exit displays sometimes show an up/down arrow next to a
+compass letter, indicating that exit changes dungeon level - this
+matches round 128's already-documented finding exactly ("compass exits
+can carry a level-change indicator, e.g. NE↑") from a completely
+independent source (the CRASH 29 review) - a nice, unprompted
+corroboration of an existing fact, not a new one, even without a
+freshly-captured screenshot of the glyph itself.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean throughout, and verified live via `go run
+./cmd/hotm`: `EXAMINE CAULDRON`/`CAULDRON, ACHAD` at the (currently
+unreachable) Kitchen of Ai correctly gate through their real
+requirements, and `WATER, FALL` at the real Level3Grid Water cell
+returns the real "Trickle." text.
+
+**How to apply**: a round's own "corrected X" finding isn't
+automatically final - round 177's own "Room of Nani" placement felt
+well-evidenced (a direct room-name match plus a matching item-dropping
+sequence) but turned out to be a different, coincidental sequence in
+the same footage; continuing the SAME video's review past where a
+round stopped is what caught it. Direct live gameplay text (a status
+panel, a combat message) is stronger evidence than an inference chain
+built from a fan map's zone banner - when the two conflict, trust the
+live text, but don't assume the earlier inference was baseless
+(Wolfdorp genuinely is a Level-1 zone with real, independently-sourced
+items; it just didn't have THIS particular one).
+
 ## Open next steps
 
+- **Quadra Porta's real Philosophus promotion isn't wired yet** (round
+  178): confirmed via the same video as Tertia Porta's (already wired),
+  but deliberately not implemented this round - round 147 already
+  shipped a "must be Philosophus to find an Exit" note on the win
+  condition, and adding an actual Philosophus-granting door needs some
+  thought about how the two interact (e.g. does reaching Philosophus
+  via Quadra Porta retroactively clear that note for an Exit already
+  standing on?) before wiring it in without a design misstep. Neither
+  Tertia nor Quadra Porta is placed at an exact cell in any dataset
+  yet either - both are known real room names
+  (`known_room_names.go`) with no confirmed placement.
+- **CAULDRON, ACHAD's own final EFFECT is still unconfirmed** (round
+  139, location resolved round 178): now that the real room ("Kitchen
+  of Ai") and the real setup (Ulna/Thigh/Skull in the cauldron, Scroll
+  removed first) are both confirmed, the one remaining unknown is what
+  actually happens once the player says "CAULDRON, ACHAD" - no source
+  checked so far describes the outcome, only the ritual's own name and
+  setup. Worth a fresh, targeted look if the same third video's
+  ~74 minutes are ever re-reviewed at a finer sampling interval (this
+  pass used 1 frame per 10 seconds, which could plausibly skip a short
+  on-screen result message).
+- **The Belezbar Pebble/Lichgate-vs-Erlstone conflict** (round 178):
+  two real, sourced Belezbar reveals for a generic "Pebble" object
+  disagree (numbered map's #59 says "disguised Erlstone"; a different
+  Pebble in the third video's own footage reveals "Lichgate") - the
+  current single name-to-disguise mapping can't hold both without an
+  exact room to distinguish which Pebble is which. Worth revisiting if
+  a specific room/cell for either Pebble instance is ever found.
 - **The Wraith/Vampire question is reopened** (round 177, correcting
   round 74): direct video evidence shows Methos's real monster is a
   Wraith, not the Vampire round 74's global rename assumed - and that
@@ -8421,23 +8583,21 @@ footage showing the actual status-panel text is the tiebreaker.
   screenshot atlas. Checked Hardcore Gaming 101's article (round 171):
   a clean negative — it doesn't name any monster types at all, Hydra
   included, only the bare "21 monsters" count.
-- **Who or what "AI" is (the `CAULDRON, ACHAD` ritual's real, sourced
-  "TO RESURRECT AI" section heading) remains genuinely unresolved**
-  (round 139, re-checked round 171): World of Spectrum's plain-text
-  instructions file states the ritual's exact setup precisely but never
-  explains who/what AI actually is — re-fetched it once more (round
-  171) asking specifically for surrounding context, and it has none.
-  The CASA walkthrough was also re-checked (round 171) and doesn't
-  mention the cauldron/ACHAD/AI at all — this ritual simply isn't part
-  of that particular minimal solution path. Two real, independent
-  checked negatives, not just one — this is a genuinely hard-to-find
-  fact, not a source nobody's tried yet. `game.cauldronAchad` is
-  shipped and tested with the confirmed real setup requirements
-  (Ulna/Thigh/Skull dropped, Scroll removed first), the same honest
-  "confirmed real, effect unknown" stub as NEST/PHOENIX had before
-  CALL's own eventual resolution — worth trying a genuinely different
-  source type (a magazine review, a different fan wiki) rather than
-  re-fetching either of these same two sources a third time.
+- ~~Who or what "AI" is~~ — **RESOLVED (round 178)**: a full frame-by-
+  frame review of a third gameplay video found "AI" IS resolvable after
+  all, from a source type not tried before (live gameplay dialogue, not
+  a written walkthrough): calling Apex near the real "Kitchen of Ai"
+  room gets the response "AI: COLD AND DEAD", and the ritual location
+  itself displays a real riddle - "FOR AI IS DEAD, SEEK ARM, LEG, HEAD
+  IN POT, DISPLAY, AND ONE WORD SAY" - confirming AI is a real, dead
+  character the CAULDRON, ACHAD ritual is meant to resurrect (matching
+  World of Spectrum's own "TO RESURRECT AI" heading exactly). The
+  ritual's own final EFFECT (what actually happens once "CAULDRON,
+  ACHAD" is said) is still unconfirmed - that narrower question remains
+  open. See `internal/game/rituals.go` and `internal/world/level3_grid.go`
+  (Kitchen of Ai, Level3Grid's H2) for the full writeup - this also
+  corrected an interim round-177 guess that placed the ritual at "Room
+  of Nani" instead (a real room, just not this one).
 - **NEW: `heavymap-speccy-screenshots.png`** (maps.speccy.cz, "Speccy
   Screenshot Maps", credited to Hippy Smith) is a 10056×5493 composite
   of REAL in-game screenshots for all 4 levels, plus a full demon/

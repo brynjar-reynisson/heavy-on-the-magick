@@ -1,15 +1,15 @@
 package world
 
-// Level3Grid is a real, 47-cell room graph for the dungeon's Level 3,
+// Level3Grid is a real, 48-cell room graph for the dungeon's Level 3,
 // extracted from the same clean, computer-rendered grid map as
 // Level1Grid/Level2Grid (heavymap-grid-clean.gif). Cells are addressed
 // the same way: a row letter A-H and a column number 1-8, offset into a
-// distinct RoomID range via level3Room. 41 of the 47 form one fully
-// connected component reachable from the start room; the other 6 (D4
-// "Sothic Complex", F3 "Room of Nani", F5 "Hydra", G2 "Two", G4, H4
-// "Water") are real, named or monster-bearing, deliberately isolated
-// special rooms - see the "SOTHIC COMPLEX" section below and the
-// round-57/66/177 updates.
+// distinct RoomID range via level3Room. 41 of the 48 form one fully
+// connected component reachable from the start room; the other 7 (D4
+// "Sothic Complex", F3 "Room of Nani", F5 "Hydra", G2 "Two", G4, H2
+// "Kitchen of Ai", H4 "Water") are real, named or monster-bearing,
+// deliberately isolated special rooms - see the "SOTHIC COMPLEX"
+// section below and the round-57/66/177/178 updates.
 //
 // ROUND 57: applying the same "check for a named special room explaining
 // a gap" technique that found Sothic Complex, tight-cropped the F2-F6
@@ -29,9 +29,10 @@ package world
 // G4 has a real, confirmed Wyvern monster icon (same rare exact blue
 // RGB(0,132,255) used elsewhere on this map); H4 reads "WATER". G1,
 // G3, H1, and H3 were also checked and are plain, unlabeled cells -
-// left unadded. All 3 finds are added the same way as Sothic Complex/
-// Nani/Hydra: isolated (no Exits), since connectivity for this zone
-// isn't extracted.
+// left unadded (H2 was not individually checked this round - see
+// round 178 below). All 3 finds are added the same way as Sothic
+// Complex/Nani/Hydra: isolated (no Exits), since connectivity for
+// this zone isn't extracted.
 //
 // ROUND 71: zone_monsters.go's independently-sourced
 // ZoneMonsterSightings records "Gorburg: Wyvern x1, Ghost x2" (exact
@@ -45,19 +46,36 @@ package world
 // ROUND 177: a full frame-by-frame review of a third gameplay video
 // confirms F3's real, full status-panel name is literally "Room of
 // Nani" (not just "Nani" - this file's own room-name field is now
-// corrected to match verbatim). The same footage shows the player
-// picking up real Ulna/Thigh/Skull bones at CollodonsPile's Methos
-// (see that file's own round-177 note) and dropping all 3 here, at
-// Room of Nani - real, direct confirmation this cell is the "Cauldron"
-// location game.cauldronAchad's "CAULDRON, ACHAD" ritual (round 139)
-// has been checking for by room NAME "Cauldron" (a guess, based on the
-// numbered map poster's own item description "Cauldron of cold iron")
-// since it was first implemented. That check is now corrected to match
-// this room's real confirmed name instead - see rituals.go. Methos and
-// Room of Nani remain 2 different, unmerged datasets (CollodonsPile vs.
-// Level3Grid), so the ritual's real ingredients and its real location
-// still can't be reached in one playthrough - the same honest,
-// already-established "mechanic real, cross-dataset barrier" pattern.
+// corrected to match verbatim). That round ALSO guessed this was the
+// real "Cauldron" location for game.cauldronAchad's "CAULDRON, ACHAD"
+// ritual, based on the player dropping Ulna/Thigh/Skull here in the
+// same footage - CORRECTED in round 178 below, that guess was wrong.
+//
+// ROUND 178 CORRECTION: further review of the SAME footage found the
+// real ritual location a few rooms later: "YOU ARE IN THE KITCHEN OF
+// AI ON LEVEL 3" - a real, distinct room within the already-known
+// "Kitchen of Ai" zone (round 66), not just a zone label - with a real,
+// examinable "EXAMINE CAULDRON" object whose response is the game's own
+// exact text, "COLD IRON: IT HOLDS A SCROLL" (matching the numbered map
+// poster's own "#50 Cauldron of cold iron (scroll inside)" verbatim),
+// and a real riddle overheard there: "FOR AI IS DEAD, SEEK ARM, LEG,
+// HEAD IN POT, DISPLAY, AND ONE WORD SAY" (Ulna=arm, Thigh=leg,
+// Skull=head - dropped "IN THE CAULDRON" per the footage's own drop
+// confirmations) - directly confirms "AI" is a real, dead character the
+// ritual is meant to resurrect (matching World of Spectrum's own "TO
+// RESURRECT AI" section heading, round 139). Added as H2 - one of the
+// 4 cells round 66 left unchecked as "plain" (H2 itself wasn't actually
+// individually verified that round, unlike G1/G3/H1/H3), so this is a
+// zone-level placement (the same honest confidence tier as Wolfdorp/
+// Nidus/Trollwynd elsewhere in this project), not an exact-cell one
+// like Sothic Complex/Nani/Hydra. game.cauldronAchad's room-name check
+// is corrected to match "Kitchen of Ai" instead of "Room of Nani".
+// Methos (where the real Ulna/Thigh/Skull are placed - see
+// collodons_pile.go) and Kitchen of Ai remain 2 different, unmerged
+// datasets (CollodonsPile vs. Level3Grid), so the ritual's real
+// ingredients and its real location still can't be reached in one
+// playthrough - the same honest, already-established "mechanic real,
+// cross-dataset barrier" pattern used for Pellet/Slug.
 //
 // CALIBRATION HISTORY - CORRECTED (this matters for anyone diffing old
 // output against this file): an earlier round found only 7 of the
@@ -239,6 +257,7 @@ var level3Cells = []*Room{
 	{ID: level3Room("F7"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("F8"), North: level3Room("E7")}},
 	{ID: level3Room("G2"), Name: "Two", Level: 3},
 	{ID: level3Room("G4"), Level: 3, Monster: "Wyvern", MonsterHealth: 3},
+	{ID: level3Room("H2"), Name: "Kitchen of Ai", Level: 3, HasCauldron: true, Items: []string{"Scroll"}},
 	{ID: level3Room("H4"), Name: "Water", Level: 3, Water: true},
 	{ID: level3Room("F8"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("E8"), West: level3Room("F7")}, Monster: "Troll", MonsterHealth: 3},
 }

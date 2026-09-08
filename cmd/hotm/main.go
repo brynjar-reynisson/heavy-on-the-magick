@@ -45,7 +45,7 @@ func main() {
 		g = game.NewLevel2Exploration()
 	case *level3Grid:
 		fmt.Println("Heavy on the Magick — Go port (Level 3 grid exploration mode)")
-		fmt.Println("Real 47-cell Level 3 map (world.Level3Grid): 41 fully-connected plus 6 isolated rooms — not merged with CollodonsPile yet.")
+		fmt.Println("Real 48-cell Level 3 map (world.Level3Grid): 41 fully-connected plus 7 isolated rooms — not merged with CollodonsPile yet.")
 		g = game.NewLevel3Exploration()
 	case *level4Grid:
 		fmt.Println("Heavy on the Magick — Go port (Level 4 grid exploration mode)")

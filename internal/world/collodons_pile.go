@@ -268,19 +268,26 @@ package world
 // The poster also spells this room "Sothic Complex" — a third source
 // agreeing with the vocabulary-based correction above.
 //
-// Wolfdorp's "Sword" (round 52): cross-referenced from TWO independent
-// sources. The numbered map poster's key list gives room #65 as "Rock,
-// two stalagmites, stalactite, sword", and #65 sits within the
-// "WOLFDORP" banner-labeled cluster on that same poster's Level 1 grid
-// (tight-cropped and visually confirmed, not guessed). Separately,
-// level_items.go's LevelOneItems (from the OTHER poster,
-// heavymap-levels1-2.jpg, extracted in an earlier round) independently
-// lists a "Sword" on Level 1 with no room precision. Two unrelated
-// sources agreeing Level 1 has a sword, one of them at zone-level
-// confidence for Wolfdorp specifically, matches the Mantis/Belezbar
-// precedent (Level3Grid) closely enough to place it here. "Sword" is
-// Astarot's confirmed real Charm (magic.Demons) — this makes Astarot's
-// invocation reachable in real gameplay for the first time.
+// The Sword's real location (round 178 correction): originally placed
+// at Wolfdorp (round 52) via a zone-banner cross-reference (the
+// numbered map poster's key list gives room #65 as "Rock, two
+// stalagmites, stalactite, sword", sitting within the "WOLFDORP"
+// banner-labeled cluster on that poster's Level 1 grid; level_items.go's
+// separately-sourced LevelOneItems also lists a plain "Sword" on Level
+// 1 with no room precision). A full frame-by-frame review of a third
+// gameplay video shows something stronger and directly contradictory:
+// the player picks up a real Sword ("YOU TAKE THE SWORD: IT'S
+// INSCRIBED WITH A GREAT NUMBER") while the live status panel reads
+// "YOU ARE IN THE SOTHIC COMPLEX" - not Wolfdorp. Direct live gameplay
+// text outranks the earlier zone-level inference, so the Sword is
+// moved here, to CollodonsPile's own already-real, already-connected
+// Sothic Complex room. "Sword" is Astarot's confirmed real Charm
+// (magic.Demons) — this makes Astarot's invocation reachable in real
+// gameplay for the first time. (This project already has a separate,
+// documented open question about whether "Sothic Complex" on Level 2
+// vs. Level 3 are the same physical room across different map sources
+// - round 51/138 - so this doesn't newly resolve that, just confirms
+// the Sword isn't at Wolfdorp.)
 //
 // Room of Misery's "Poison-smeared book" (round 53): the numbered map
 // poster labels this exact room "START / Room of Misery / 1, 2" - i.e.
@@ -392,8 +399,8 @@ func CollodonsPile() *World {
 		// Trollwynd). Both are real, confirmed compass directions from
 		// 2 independent sources, not fabricated to make a zone-
 		// abstracted room "feel" fully connected.
-		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{East: roomMisery, South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower"}, HasTable: true},
-		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, DoorHints: []string{"Cry and enter door.", "To enter is madness."}, Monster: "Werewolf", MonsterHealth: 2, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true, HasChest: true},
+		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{East: roomMisery, South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower", "Sword"}, HasTable: true},
+		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, DoorHints: []string{"Cry and enter door.", "To enter is madness."}, Monster: "Werewolf", MonsterHealth: 2, Items: []string{"Garlic", "Bag", "Loaf"}, HasTable: true, HasChest: true},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key", HasTable: true},
 		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Monster: "Vampire", MonsterHealth: 2, Items: []string{"Slat"}, TollItem: "Bag", HasTable: true, HasChest: true},
 		{ID: roomArrows, Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{East: roomNidus, North: roomWolfdorp}, TollItem: "Slat", HasTable: true},

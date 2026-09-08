@@ -232,6 +232,19 @@ type Room struct {
 	// for these 2 specifically confirmed rooms, not assumed elsewhere.
 	HasChest bool
 
+	// HasCauldron is a third distinct container fixture (round 178),
+	// confirmed via a direct frame-by-frame review of real gameplay
+	// footage: "EXAMINE CAULDRON" is a real available command at
+	// Level3Grid's "Kitchen of Ai", and the response is the game's own
+	// exact text - "COLD IRON: IT HOLDS A SCROLL" - matching the fan-made
+	// numbered map poster's own item description ("#50 Cauldron of cold
+	// iron (scroll inside)") verbatim. This is the real location for
+	// game.cauldronAchad's "CAULDRON, ACHAD" ritual (round 139, corrected
+	// round 178 - an earlier round-177 guess placed it at "Room of Nani"
+	// instead, based on a different, coincidental bone-dropping sequence
+	// in the same footage).
+	HasCauldron bool
+
 	// SwapItem and RevealItem model a real, sourced "protected item"
 	// mechanic (round 132): World of Spectrum's separate plain-text
 	// instructions file (see game.go's checkSwapItem doc comment for the

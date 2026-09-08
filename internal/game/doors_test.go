@@ -6,6 +6,7 @@ import (
 
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/character"
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/parser"
+	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/world"
 )
 
 // TestPassGuardsClearsRealObstacle covers the confirmed real command
@@ -39,8 +40,8 @@ func TestPassWaterClearsRealObstacle(t *testing.T) {
 	g := New()
 	g.World.CurrentRoom().Water = true
 	got := g.Handle(parser.Parse("WATER, FALL"))
-	if !strings.Contains(got, "lets you pass") {
-		t.Errorf("Handle(WATER, FALL) with real water present = %q, want it to let the player pass", got)
+	if !strings.Contains(got, "Trickle") {
+		t.Errorf("Handle(WATER, FALL) with real water present = %q, want the real confirmed response \"Trickle\"", got)
 	}
 	if g.World.CurrentRoom().Water {
 		t.Error("Water should be cleared after a successful WATER, FALL")
@@ -71,8 +72,8 @@ func TestLevel3GridWaterHazard(t *testing.T) {
 		t.Fatalf("test setup bug: expected a real Water hazard at %q, got %+v", "Water", g.World.CurrentRoom())
 	}
 	got := g.Handle(parser.Parse("WATER, FALL"))
-	if !strings.Contains(got, "lets you pass") {
-		t.Errorf("Handle(WATER, FALL) at the real Water cell = %q, want it to succeed", got)
+	if !strings.Contains(got, "Trickle") {
+		t.Errorf("Handle(WATER, FALL) at the real Water cell = %q, want the real confirmed response \"Trickle\"", got)
 	}
 }
 
@@ -106,6 +107,29 @@ func TestHandleSecundaPortaDoorPromotesToZelator(t *testing.T) {
 	}
 	if !strings.Contains(got, "Zelator") {
 		t.Errorf("Handle(DOOR, SILENCE) = %q, want it to mention becoming a Zelator", got)
+	}
+}
+
+// TestHandleTertiaPortaDoorPromotesToPracticus covers round 178's real,
+// video-confirmed second promotion door: passing Tertia Porta's door
+// raises Axil from Zelator to Practicus, the exact same pattern as
+// Secunda Porta's Neophyte-to-Zelator promotion. No shipped World.Room
+// is named "Tertia Porta" yet (a known real room name per
+// known_room_names.go, not placed at an exact cell in any dataset) -
+// uses a synthetic room, the same "mechanic real, not yet reachable"
+// pattern as several other confirmed mechanics in this project.
+func TestHandleTertiaPortaDoorPromotesToPracticus(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Tertia Porta", DoorPasswords: []string{"OPEN"}})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	g.Player.Grade = character.Zelator
+
+	got := g.Handle(parser.Parse("DOOR, OPEN"))
+	if g.Player.Grade != character.Practicus {
+		t.Errorf("Grade after Tertia Porta's door = %v, want Practicus", g.Player.Grade)
+	}
+	if !strings.Contains(got, "Practicus") {
+		t.Errorf("Handle(DOOR, OPEN) at Tertia Porta = %q, want it to mention becoming a Practicus", got)
 	}
 }
 

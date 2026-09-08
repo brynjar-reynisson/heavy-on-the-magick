@@ -30,14 +30,16 @@ func (g *Game) passGuards() string {
 // passGuards (a spoken command, not a carried item like Fire/Clasp),
 // clearing a real Water hazard - see world.Room.Water's doc comment
 // for the exact-cell sourcing (Level3Grid's H4, already independently
-// confirmed as literally named "Water").
+// confirmed as literally named "Water"). The response text is the
+// game's own exact, confirmed word - "Trickle" - per a direct
+// frame-by-frame review of real gameplay footage (round 178).
 func (g *Game) passWater() string {
 	room := g.World.CurrentRoom()
 	if room == nil || !room.Water {
 		return "There is no water here to command."
 	}
 	room.Water = false
-	return "The water falls away and lets you pass."
+	return "Trickle."
 }
 
 // payToll handles a real, distinct door mechanic (see world.Room.TollItem's

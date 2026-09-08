@@ -2,9 +2,9 @@ package world
 
 import "testing"
 
-func TestLevel3GridHas47Cells(t *testing.T) {
-	if len(level3Cells) != 47 {
-		t.Fatalf("len(level3Cells) = %d, want 47 (the validated 41-cell connected component plus 6 isolated cells: Sothic Complex, Room of Nani, Hydra, Two, G4/Wyvern, Water)", len(level3Cells))
+func TestLevel3GridHas48Cells(t *testing.T) {
+	if len(level3Cells) != 48 {
+		t.Fatalf("len(level3Cells) = %d, want 48 (the validated 41-cell connected component plus 7 isolated cells: Sothic Complex, Room of Nani, Hydra, Two, G4/Wyvern, Kitchen of Ai, Water)", len(level3Cells))
 	}
 }
 
@@ -25,6 +25,29 @@ func TestLevel3GridKitchenOfAiFinds(t *testing.T) {
 	water := w.Rooms[level3Room("H4")]
 	if water == nil || water.Name != "Water" || len(water.Exits) != 0 {
 		t.Errorf("room H4 = %+v, want isolated with Name \"Water\"", water)
+	}
+}
+
+// TestLevel3GridKitchenOfAiRoomHasCauldron pins the round-178 addition:
+// a full frame-by-frame review of real gameplay footage shows a real,
+// distinct room "Kitchen of Ai" (not just the zone label round 66
+// already knew about) with a real, examinable Cauldron holding a
+// Scroll - the real location for game.cauldronAchad's "CAULDRON,
+// ACHAD" ritual (corrected from round 177's "Room of Nani" guess).
+func TestLevel3GridKitchenOfAiRoomHasCauldron(t *testing.T) {
+	w := Level3Grid()
+	room := w.Rooms[level3Room("H2")]
+	if room == nil || room.Name != "Kitchen of Ai" || !room.HasCauldron || len(room.Exits) != 0 {
+		t.Errorf("room H2 = %+v, want isolated, named \"Kitchen of Ai\", with a real Cauldron", room)
+	}
+	found := false
+	for _, item := range room.Items {
+		if item == "Scroll" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Kitchen of Ai Items = %v, want it to include \"Scroll\"", room.Items)
 	}
 }
 

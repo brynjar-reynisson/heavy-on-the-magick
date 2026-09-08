@@ -59,27 +59,35 @@ func (g *Game) nestPhoenix() string {
 // field needed; a real container is just "this room's real Items",
 // the same convention checkSwapItem/checkPelletSlug already read from
 // and write to). "ACHAD" is Aleister Crowley associate Charles
-// Stansfeld Jones's own magical name - who "AI" is isn't explained by
-// any source checked so far (see this round's writeup in
-// ../../CLAUDE.md). Same honest "confirmed real, effect unknown" stub
-// as NEST/PHOENIX.
+// Stansfeld Jones's own magical name.
 //
-// ROUND 177 CORRECTION: this originally checked for a room literally
-// named "Cauldron" - a guess based on the numbered map poster's own
-// item description ("Cauldron of cold iron (scroll inside)"), with no
-// real World.Room by that name ever placed. A full frame-by-frame
-// review of a third gameplay video shows the room's real, confirmed
-// status-panel name is actually "Room of Nani" (Level3Grid's F3,
-// isolated) - the video shows the player dropping the real Ulna/Thigh/
-// Skull bones there directly. The check below now matches that real
-// name instead of the guessed one. Methos (where those 3 bones are
-// really placed - see collodons_pile.go) and Room of Nani are still 2
-// different, unmerged datasets, so the ritual isn't reachable in one
-// playthrough yet - the same honest "mechanic real, cross-dataset
-// barrier" pattern used for Pellet/Slug.
+// ROUND 177 CORRECTION (superseded by round 178 below): originally
+// checked for a room literally named "Cauldron" - a guess based on the
+// numbered map poster's own item description. A frame-by-frame review
+// of a third gameplay video found the player dropping real Ulna/Thigh/
+// Skull bones at a room named "Room of Nani" and briefly corrected the
+// check to that name - WRONG, see round 178.
+//
+// ROUND 178 CORRECTION: further review of the SAME footage found the
+// real ritual location a few rooms later than Room of Nani: "YOU ARE IN
+// THE KITCHEN OF AI ON LEVEL 3" - a real, distinct room (Level3Grid's
+// H2) with a real, examinable Cauldron whose response is the game's own
+// exact text, "COLD IRON: IT HOLDS A SCROLL" (matching the numbered
+// map's #50 entry verbatim), and a real riddle overheard there: "FOR AI
+// IS DEAD, SEEK ARM, LEG, HEAD IN POT, DISPLAY, AND ONE WORD SAY" -
+// this directly confirms who/what "AI" is: a real, dead character the
+// ritual is meant to resurrect (matching World of Spectrum's own "TO
+// RESURRECT AI" section heading) - previously an open mystery. The
+// check below now matches "Kitchen of Ai" instead of the round-177
+// guess. Methos (where the real Ulna/Thigh/Skull are placed - see
+// collodons_pile.go) and Kitchen of Ai are still 2 different, unmerged
+// datasets, so the ritual isn't reachable in one playthrough yet - the
+// same honest "mechanic real, cross-dataset barrier" pattern used for
+// Pellet/Slug. The ritual's own EFFECT is still honestly unconfirmed -
+// same "confirmed real, effect unknown" stub as NEST/PHOENIX.
 func (g *Game) cauldronAchad() string {
 	room := g.World.CurrentRoom()
-	if room == nil || !strings.EqualFold(room.Name, "Room of Nani") {
+	if room == nil || !strings.EqualFold(room.Name, "Kitchen of Ai") {
 		return "There is no cauldron here."
 	}
 	if g.roomHasItem("Scroll") {

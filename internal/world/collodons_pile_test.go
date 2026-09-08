@@ -113,12 +113,14 @@ func TestCollodonsPileSecondaryExits(t *testing.T) {
 	}
 }
 
-// TestCollodonsPileWolfdorpHasSword pins the real, cross-referenced
-// Sword placement (Astarot's confirmed Charm) - see CollodonsPile's doc
-// comment for the two-source sourcing.
-func TestCollodonsPileWolfdorpHasSword(t *testing.T) {
+// TestCollodonsPileSothicComplexHasSword pins the round-178 correction:
+// a full frame-by-frame review of real gameplay footage shows the
+// player picking up the real Sword (Astarot's confirmed Charm) at
+// Sothic Complex, not Wolfdorp (round 52's original zone-banner-based
+// placement) - see CollodonsPile's doc comment for the full reasoning.
+func TestCollodonsPileSothicComplexHasSword(t *testing.T) {
 	w := CollodonsPile()
-	room := w.Rooms[roomWolfdorp]
+	room := w.Rooms[roomSothicComplex]
 	found := false
 	for _, item := range room.Items {
 		if item == "Sword" {
@@ -126,7 +128,20 @@ func TestCollodonsPileWolfdorpHasSword(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Errorf("Wolfdorp Items = %v, want it to include \"Sword\"", room.Items)
+		t.Errorf("Sothic Complex Items = %v, want it to include \"Sword\"", room.Items)
+	}
+}
+
+// TestCollodonsPileWolfdorpDoesNotHaveSword is the negative half of the
+// round-178 correction above - the earlier round-52 placement is gone,
+// not duplicated.
+func TestCollodonsPileWolfdorpDoesNotHaveSword(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomWolfdorp]
+	for _, item := range room.Items {
+		if item == "Sword" {
+			t.Errorf("Wolfdorp Items = %v, want it to NOT include \"Sword\" (round-178 correction - see doc comment)", room.Items)
+		}
 	}
 }
 

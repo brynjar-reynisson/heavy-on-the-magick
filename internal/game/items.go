@@ -114,6 +114,9 @@ func (g *Game) drop(target string) string {
 			if msg := g.checkSlatCyclops(); msg != "" {
 				result += "\n" + msg
 			}
+			if msg := g.checkMirrorMedusa(); msg != "" {
+				result += "\n" + msg
+			}
 			if msg := g.checkSwapItem(item); msg != "" {
 				result += "\n" + msg
 			}
@@ -141,6 +144,12 @@ func (g *Game) examine(target string) string {
 		}
 		if room.HasChest && strings.EqualFold(target, "CHEST") {
 			return "A wooden chest."
+		}
+		if room.HasCauldron && strings.EqualFold(target, "CAULDRON") {
+			if g.roomHasItem("Scroll") {
+				return "Cold iron: it holds a Scroll."
+			}
+			return "A cold iron cauldron."
 		}
 		if room.Monster != "" && room.MonsterHealth > 0 && strings.EqualFold(room.Monster, target) {
 			return fmt.Sprintf("You see a %s.", room.Monster)

@@ -36,6 +36,9 @@ func (g *Game) move(dir world.Direction) string {
 	if msg := g.checkSlatCyclops(); msg != "" {
 		msgs = append(msgs, msg)
 	}
+	if msg := g.checkMirrorMedusa(); msg != "" {
+		msgs = append(msgs, msg)
+	}
 	desc := g.describeCurrentRoom()
 	if len(msgs) > 0 {
 		return strings.Join(msgs, "\n") + "\n" + desc
@@ -249,6 +252,34 @@ func (g *Game) checkSlatCyclops() string {
 	return ""
 }
 
+// checkMirrorMedusa implements a sixth real, sourced instant-kill
+// mechanic (round 178), same drop-triggered pattern as
+// checkNougatWerewolf/checkGarlicVampire/checkPelletSlug/checkSnakeHydra/
+// checkSlatCyclops - confirmed via a direct frame-by-frame review of a
+// third gameplay video: the real live combat text at "The Pit"
+// (Level 4, an already-real, zone_monsters.go-sourced Medusa placement
+// since round 12) reads "THE MIRROR DESTROYS MEDUSA" - a thematically
+// fitting mechanic (a mirror reflecting a Gorgon's gaze, the classic
+// Perseus myth), not invented flavor. Mirror is already real, placed
+// data at CollodonsPile's Trollwynd (round 177); Medusa's own confirmed
+// placement is Level4Grid's H5 (round 60) - 2 different, unmerged
+// datasets, so - the same honest "mechanic real, cross-dataset
+// barrier" pattern used for Pellet/Slug and Snake/Hydra - this isn't
+// reachable in one playthrough yet.
+func (g *Game) checkMirrorMedusa() string {
+	room := g.World.CurrentRoom()
+	if room == nil || room.Monster != "Medusa" || room.MonsterHealth <= 0 {
+		return ""
+	}
+	for _, item := range room.Items {
+		if strings.EqualFold(item, "Mirror") {
+			room.MonsterHealth = 0
+			return "The Mirror destroys Medusa."
+		}
+	}
+	return ""
+}
+
 // describeCurrentRoom renders LOOK's real output. Round 115: now
 // includes the room's real Level (1-4, sourced the same way as every
 // other room fact in this project) when it's set - a third instance
@@ -311,6 +342,9 @@ func (g *Game) describeCurrentRoom() string {
 	}
 	if room.HasChest {
 		b.WriteString("There is a chest here.\n")
+	}
+	if room.HasCauldron {
+		b.WriteString("There is a cauldron here.\n")
 	}
 	if room.Guards {
 		b.WriteString("Guards bar your way here.\n")

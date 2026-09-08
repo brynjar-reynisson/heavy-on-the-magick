@@ -115,12 +115,12 @@ func NewLevel2Exploration() *Game {
 }
 
 // NewLevel3Exploration is Level1/2Exploration's counterpart for
-// world.Level3Grid — a real 47-cell room graph for Level 3: a 41-cell
-// fully-connected component plus 6 real, deliberately isolated special
-// rooms (Sothic Complex/D4, Nani/F3, Hydra/F5, Two/G2, a Wyvern/G4,
-// Water/H4 — see Level3Grid's doc comment for why, and for a real
-// cross-source naming discrepancy with CollodonsPile worth knowing
-// about).
+// world.Level3Grid — a real 48-cell room graph for Level 3: a 41-cell
+// fully-connected component plus 7 real, deliberately isolated special
+// rooms (Sothic Complex/D4, Room of Nani/F3, Hydra/F5, Two/G2, a
+// Wyvern/G4, Kitchen of Ai/H2, Water/H4 — see Level3Grid's doc comment
+// for why, and for a real cross-source naming discrepancy with
+// CollodonsPile worth knowing about).
 func NewLevel3Exploration() *Game {
 	return &Game{
 		Player: character.NewPlayer(),
@@ -380,6 +380,22 @@ func (g *Game) Handle(cmd parser.Command) string {
 						// Philosophus are Outer Order grades; Adeptus Minor
 						// and above are Inner Order), not invented flavor.
 						return "The door swings open. You are raised to the grade of Zelator in the Outer Order."
+					}
+					// ROUND 178: a full frame-by-frame review of a third
+					// gameplay video shows a SECOND real promotion door,
+					// following the exact same pattern - passing Tertia
+					// Porta's own door (already a known real room name,
+					// known_room_names.go - not yet placed at an exact
+					// cell in any world dataset) raises Axil from Zelator
+					// to Practicus, with the game's own exact confirmed
+					// text ("...raised to the grade of Practicus in the
+					// Outer Order"). Same honest "mechanic real, not yet
+					// reachable" pattern as several other confirmed
+					// mechanics in this project - no shipped World.Room is
+					// named "Tertia Porta" yet.
+					if room.Name == "Tertia Porta" && g.Player.Grade == character.Zelator {
+						g.Player.Grade = character.Practicus
+						return "The door swings open. You are raised to the grade of Practicus in the Outer Order."
 					}
 					return "The door swings open."
 				}

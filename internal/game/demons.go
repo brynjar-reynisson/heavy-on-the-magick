@@ -210,6 +210,20 @@ func (g *Game) asmodeeDestroy(object string) string {
 // day place the disguised "Pebble" form specifically, the same "real
 // mechanic, not yet reachable in shipped data" pattern already used
 // for TollItem/Fire/Guards/SwapItem before their own first placements.
+//
+// ROUND 178 - a real, unresolved second data point: a frame-by-frame
+// review of a third gameplay video shows a DIFFERENT real Pebble
+// (elsewhere in the dungeon, room not identified) whose real Belezbar
+// reveal reads "IT'S INSCRIBED WITH THE WORD LICHGATE" - not Erlstone.
+// "Lichgate" is itself a real, separately-confirmed zone name
+// (known_room_names.go). Since Pebble is evidently a generic item name
+// with multiple distinct real instances/rooms (the numbered map's own
+// key list already shows several plain, undisguised Pebbles alongside
+// #59's disguised one), this project's current single
+// name-to-disguise mapping can't represent both real reveals for the
+// same generic name without an exact room to distinguish them - left
+// as an honest, documented conflict rather than arbitrarily picking
+// one over the other or guessing a room.
 var belezbarDisguises = map[string]string{
 	"Pebble": "Erlstone",
 }
@@ -223,7 +237,12 @@ var belezbarDisguises = map[string]string{
 // other 3 applies directly. Checks belezbarDisguises for a real,
 // sourced disguise; anything else gets an honest "appears to be
 // exactly what it seems" - not a fabricated secret identity for every
-// object, only the one genuinely confirmed case.
+// object, only the one genuinely confirmed case. The success wording
+// ("<Object> is inscribed with the word <Word>.") matches the game's
+// own real, confirmed phrasing - a direct frame-by-frame review of a
+// third gameplay video shows the exact live text "BELEZBAR: PEBBLE" /
+// "IT'S INSCRIBED WITH THE WORD LICHGATE" (round 178) - replacing this
+// port's own earlier invented "it is really a X" wording.
 //
 // Unlike Astarot/Magot/Asmodee's Charms (Sword/Sunflower/Erlstone, all
 // placed in world.CollodonsPile itself), Belezbar's Charm (Mantis) is
@@ -243,7 +262,7 @@ func (g *Game) belezbarReveal(object string) string {
 	}
 	for disguised, real := range belezbarDisguises {
 		if strings.EqualFold(disguised, object) {
-			return fmt.Sprintf("You invoke %s, %s! The %s reveals its true nature - it is really a %s!", belezbarName, belezbarTitle, disguised, real)
+			return fmt.Sprintf("You invoke %s, %s! %s is inscribed with the word %s.", belezbarName, belezbarTitle, disguised, real)
 		}
 	}
 	return fmt.Sprintf("You invoke %s, %s! The %s appears to be exactly what it seems.", belezbarName, belezbarTitle, object)

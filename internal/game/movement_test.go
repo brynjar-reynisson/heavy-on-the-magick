@@ -334,6 +334,27 @@ func TestSnakeWardsOffHydraOnDrop(t *testing.T) {
 	}
 }
 
+// TestMirrorDestroysMedusaOnDrop covers round 178's real, video-
+// confirmed instant-kill mechanic ("THE MIRROR DESTROYS MEDUSA") - see
+// checkMirrorMedusa. Mirror (Trollwynd) and Medusa (Level4Grid H5) are
+// 2 different, unmerged datasets, so this uses a synthetic room, same
+// pattern as TestSnakeWardsOffHydraOnDrop.
+func TestMirrorDestroysMedusaOnDrop(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "The Pit", Monster: "Medusa", MonsterHealth: 3})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	g.Player.Items = append(g.Player.Items, "Mirror")
+
+	got := g.Handle(parser.Parse("DROP MIRROR"))
+	room := g.World.CurrentRoom()
+	if room.MonsterHealth > 0 {
+		t.Errorf("Medusa should be destroyed after dropping the Mirror, MonsterHealth = %d", room.MonsterHealth)
+	}
+	if !strings.Contains(got, "Mirror") {
+		t.Errorf("Handle(DROP MIRROR) with a live Medusa present = %q, want it to mention the Mirror mechanic", got)
+	}
+}
+
 func TestNougatDefeatsWerewolfOnDrop(t *testing.T) {
 	g := NewLevel1Exploration()
 	for _, dir := range []string{"SOUTH", "SOUTH", "EAST"} {
