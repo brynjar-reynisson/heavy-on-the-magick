@@ -112,6 +112,41 @@ package world
 // this makes it a genuine, reachable combat encounter, not just
 // recorded data.
 //
+// ROUND 177 CORRECTION - reverted back to "Wraith": a full frame-by-
+// frame review of a third gameplay video shows Methos's OWN real,
+// live combat text reads "WRAITH IS DEAD" - not "VAMPIRE" - after
+// defeating this exact monster. The SAME video separately shows
+// Morfang's monster with its own real, live combat text: "VAMPIRE
+// ATTACKS! ... THE GARLIC DESTROYS VAMPIRE" - confirming Morfang's own
+// Vampire placement (round 106) is genuinely correct AND that "Wraith"
+// and "Vampire" are two real, distinct creature names actually used in
+// live gameplay, not one creature known by two source-dependent names
+// the way round 74's portrait-gallery-driven global rename assumed.
+// Round 74's rename was real, sourced, and correct for the portrait
+// gallery's own 8th monster type - but applying it project-wide to
+// every prior "Wraith"-sourced placement (this one included) turns out
+// to have been too broad: this room's own original zone_monsters.go
+// sourcing said "Wraith", and live gameplay footage now directly
+// confirms that original reading, not the renamed one. The other 6
+// placements round 74 renamed (Level1Grid's F2/G1/G2/H1, Level2Grid's
+// A5, Level4Grid's A6) have NOT been re-checked against real gameplay
+// text this round - no new evidence for or against them yet, so they
+// are deliberately left as "Vampire" rather than reverted on
+// inference from this one room's correction alone. See CLAUDE.md's
+// "Open next steps" for this reopened question.
+//
+// The same footage also confirms Methos really does hold the CAULDRON,
+// ACHAD ritual's 3 real ingredients - Ulna, Thigh, and Skull (the
+// World of Spectrum instructions file's own "the skull behind the
+// wraith" phrasing is now doubly explained: it's literally behind a
+// Wraith, not a Vampire) - added to Items below. The ritual's own real
+// destination room, "Room of Nani" (see level3_grid.go and
+// game.cauldronAchad), is a different, unmerged dataset (Level3Grid),
+// so - the same honest "mechanic real, ingredients real, not reachable
+// in one playthrough yet" pattern already used for Pellet/Slug - these
+// items can be picked up here but not yet carried to where the ritual
+// actually checks for them.
+//
 // Wolfdorp's Werewolf (round 120): zone_monsters.go's "Wolfdorp: Ghost
 // x2, Werewolf x2" sighting (already cross-confirmed above, round 71,
 // against Level1Grid's own A1/C2/C6/D5 placements — all 4 cells sit
@@ -212,6 +247,12 @@ package world
 // those exact numbered-map items, not just coincidentally-named
 // duplicates - see game.Handle's CALL doc comment for how this
 // sharpens (without fully resolving) the CALL spell's honest stub.
+//
+// Trollwynd's "Mirror" (round 177): a full frame-by-frame review of a
+// third gameplay video shows the player picking up a real "Mirror"
+// item here, alongside the already-placed Clasp/Nougat/Scroll -
+// confirmed real, sourced content, not yet cross-referenced against
+// any other source or wired to a mechanic of its own.
 //
 // A fan-made numbered map poster (see numbered_room_contents.go) provides
 // good independent cross-confirmation and one open discrepancy worth
@@ -342,9 +383,9 @@ func CollodonsPile() *World {
 		// (walking back East returns to Room of Misery).
 		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta, West: roomSothicComplex}, Items: []string{"Grimoire", "Poison-smeared book"}, HasTable: true},
 		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}, Items: []string{"Sign"}},
-		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "Troll", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll"}, HasTable: true},
+		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "Troll", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll", "Mirror"}, HasTable: true},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
-		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget", "Erlstone"}, HasTable: true, Monster: "Vampire", MonsterHealth: 2},
+		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget", "Erlstone", "Ulna", "Thigh", "Skull"}, HasTable: true, Monster: "Wraith", MonsterHealth: 2},
 		// Sothic Complex now has 2 real entrances (see Room of Misery's
 		// own West exit above) - East back to Room of Misery, South to
 		// Wolfdorp (the original, CASA-walkthrough-sourced path from

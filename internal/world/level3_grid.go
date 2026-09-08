@@ -6,9 +6,10 @@ package world
 // the same way: a row letter A-H and a column number 1-8, offset into a
 // distinct RoomID range via level3Room. 41 of the 47 form one fully
 // connected component reachable from the start room; the other 6 (D4
-// "Sothic Complex", F3 "Nani", F5 "Hydra", G2 "Two", G4, H4 "Water") are
-// real, named or monster-bearing, deliberately isolated special rooms -
-// see the "SOTHIC COMPLEX" section below and the round-57/66 updates.
+// "Sothic Complex", F3 "Room of Nani", F5 "Hydra", G2 "Two", G4, H4
+// "Water") are real, named or monster-bearing, deliberately isolated
+// special rooms - see the "SOTHIC COMPLEX" section below and the
+// round-57/66/177 updates.
 //
 // ROUND 57: applying the same "check for a named special room explaining
 // a gap" technique that found Sothic Complex, tight-cropped the F2-F6
@@ -40,6 +41,23 @@ package world
 // "Rook of Hydra: Wyvern x1", neither of which this file had a monster
 // for yet. Added to the already-isolated Sothic Complex (D4) and
 // Hydra (F5) cells.
+//
+// ROUND 177: a full frame-by-frame review of a third gameplay video
+// confirms F3's real, full status-panel name is literally "Room of
+// Nani" (not just "Nani" - this file's own room-name field is now
+// corrected to match verbatim). The same footage shows the player
+// picking up real Ulna/Thigh/Skull bones at CollodonsPile's Methos
+// (see that file's own round-177 note) and dropping all 3 here, at
+// Room of Nani - real, direct confirmation this cell is the "Cauldron"
+// location game.cauldronAchad's "CAULDRON, ACHAD" ritual (round 139)
+// has been checking for by room NAME "Cauldron" (a guess, based on the
+// numbered map poster's own item description "Cauldron of cold iron")
+// since it was first implemented. That check is now corrected to match
+// this room's real confirmed name instead - see rituals.go. Methos and
+// Room of Nani remain 2 different, unmerged datasets (CollodonsPile vs.
+// Level3Grid), so the ritual's real ingredients and its real location
+// still can't be reached in one playthrough - the same honest,
+// already-established "mechanic real, cross-dataset barrier" pattern.
 //
 // CALIBRATION HISTORY - CORRECTED (this matters for anyone diffing old
 // output against this file): an earlier round found only 7 of the
@@ -216,7 +234,7 @@ var level3Cells = []*Room{
 	{ID: level3Room("E7"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("E8"), North: level3Room("D7"), South: level3Room("F7"), West: level3Room("E6")}, Monster: "Troll", MonsterHealth: 3},
 	{ID: level3Room("E8"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("D8"), South: level3Room("F8"), West: level3Room("E7")}},
 	{ID: level3Room("F1"), Level: 3, Exits: map[Direction]RoomID{North: level3Room("E1")}},
-	{ID: level3Room("F3"), Name: "Nani", Level: 3},
+	{ID: level3Room("F3"), Name: "Room of Nani", Level: 3},
 	{ID: level3Room("F5"), Name: "Hydra", Level: 3, Monster: "Wyvern", MonsterHealth: 3},
 	{ID: level3Room("F7"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("F8"), North: level3Room("E7")}},
 	{ID: level3Room("G2"), Name: "Two", Level: 3},

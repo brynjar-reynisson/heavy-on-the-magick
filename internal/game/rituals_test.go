@@ -52,10 +52,11 @@ func TestHandleNestPhoenixFullRitual(t *testing.T) {
 
 // TestHandleCauldronAchadRequiresRealCauldron covers round 139's real,
 // sourced ritual command (see game.cauldronAchad's doc comment):
-// saying "CAULDRON, ACHAD" anywhere that isn't really named "Cauldron"
-// is an honest rejection.
+// saying "CAULDRON, ACHAD" anywhere that isn't really named "Room of
+// Nani" (corrected round 177 from a guessed "Cauldron" name) is an
+// honest rejection.
 func TestHandleCauldronAchadRequiresRealCauldron(t *testing.T) {
-	g := New() // starts in Room of Misery, not the Cauldron
+	g := New() // starts in Room of Misery, not Room of Nani
 	got := g.Handle(parser.Parse("CAULDRON, ACHAD"))
 	if !strings.Contains(got, "no cauldron here") {
 		t.Errorf("Handle(CAULDRON, ACHAD) outside the real cauldron = %q, want an honest rejection", got)
@@ -65,11 +66,12 @@ func TestHandleCauldronAchadRequiresRealCauldron(t *testing.T) {
 // TestHandleCauldronAchadFullRitual covers the real ritual succeeding
 // once every confirmed requirement is met: real room name, the
 // Scroll removed, and Ulna/Thigh/Skull all dropped. Uses a synthetic
-// room (no shipped World.Room is named "Cauldron" yet) - same pattern
-// as TestHandleNestPhoenixFullRitual.
+// room named "Room of Nani" (the real name, per round 177 - Level3Grid's
+// own F3 isn't in the same World as this synthetic test setup) - same
+// pattern as TestHandleNestPhoenixFullRitual.
 func TestHandleCauldronAchadFullRitual(t *testing.T) {
 	w := world.New(0)
-	w.AddRoom(&world.Room{ID: 0, Name: "Cauldron", Items: []string{"Scroll"}})
+	w.AddRoom(&world.Room{ID: 0, Name: "Room of Nani", Items: []string{"Scroll"}})
 	g := &Game{Player: character.NewPlayer(), World: w}
 
 	got := g.Handle(parser.Parse("CAULDRON, ACHAD"))

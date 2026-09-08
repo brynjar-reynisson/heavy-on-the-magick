@@ -91,6 +91,19 @@ package world
 // for the same red "w"-icon creature already placed at Level1Grid's F2/
 // G1/G2/H1, Level2Grid's A5, Level4Grid's A6, and CollodonsPile's Methos.
 //
+// PARTIAL REVERSION (round 177): CollodonsPile's own Methos placement
+// was reverted back to "Wraith" - a full frame-by-frame review of real
+// gameplay footage shows Methos's own live combat text literally reads
+// "WRAITH IS DEAD", while a separately-encountered room (Morfang) shows
+// real combat text "VAMPIRE ATTACKS!" for a genuinely different
+// monster. This is direct, in-game evidence that "Wraith" and "Vampire"
+// are two real, distinct creatures - not one creature known by two
+// source-dependent names as this round-74 rename assumed. The OTHER 5
+// placements this rename touched (this file's own F2/G1/G2/H1,
+// Level2Grid's A5, Level4Grid's A6) have NOT been re-checked against
+// real gameplay text and are deliberately left as "Vampire" for now -
+// see CLAUDE.md's "Open next steps" for this reopened question.
+//
 // "Guards" icons (at D4 and D7, unchanged by the above - they were
 // correctly placed originally) are modeled as world.Room.Guards, not
 // Monster - guards aren't a BLAST/FREEZE combat encounter. The real

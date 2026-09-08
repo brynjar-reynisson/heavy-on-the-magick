@@ -62,12 +62,24 @@ func (g *Game) nestPhoenix() string {
 // Stansfeld Jones's own magical name - who "AI" is isn't explained by
 // any source checked so far (see this round's writeup in
 // ../../CLAUDE.md). Same honest "confirmed real, effect unknown" stub
-// as NEST/PHOENIX. No real World.Room is currently named "Cauldron"
-// (real, scoped follow-up work, the same "mechanic real, not yet
-// reachable" pattern used repeatedly in this project).
+// as NEST/PHOENIX.
+//
+// ROUND 177 CORRECTION: this originally checked for a room literally
+// named "Cauldron" - a guess based on the numbered map poster's own
+// item description ("Cauldron of cold iron (scroll inside)"), with no
+// real World.Room by that name ever placed. A full frame-by-frame
+// review of a third gameplay video shows the room's real, confirmed
+// status-panel name is actually "Room of Nani" (Level3Grid's F3,
+// isolated) - the video shows the player dropping the real Ulna/Thigh/
+// Skull bones there directly. The check below now matches that real
+// name instead of the guessed one. Methos (where those 3 bones are
+// really placed - see collodons_pile.go) and Room of Nani are still 2
+// different, unmerged datasets, so the ritual isn't reachable in one
+// playthrough yet - the same honest "mechanic real, cross-dataset
+// barrier" pattern used for Pellet/Slug.
 func (g *Game) cauldronAchad() string {
 	room := g.World.CurrentRoom()
-	if room == nil || !strings.EqualFold(room.Name, "Cauldron") {
+	if room == nil || !strings.EqualFold(room.Name, "Room of Nani") {
 		return "There is no cauldron here."
 	}
 	if g.roomHasItem("Scroll") {

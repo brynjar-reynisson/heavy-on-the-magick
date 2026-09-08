@@ -147,6 +147,24 @@ func TestCollodonsPileMethosHasErlstone(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileTrollwyndHasMirror pins the round-177 addition: a
+// full frame-by-frame review of real gameplay footage shows the player
+// picking up a real "Mirror" item at Trollwynd, alongside the
+// already-placed Clasp/Nougat/Scroll.
+func TestCollodonsPileTrollwyndHasMirror(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomTrollwynd]
+	found := false
+	for _, item := range room.Items {
+		if item == "Mirror" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Trollwynd Items = %v, want it to include \"Mirror\"", room.Items)
+	}
+}
+
 // TestCollodonsPileWolfdorpDoesNotHaveKey pins the round-82 correction:
 // round 81 placed "Key" in Wolfdorp's Items based on a misread
 // AI-summarized list, not the raw source text - the raw text shows the
@@ -265,17 +283,43 @@ func TestCollodonsPileSecundaPortaHasSign(t *testing.T) {
 	}
 }
 
-// TestCollodonsPileMethosHasVampire pins the round-71 addition: Methos
+// TestCollodonsPileMethosHasWraith pins the round-71 addition: Methos
 // is a real, connected, reachable room, and zone_monsters.go's
 // independently-sourced "Methos: Wraith x1" sighting - cross-validated
 // against other exact matches in that same list - is the first monster
 // this room has had (see CollodonsPile's doc comment). Renamed from
-// "Wraith" to "Vampire" in round 74 (see Level1Grid's doc comment).
-func TestCollodonsPileMethosHasVampire(t *testing.T) {
+// "Wraith" to "Vampire" in round 74 (see Level1Grid's doc comment), then
+// reverted back to "Wraith" in round 177: a full frame-by-frame review
+// of real gameplay footage shows Methos's own live combat text reads
+// "WRAITH IS DEAD", while a separate encounter (Morfang) shows real
+// combat text "VAMPIRE ATTACKS!" for what's now confirmed to be a
+// genuinely different monster - see CollodonsPile's doc comment.
+func TestCollodonsPileMethosHasWraith(t *testing.T) {
 	w := CollodonsPile()
 	room := w.Rooms[roomMethos]
-	if room.Monster != "Vampire" || room.MonsterHealth <= 0 {
-		t.Errorf("Methos Monster = %q (health %d), want a live Vampire", room.Monster, room.MonsterHealth)
+	if room.Monster != "Wraith" || room.MonsterHealth <= 0 {
+		t.Errorf("Methos Monster = %q (health %d), want a live Wraith", room.Monster, room.MonsterHealth)
+	}
+}
+
+// TestCollodonsPileMethosHasCauldronBones pins the round-177 addition:
+// a full frame-by-frame review of real gameplay footage shows the
+// player picking up Ulna, Thigh, and Skull at Methos - the exact 3
+// ingredients game.cauldronAchad's "CAULDRON, ACHAD" ritual (round 139)
+// requires, previously sourced but never placed anywhere reachable.
+func TestCollodonsPileMethosHasCauldronBones(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomMethos]
+	for _, want := range []string{"Ulna", "Thigh", "Skull"} {
+		found := false
+		for _, item := range room.Items {
+			if item == want {
+				found = true
+			}
+		}
+		if !found {
+			t.Errorf("Methos Items = %v, want it to include %q", room.Items, want)
+		}
 	}
 }
 

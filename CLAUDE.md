@@ -8278,8 +8278,117 @@ shipped dataset (CollodonsPile's Exit), that's exactly the kind of
 project's own history keeps rewarding - worth checking every real
 walkthrough's own ending specifically, not just its early rooms.
 
+### Round 177: a third video's own live combat text reopens the Wraith/Vampire question, and locates 2 more real, previously-unplaced things
+
+Continued the same third (~74 minute) walkthrough video's frame-by-frame
+review from round 176, sampling further into the run (fps=1/10, 444
+frames total, reviewed via 8x8 contact-sheet montages then zoomed to
+full resolution wherever a detail mattered). Three real findings:
+
+1. **"Wraith" and "Vampire" are two real, distinct in-game creature
+   names — round 74's global rename conflated them.** The video's own
+   live combat text at Methos reads "WRAITH IS DEAD" (not "VAMPIRE"),
+   while a separate encounter at Morfang shows real combat text
+   "VAMPIRE ATTACKS! ... THE GARLIC DESTROYS VAMPIRE" for what's now
+   confirmed to be a genuinely different monster. Round 74 renamed
+   "Wraith" to "Vampire" project-wide based on a real, but different,
+   piece of evidence (the game's own portrait gallery screenshot labels
+   its 8th monster type "VAMPIRE") - correct for that specific portrait,
+   but wrong to assume every prior "Wraith"-sourced placement (this
+   project's own name, traced back to a fan map's plain-English gloss
+   on a red "w" icon) must be the same creature. Reverted Methos's own
+   `Monster` field (and its matching `zone_monsters.go` sighting) back
+   to "Wraith" — the only one of round 74's 7 renamed placements with
+   direct, room-specific video evidence either way. The other 6
+   (Level1Grid's F2/G1/G2/H1, Level2Grid's A5, Level4Grid's A6, and
+   Morfang itself — now cross-validated as genuinely correct) are
+   deliberately left as "Vampire", not reverted on inference alone; the
+   "Wraithvale" zone's own "Vampire" sighting is flagged as worth
+   particular suspicion (a zone literally named after "Wraith"
+   reporting a "Vampire") but likewise left unchanged pending real
+   evidence. `cmd/hotm-gui`'s `monsterGlyphColor`/portrait maps have no
+   entry for "Wraith" at all, so Methos's monster now honestly falls
+   back to no glyph/portrait rather than reusing Vampire's unconfirmed
+   art for a different creature.
+
+2. **Methos really does hold the CAULDRON, ACHAD ritual's 3 real
+   ingredients.** The same footage shows the player picking up Ulna,
+   Thigh, and Skull directly at Methos (the World of Spectrum
+   instructions file's own "the skull behind the wraith" phrasing is
+   now literally explained — it really is behind a Wraith, not a
+   Vampire), then carrying and dropping all 3 at a room whose own real,
+   confirmed status-panel name is **"Room of Nani"** — not the shorter
+   "Nani" this project had stored, and not the guessed "Cauldron" name
+   `game.cauldronAchad` (round 139) had been checking for ever since it
+   shipped with no known real room. Corrected both: `Level3Grid`'s F3
+   is now named exactly "Room of Nani" (matching the video verbatim),
+   and `cauldronAchad`'s room-name check now matches it instead of the
+   guessed "Cauldron". Methos (CollodonsPile) and Room of Nani
+   (Level3Grid) remain 2 different, unmerged datasets, so — the same
+   honest "mechanic real, cross-dataset barrier" pattern already used
+   for Pellet/Slug — the ritual's real ingredients and its real
+   location still can't be reached in one playthrough.
+
+3. **A real, previously-unplaced item at Trollwynd: "Mirror".** The
+   same footage shows the player picking it up alongside the
+   already-placed Clasp/Nougat/Scroll — added to `Items`, not yet
+   cross-referenced against any other source or wired to a mechanic of
+   its own.
+
+Also observed, not acted on: the same footage's own status panel
+occasionally renders "Nidus" in a way that reads ambiguously as "Midus"
+at this font's resolution (N/M are visually similar in this chunky
+Spectrum font) — round 15's correction to "Nidus" rests on much
+stronger evidence (the word's confirmed presence/absence in the game's
+own extracted vocabulary table), so this was NOT treated as
+contradicting evidence, just noted as a font-legibility trap worth
+remembering before trusting a video screen's spelling over a
+vocabulary-table fact. Also observed a real Apex hint for the NEST,
+PHOENIX ritual ("CALL APEX" near a full nest responds "PHOENIX... TO A
+FULL NEST SAY THE NAME") — real, corroborating content, but not wired
+to anything since no source has ever placed a real "Nest of Phoenix"
+`World.Room` to attach the hint to (same gap round 136 already flagged).
+
+Added `TestCollodonsPileMethosHasWraith` (replacing
+`TestCollodonsPileMethosHasVampire`), `TestCollodonsPileMethosHasCauldronBones`,
+`TestCollodonsPileTrollwyndHasMirror`, and updated
+`TestLevel3GridNaniAndHydraAreIsolated`/`TestHandleCauldronAchadRequiresRealCauldron`/
+`TestHandleCauldronAchadFullRitual` to match. Ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live via `go run ./cmd/hotm`: walking the real path
+to Methos now shows "You see: Nugget, Erlstone, Ulna, Thigh, Skull",
+all 3 bones pick up correctly.
+
+**How to apply**: a global find-and-replace rename (round 74's Wraith→
+Vampire) driven by one strong piece of evidence (a portrait gallery
+screenshot) can still be wrong for OTHER placements that happened to
+share the old name for an unrelated reason — when a later source gives
+room-specific, direct evidence (live combat text naming the creature at
+THIS exact room), that's stronger than the original blanket
+justification and should be applied per-room, not assumed to vindicate
+or invalidate the whole prior rename at once. A numbered-map poster's
+own item description (round 139's "Cauldron of cold iron") describes a
+room's CONTENTS, not necessarily its real display NAME - the same
+"micro-label vs. zone/room name" trap this project has hit before
+(Sign vs. Sothic Complex, round 174's correction) - real gameplay
+footage showing the actual status-panel text is the tiebreaker.
+
 ## Open next steps
 
+- **The Wraith/Vampire question is reopened** (round 177, correcting
+  round 74): direct video evidence shows Methos's real monster is a
+  Wraith, not the Vampire round 74's global rename assumed - and that
+  Morfang's own Vampire placement is genuinely correct (both confirmed
+  via distinct, real, live combat text in the same video). This means
+  round 74's OTHER 5 renamed placements - Level1Grid's F2/G1/G2/H1,
+  Level2Grid's A5, and Level4Grid's A6 - have not been individually
+  re-verified and might also need reverting to "Wraith"; so might the
+  "Wraithvale" zone's own "Vampire" sighting in `zone_monsters.go`
+  (suspicious given the zone's own name). None of these were changed
+  this round for lack of direct evidence either way - worth checking
+  each one against a real gameplay video (or the screenshot atlas's own
+  individual room scenes) the same way Methos/Morfang were settled,
+  rather than reverting or keeping them on inference alone.
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the
   official map poster's own footer banner states "TRANSFUSION =
   STAMINA FROM EXPERIENCE," implying it should spend `ExperiencePoints`

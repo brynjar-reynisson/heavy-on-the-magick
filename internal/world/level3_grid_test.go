@@ -4,7 +4,7 @@ import "testing"
 
 func TestLevel3GridHas47Cells(t *testing.T) {
 	if len(level3Cells) != 47 {
-		t.Fatalf("len(level3Cells) = %d, want 47 (the validated 41-cell connected component plus 6 isolated cells: Sothic Complex, Nani, Hydra, Two, G4/Wyvern, Water)", len(level3Cells))
+		t.Fatalf("len(level3Cells) = %d, want 47 (the validated 41-cell connected component plus 6 isolated cells: Sothic Complex, Room of Nani, Hydra, Two, G4/Wyvern, Water)", len(level3Cells))
 	}
 }
 
@@ -31,10 +31,12 @@ func TestLevel3GridKitchenOfAiFinds(t *testing.T) {
 // TestLevel3GridNaniAndHydraAreIsolated pins the 2 real, tight-crop-
 // verified named cells found in round 57 (see Level3Grid's doc
 // comment) - the same "check for a named special room" technique that
-// found Sothic Complex, applied to the rest of the F2-F6 gap.
+// found Sothic Complex, applied to the rest of the F2-F6 gap. F3's
+// name was corrected round 177 from "Nani" to its real, full,
+// video-confirmed status-panel name "Room of Nani".
 func TestLevel3GridNaniAndHydraAreIsolated(t *testing.T) {
 	w := Level3Grid()
-	want := map[string]string{"F3": "Nani", "F5": "Hydra"}
+	want := map[string]string{"F3": "Room of Nani", "F5": "Hydra"}
 	for code, name := range want {
 		room := w.Rooms[level3Room(code)]
 		if room == nil || room.Name != name {
