@@ -147,6 +147,26 @@ func TestLevel2GridHasVerifiedMonsters(t *testing.T) {
 	}
 }
 
+// TestLevel2GridA5HasSnake pins round 179's addition: a full frame-by-
+// frame review of real gameplay footage shows the player picking up a
+// real Snake at "Wraithvale" (A5's own real zone name, round 74) - the
+// same real, sourced ward-off item game.checkSnakeHydra already
+// requires to pass a Hydra, previously shipped with no real placement
+// anywhere.
+func TestLevel2GridA5HasSnake(t *testing.T) {
+	w := Level2Grid()
+	room := w.Rooms[level2Room("A5")]
+	found := false
+	for _, item := range room.Items {
+		if item == "Snake" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Level2Grid room A5 Items = %v, want it to include \"Snake\"", room.Items)
+	}
+}
+
 // TestLevel2GridGuardsPlacements pins the 3 verified Guards obstacles
 // within the playable 50-cell component - see Level2Grid's doc comment
 // for why 2 more real Guards icons (G5, H5) are deliberately excluded.

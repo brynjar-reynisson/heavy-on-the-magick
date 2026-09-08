@@ -109,6 +109,18 @@ func TestHandleExamineChest(t *testing.T) {
 	}
 }
 
+// TestHandleExamineWolfdorpChestMentionsOak covers round 179's real,
+// video-confirmed exact chest text ("IT'S A CHEST MADE OF OAK...") -
+// specific to Wolfdorp, not assumed for Morfang's own unconfirmed
+// chest material.
+func TestHandleExamineWolfdorpChestMentionsOak(t *testing.T) {
+	g := walkToWolfdorp(t)
+	got := g.Handle(parser.Parse("X CHEST"))
+	if !strings.Contains(got, "oak") {
+		t.Errorf("Handle(X CHEST) in Wolfdorp = %q, want it to mention oak", got)
+	}
+}
+
 func TestHandleExamineWithTargetNotHereSaysSo(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("EXAMINE SWORD"))

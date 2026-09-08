@@ -179,6 +179,16 @@ package world
 // separate scope limit) can now genuinely trigger it in real
 // -level3grid play.
 //
+// A3's Name and chest (round 179): a full frame-by-frame review of a
+// third gameplay video shows the real, live status-panel text "YOU ARE
+// IN GORBURG" at a room with a real, examinable chest - "IT'S A CHEST
+// MADE OF OAK; IT HOLDS A LEAF AND A BAG". This is the first cell in
+// this file's own Gorburg zone (already anchoring A1's Mantis and A2's
+// Pellet at zone-level confidence) to get the zone's own real NAME
+// directly, not just an inferred zone-banner cross-reference - added
+// to A3 specifically since that's the real, connected, previously-
+// plain cell nearest the other 2 confirmed finds in the same zone.
+//
 // Same honest scope as Level2Grid otherwise: room descriptions use the
 // same placeholder convention as everywhere else, and no other item
 // placements were extracted for this file.
@@ -214,7 +224,7 @@ func level3CellCode(id RoomID) string {
 var level3Cells = []*Room{
 	{ID: level3Room("A1"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("A2"), South: level3Room("B1")}, Items: []string{"Mantis"}},
 	{ID: level3Room("A2"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("A3"), South: level3Room("B2"), West: level3Room("A1")}, SwapItem: "Ball", RevealItem: "Pellet"},
-	{ID: level3Room("A3"), Level: 3, Exits: map[Direction]RoomID{South: level3Room("B3"), West: level3Room("A2")}},
+	{ID: level3Room("A3"), Name: "Gorburg", Level: 3, Exits: map[Direction]RoomID{South: level3Room("B3"), West: level3Room("A2")}, HasChest: true, Items: []string{"Leaf", "Bag"}},
 	{ID: level3Room("A4"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("A5"), South: level3Room("B4")}},
 	{ID: level3Room("A5"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("A6"), South: level3Room("B5"), West: level3Room("A4")}},
 	{ID: level3Room("A6"), Level: 3, Exits: map[Direction]RoomID{East: level3Room("A7"), South: level3Room("B6"), West: level3Room("A5")}},

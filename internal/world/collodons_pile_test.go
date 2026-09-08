@@ -180,6 +180,24 @@ func TestCollodonsPileTrollwyndHasMirror(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileWolfdorpHasFoot pins the round-179 addition: a full
+// frame-by-frame review of real gameplay footage shows the exact real
+// chest-examine text ("IT'S A CHEST MADE OF OAK. IT HOLDS A BAG, A
+// GARLIC AND A FOOT.") revealing a real, previously-unplaced item.
+func TestCollodonsPileWolfdorpHasFoot(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomWolfdorp]
+	found := false
+	for _, item := range room.Items {
+		if item == "Foot" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Wolfdorp Items = %v, want it to include \"Foot\"", room.Items)
+	}
+}
+
 // TestCollodonsPileWolfdorpDoesNotHaveKey pins the round-82 correction:
 // round 81 placed "Key" in Wolfdorp's Items based on a misread
 // AI-summarized list, not the raw source text - the raw text shows the

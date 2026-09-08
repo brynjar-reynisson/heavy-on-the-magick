@@ -143,6 +143,15 @@ func (g *Game) examine(target string) string {
 			return "A plain table."
 		}
 		if room.HasChest && strings.EqualFold(target, "CHEST") {
+			// Wolfdorp's and Gorburg's chests are both confirmed real
+			// oak (round 179: "IT'S A CHEST MADE OF OAK...", a direct
+			// frame-by-frame video review of each) - Morfang's own
+			// chest material isn't confirmed by any source, so it keeps
+			// the honest generic wording rather than assuming the same
+			// material.
+			if strings.EqualFold(room.Name, "Wolfdorp") || strings.EqualFold(room.Name, "Gorburg") {
+				return "A wooden chest, made of oak."
+			}
 			return "A wooden chest."
 		}
 		if room.HasCauldron && strings.EqualFold(target, "CAULDRON") {

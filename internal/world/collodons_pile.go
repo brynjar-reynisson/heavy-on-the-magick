@@ -192,6 +192,29 @@ package world
 // the same way HasTable already is - same honest "only these 2
 // specifically confirmed rooms" convention, not assumed elsewhere.
 //
+// Wolfdorp's "Foot" (round 179): a full frame-by-frame review of a
+// third gameplay video shows the real, exact chest-examine text - "IT'S
+// A CHEST MADE OF OAK. IT HOLDS A BAG, A GARLIC AND A FOOT." - which
+// both confirms the chest's real material (see game.examine's
+// HasCauldron/HasChest wiring) and reveals a real, previously-unplaced
+// item, "Foot", alongside the already-known Bag/Garlic. Added to Items.
+//
+// A real, unresolved observation (round 179, not acted on): the SAME
+// video also shows a "WRAITH IS HIT"/"WRAITH IS DEAD" combat sequence
+// at Morfang, distinct from the already-confirmed "VAMPIRE ATTACKS!"/
+// "GARLIC DESTROYS VAMPIRE" sequence also filmed there (round 177) -
+// both clearly show the status panel reading "MORFANG". This is
+// consistent with round 106's own already-flagged count mismatch
+// (zone_monsters.go's "Morfang: Vampire x3" vs. this file's single
+// Monster field) - Morfang likely holds multiple real creatures, of
+// more than one type, that this project's one-Monster-per-room data
+// model can't represent without either losing the independently-
+// confirmed Vampire or guessing which is more "correct". Left as-is
+// (Monster stays "Vampire", the more precisely-sourced of the two -
+// exact Garlic-kills-it combat text, not just a generic BLAST kill)
+// with this note on file rather than silently discarding the Wraith
+// observation.
+//
 // CORRECTED (round 82): round 81 added "Key" to Wolfdorp's Items,
 // citing "(Wolfdorp on level 1) ... EXAMINE TABLE, Pick up KEY" - but
 // that phrasing came from an AI-summarized LIST ("every EXAMINE-before-
@@ -400,7 +423,7 @@ func CollodonsPile() *World {
 		// 2 independent sources, not fabricated to make a zone-
 		// abstracted room "feel" fully connected.
 		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{East: roomMisery, South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower", "Sword"}, HasTable: true},
-		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, DoorHints: []string{"Cry and enter door.", "To enter is madness."}, Monster: "Werewolf", MonsterHealth: 2, Items: []string{"Garlic", "Bag", "Loaf"}, HasTable: true, HasChest: true},
+		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, DoorHints: []string{"Cry and enter door.", "To enter is madness."}, Monster: "Werewolf", MonsterHealth: 2, Items: []string{"Garlic", "Bag", "Loaf", "Foot"}, HasTable: true, HasChest: true},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key", HasTable: true},
 		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Monster: "Vampire", MonsterHealth: 2, Items: []string{"Slat"}, TollItem: "Bag", HasTable: true, HasChest: true},
 		{ID: roomArrows, Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{East: roomNidus, North: roomWolfdorp}, TollItem: "Slat", HasTable: true},

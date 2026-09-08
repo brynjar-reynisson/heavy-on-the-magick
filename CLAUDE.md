@@ -8507,6 +8507,76 @@ live text, but don't assume the earlier inference was baseless
 (Wolfdorp genuinely is a Level-1 zone with real, independently-sourced
 items; it just didn't have THIS particular one).
 
+### Round 179: a systematic completeness audit of the same third video - re-swept all 7 montage sheets against a checklist of what's already shipped, closing 3 more real gaps
+
+Rounds 177/178 covered the full ~74-minute third video end-to-end, but
+in the order things were noticed rather than a systematic sweep. This
+round re-examined all 7 contact-sheet montages again, specifically
+cross-checking every distinct piece of on-screen text against what's
+already implemented, to catch anything flagged-but-not-resolved or
+skipped the first time through. Found 3 more real, concrete additions
+this pass, all from sheets already "reviewed" earlier but not
+exhaustively mined:
+
+1. **Wolfdorp's real, exact chest-examine text reveals a new item,
+   "Foot".** "IT'S A CHEST MADE OF OAK. IT HOLDS A BAG, A GARLIC AND A
+   FOOT." - both a real, previously-unplaced item (added to Wolfdorp's
+   Items) and the chest's real material (Wolfdorp's own `EXAMINE
+   CHEST` response now says "made of oak" specifically, not the
+   generic wording used for Morfang's own unconfirmed-material chest).
+
+2. **A real, new named room with its own chest: Gorburg.** The same
+   zone already anchoring Belezbar's Mantis (A1) and the Pellet swap
+   mechanic (A2) has a third real cell, confirmed via the live status
+   panel ("YOU ARE IN GORBURG") holding a real, examinable oak chest -
+   "IT HOLDS A LEAF AND A BAG". Added as Level3Grid's A3 - the first
+   cell in this zone to carry the zone's own real name directly
+   (A1/A2 only ever had zone-banner-inferred item placements, no Name
+   field of their own).
+
+3. **A real home for the Snake, at last.** `game.checkSnakeHydra`
+   (round 145) has required a Snake to pass a Hydra since it shipped,
+   with no source ever placing a real Snake anywhere - this pass found
+   one: the video shows the player picking up a real Snake at
+   "Wraithvale" ("YOU TAKE THE SNAKE: IT'S AN IRON CLASP INSCRIBED WITH
+   AN UNDINE"), the same zone already confirmed as Level2Grid's A5
+   (round 74). Added to A5's Items. This does NOT resolve the still-
+   open Hydra monster-type mystery, or round 177's separate suspicion
+   about A5's own "Vampire" placement (the video's own combat encounter
+   there didn't yield a clear creature-name in this pass's 10-second
+   frame sampling) - both remain open.
+
+Also re-confirmed, without needing further changes: Rook of Hydra's
+real Wyvern combat (matches Level3Grid F5 exactly); a second, separate
+"WRAITH IS HIT"/"WRAITH IS DEAD" combat sequence at Morfang, alongside
+the already-confirmed "VAMPIRE ATTACKS!" one from the same room -
+consistent with round 106's own already-flagged Vampire×3 count
+mismatch (Morfang likely holds multiple real creatures this project's
+single-Monster-field model can't fully represent) - documented in
+`collodons_pile.go` rather than silently ignored, but not changed
+(the shipped "Vampire" stays, being the more precisely-sourced of the
+two real texts found there). A few remaining ambiguous text fragments
+(a "SOUTH:0-0?; FORGET IT" rejection-looking message, assorted item
+inscription flavor text) were judged too unclear from a single 10-
+second-interval frame to act on safely, and were left unactioned
+rather than guessed at.
+
+Added `TestCollodonsPileWolfdorpHasFoot`, `TestHandleExamineWolfdorpChestMentionsOak`,
+`TestLevel3GridA3IsGorburgWithChest`, and `TestLevel2GridA5HasSnake`.
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean.
+
+**How to apply**: reviewing a source "in full" once (rounds 177/178)
+and doing a SYSTEMATIC re-sweep against an explicit checklist of
+what's already shipped are two different levels of thoroughness - the
+first catches whatever stands out; the second catches what was visible
+in an already-viewed frame but not cross-referenced carefully enough
+against the codebase at the time (Wolfdorp's chest examine text had
+been looked at for its "It's a chest" confirmation back in round 78,
+but never mined for the exact "Foot" item sitting right there in the
+same sentence). Worth doing this kind of re-audit pass on any
+sufficiently rich source, not just once per source.
+
 ## Open next steps
 
 - **Quadra Porta's real Philosophus promotion isn't wired yet** (round

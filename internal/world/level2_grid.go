@@ -96,6 +96,20 @@ package world
 // place name (confirmed independently via the map's own colored zone
 // labeling), not affected by the creature-name correction.
 //
+// A5's "Snake" (round 179): a full frame-by-frame review of a third
+// gameplay video shows the player picking up a real Snake at
+// "Wraithvale" ("YOU TAKE THE SNAKE: IT'S AN IRON CLASP INSCRIBED WITH
+// AN UNDINE") - real, sourced content, and notably Snake is already a
+// real, sourced ward-off item (World of Spectrum: "To pass the Hydras
+// you need a Snake" - see game.checkSnakeHydra), previously shipped
+// with no real placement anywhere. This doesn't resolve the still-open
+// "Hydra" monster-type mystery, but does give the Snake itself a real,
+// reachable home for the first time. The same footage's own combat
+// encounter at this cell didn't yield a clear creature-name text this
+// round (10-second frame sampling), so it does NOT resolve round 177's
+// separately-flagged "Wraithvale: Vampire" suspicion either way -
+// left open.
+//
 // Guards: a later round re-derived this file's own row/column pixel
 // calibration directly (validated against A6/A8's own printed labels,
 // plus the "AGILE STAIR" box - real, at B8 here, not A7/A8 like
@@ -171,7 +185,7 @@ var level2Cells = []*Room{
 	{ID: level2Room("A2"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A3"), South: level2Room("B2"), West: level2Room("A1")}},
 	{ID: level2Room("A3"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A4"), South: level2Room("B3"), West: level2Room("A2")}},
 	{ID: level2Room("A4"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A5"), South: level2Room("B4"), West: level2Room("A3")}},
-	{ID: level2Room("A5"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A6"), South: level2Room("B5"), West: level2Room("A4")}, Monster: "Vampire", MonsterHealth: 2},
+	{ID: level2Room("A5"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A6"), South: level2Room("B5"), West: level2Room("A4")}, Monster: "Vampire", MonsterHealth: 2, Items: []string{"Snake"}},
 	{ID: level2Room("A6"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A7"), South: level2Room("B6"), West: level2Room("A5")}},
 	{ID: level2Room("A7"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A8"), South: level2Room("B7"), West: level2Room("A6")}},
 	{ID: level2Room("A8"), Level: 2, Exits: map[Direction]RoomID{West: level2Room("A7")}},

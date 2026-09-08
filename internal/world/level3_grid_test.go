@@ -168,6 +168,30 @@ func TestLevel3GridA2HasPelletSwap(t *testing.T) {
 	}
 }
 
+// TestLevel3GridA3IsGorburgWithChest pins round 179's addition: a full
+// frame-by-frame review of real gameplay footage shows the real, live
+// status-panel name "Gorburg" at a room with a real, examinable chest
+// holding a Leaf and a Bag - the same zone already anchoring A1's
+// Mantis and A2's Pellet swap.
+func TestLevel3GridA3IsGorburgWithChest(t *testing.T) {
+	w := Level3Grid()
+	room := w.Rooms[level3Room("A3")]
+	if room == nil || room.Name != "Gorburg" || !room.HasChest {
+		t.Fatalf("Level3Grid room A3 = %+v, want Name \"Gorburg\" with a real chest", room)
+	}
+	for _, want := range []string{"Leaf", "Bag"} {
+		found := false
+		for _, item := range room.Items {
+			if item == want {
+				found = true
+			}
+		}
+		if !found {
+			t.Errorf("Gorburg (A3) Items = %v, want it to include %q", room.Items, want)
+		}
+	}
+}
+
 // TestLevel3GridMainComponentIsFullyConnected pins that the original
 // 41-cell component, like Level2Grid's 50 (but unlike Level1Grid's
 // 44/64), is entirely reachable from the start room - it was
