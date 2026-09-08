@@ -38,6 +38,17 @@ func (g *Game) checkSpellbook(verb string) (ok bool, rejection string) {
 	return false, fmt.Sprintf("You can't invoke that spell - you don't have the %s.", item)
 }
 
+// transfusionExperienceCost is charged per TRANSFUSION cast - a real,
+// confirmed mechanic (round 147: the official map poster's own footer
+// states "TRANSFUSION = STAMINA FROM EXPERIENCE"), now doubly confirmed
+// by a direct frame-by-frame review of a full walkthrough video showing
+// the real game's own exact rejection text, "Not enough experience.",
+// when attempting to cast without sufficient ExperiencePoints. The
+// EXACT cost/ratio still isn't extracted - this placeholder amount
+// matches awardVictoryPoints' own base reward (10), a reasonable,
+// internally-consistent guess pending the real number.
+const transfusionExperienceCost = 10
+
 // transfusion handles TRANSFUSION. Confirmed real effect (restores
 // Stamina) via the CASA walkthrough extraction; the exact original
 // restore amount was not stated there and hasn't been extracted from the
@@ -50,6 +61,10 @@ func (g *Game) transfusion() string {
 	if ok, rejection := g.checkSpellbook("TRANSFUSION"); !ok {
 		return rejection
 	}
+	if g.Player.ExperiencePoints < transfusionExperienceCost {
+		return "Not enough experience."
+	}
+	g.Player.ExperiencePoints -= transfusionExperienceCost
 	const placeholderRestoreAmount = 10
 	g.Player.Stamina = min(g.Player.Stamina+placeholderRestoreAmount, g.Player.MaxStamina)
 	if g.Player.Stamina >= g.Player.MaxStamina {

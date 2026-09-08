@@ -220,6 +220,22 @@ func TestHandlePickupMovesItemToInventory(t *testing.T) {
 // sourced mechanic (a 1986 CRASH magazine review: "Poison damages
 // Stamina upon contact") applied to Room of Misery's already-real
 // "Poison-smeared book".
+// TestHandlePickupNougatSaysNotFood covers a real, confirmed detail
+// (see notFoodItems' doc comment): a direct frame-by-frame review of a
+// full walkthrough video showed the exact real response "IT'S NOT
+// FOOD" when picking up Nougat - one of this project's own already-
+// real, already-placed items.
+func TestHandlePickupNougatSaysNotFood(t *testing.T) {
+	g := New()
+	g.Handle(parser.Parse("EAST"))
+	g.Handle(parser.Parse("DOOR, SILENCE"))
+	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a real Nougat
+	got := g.Handle(parser.Parse("PICKUP NOUGAT"))
+	if !strings.Contains(got, "not food") {
+		t.Errorf("Handle(PICKUP NOUGAT) = %q, want it to say it's not food", got)
+	}
+}
+
 func TestHandlePickupPoisonedItemCostsStamina(t *testing.T) {
 	g := New() // Room of Misery has a real sourced item: Poison-smeared book
 	before := g.Player.Stamina

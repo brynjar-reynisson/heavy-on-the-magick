@@ -8184,6 +8184,100 @@ data exactly like this. When honesty requires leaving a real, observed
 detail out (Apex's/monsters' "CUNNING" stat), record NOT modeling it as
 an intentional, sourced decision in the code, not silence.
 
+### Round 176: a full pass over a SECOND, much longer walkthrough video - 7 more real, sourced corrections including CollodonsPile's own first walkable win
+
+The user provided a second, much longer (~22 minute) full-walkthrough
+video, distinct from round 175's shorter one. Sampled the entire video
+via ffmpeg (1 frame/3s, ~448 frames, reviewed as contact-sheet montages
+then zoomed to full resolution wherever a detail mattered) and found
+real, concrete corrections spanning the whole run - character creation
+through the actual ending.
+
+1. **The real Grade-promotion message is more specific than this port's
+   own wording**: passing Secunda Porta's door text names the real
+   Golden Dawn term "Outer Order" explicitly (a genuine, correct detail
+   - Neophyte through Philosophus are Outer Order grades; Adeptus Minor
+   and above are Inner Order), not just "you are now a Zelator" as this
+   port previously said.
+
+2. **TRANSFUSION really does cost Experience Points, with a real exact
+   rejection.** Round 147 already found the map poster's own footer
+   states "TRANSFUSION = STAMINA FROM EXPERIENCE" but left it
+   unimplemented, worried about breaking an existing 0-XP test on an
+   unconfirmed mechanic. This video removes that doubt: casting
+   TRANSFUSION without enough Experience shows the real game's own
+   exact rejection text. Added `transfusionExperienceCost` (a
+   placeholder amount, matching `awardVictoryPoints`' own base reward)
+   and the real gate; updated the 2 existing tests to grant XP first,
+   added a new test for the rejection itself.
+
+3. **The real Nugget/Werewolf message is more decisive than this port's
+   wording, AND it awards real Experience Points** - previously this
+   mechanic granted none at all, unlike an ordinary BLAST/FREEZE kill.
+   Fixed both: reworded to match the real confirmed phrasing, and wired
+   in the same `awardVictoryPoints()` every other real monster defeat
+   uses. (The Nougat case's own wording is left as-is - only the
+   Nugget/Silver-Nugget case was confirmed with different, more
+   decisive text this round.)
+
+4. **A real, small joke the original makes: "IT'S NOT FOOD"** - shown
+   for BOTH Nougat and Garlic on pickup (two already-real, already-
+   placed items whose names sound edible). Added `notFoodItems` (a
+   map, not a hardcoded pair, matching this project's own established
+   convention for a fact confirmed on a small set that a future round
+   might extend) and wired it into `pickup`.
+
+5. **The real win message differs from this port's own earlier
+   invented wording** - the game's own actual congratulatory text
+   (confirmed via the video's own ending sequence) replaces the
+   previous paraphrase, while keeping this port's own added context
+   (which of the 3 real exits, the still-open Philosophus-gate
+   question) that the original's own shorter text doesn't include.
+
+6. **CollodonsPile itself never had a reachable Exit at all, in 176
+   rounds - the win condition only ever fired in the separate,
+   unmerged level-grid datasets.** The video's own real ending sequence
+   shows the exact missing connection: Pile Collodom (already this
+   dataset's own final room, per the CASA walkthrough's path) has a
+   real North exit leading directly to a real "Exit" room - the same
+   naming convention already used by Level1Grid's G3 and Level4Grid's
+   G2 (2 other independently-confirmed Exit cells). Added `roomExit`
+   and the connection; `TestSharedNamedRoomsCollodonsPileLevel1Grid`
+   updated to include the new real "Exit" name-overlap (a real match,
+   not proof of one physical room - same honest treatment already
+   established for Level1Grid/Level4Grid's own 2 Exits). Verified live,
+   end to end, via the full real walkthrough path in `cmd/hotm`: this
+   is CollodonsPile's OWN first genuinely walkable win, not just a
+   count bumped to 15 rooms.
+
+7. **A real, previously-unplaced vocabulary word finally has a
+   confirmed location: "Goblin."** Round 130 found this as real,
+   confirmed vocabulary with no known placement; this video shows a
+   live Goblin encounter within the Wolfdorp zone. NOT yet added to
+   CollodonsPile's own data - `world.Room.Monster` is a single field,
+   already spoken for by Wolfdorp's real, mechanically-load-bearing
+   Werewolf (round 120's `checkNougatWerewolf` activation) - adding
+   Goblin without a real multi-monster-per-room model would mean either
+   losing that mechanic or guessing at a different cell. Left as an
+   honest, documented open item rather than forcing a data-model change
+   this round.
+
+Ran the full `gofmt`/`build`/`vet`/`test` suite (with a repeated
+`-count=2` run) clean throughout, and verified the new win path live
+via the real, full CollodonsPile walkthrough sequence in `cmd/hotm`.
+
+**How to apply**: a second, independent, much longer real playthrough
+video can still find genuinely new corrections even after a first video
+already yielded several (round 175) - a longer walkthrough covers more
+of the game's actual content (here: the real ending, deeper combat
+variety, the full Wolfdorp/Trollwynd/Room-of-Stings/Pilefoot chain in
+one continuous run) that a shorter clip simply never reaches. When a
+video's own ending sequence reveals a missing connection in an already-
+shipped dataset (CollodonsPile's Exit), that's exactly the kind of
+"real reference material closes a real, long-standing gap" finding this
+project's own history keeps rewarding - worth checking every real
+walkthrough's own ending specifically, not just its early rooms.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the

@@ -241,6 +241,7 @@ func TestHandleDeadPlayerCanStillLookAndMap(t *testing.T) {
 func TestHandleTransfusionRestoresStamina(t *testing.T) {
 	g := New()
 	withGrimoire(g)
+	g.Player.ExperiencePoints = transfusionExperienceCost
 	g.Player.Stamina -= 5 // take damage first; a fresh player starts at MaxStamina already
 	before := g.Player.Stamina
 	got := g.Handle(parser.Parse("TRANSFUSION"))
@@ -250,16 +251,38 @@ func TestHandleTransfusionRestoresStamina(t *testing.T) {
 	if !strings.Contains(got, "Stamina") {
 		t.Errorf("Handle(TRANSFUSION) = %q, want it to report Stamina", got)
 	}
+	if g.Player.ExperiencePoints != 0 {
+		t.Errorf("ExperiencePoints after TRANSFUSION = %d, want 0 (the real cost was charged)", g.Player.ExperiencePoints)
+	}
 }
 
 func TestHandleTransfusionCapsAtMaxStamina(t *testing.T) {
 	g := New() // a fresh player already starts at MaxStamina
 	withGrimoire(g)
+	g.Player.ExperiencePoints = transfusionExperienceCost
 	got := g.Handle(parser.Parse("TRANSFUSION"))
 	if g.Player.Stamina != g.Player.MaxStamina {
 		t.Errorf("Stamina after TRANSFUSION on a full-health player = %d, want it capped at MaxStamina %d", g.Player.Stamina, g.Player.MaxStamina)
 	}
 	if !strings.Contains(got, "maximum") {
 		t.Errorf("Handle(TRANSFUSION) at full health = %q, want it to say maximum", got)
+	}
+}
+
+// TestHandleTransfusionRequiresExperience covers the real gate confirmed
+// via a direct frame-by-frame review of a full walkthrough video (see
+// transfusionExperienceCost's doc comment): the exact real rejection
+// text, "Not enough experience.", shown when ExperiencePoints is too low.
+func TestHandleTransfusionRequiresExperience(t *testing.T) {
+	g := New()
+	withGrimoire(g)
+	g.Player.ExperiencePoints = transfusionExperienceCost - 1
+	before := g.Player.Stamina
+	got := g.Handle(parser.Parse("TRANSFUSION"))
+	if got != "Not enough experience." {
+		t.Errorf("Handle(TRANSFUSION) with insufficient experience = %q, want the real exact rejection", got)
+	}
+	if g.Player.Stamina != before {
+		t.Errorf("Stamina changed to %d despite insufficient experience, want unchanged %d", g.Player.Stamina, before)
 	}
 }

@@ -98,6 +98,13 @@ func (g *Game) move(dir world.Direction) string {
 // unrelated sources both specify "silver," accepting the fuller name
 // alongside the bare one is the same safe "don't discard a source's
 // own precision" convention already used for Nougat/Nugget above.
+// Round 176: a direct frame-by-frame review of a full walkthrough video
+// confirmed the real game's own exact confirmation text for the Nugget
+// case - "The Nugget destroys Werewolf" - a genuine kill, not merely a
+// "lets you pass" ward-off as this port's own wording had it. Awards
+// real Experience Points to match (previously this mechanic granted
+// none at all, unlike an ordinary BLAST/FREEZE kill) - the same
+// awardVictoryPoints() every other real monster defeat uses.
 func (g *Game) checkNougatWerewolf() string {
 	room := g.World.CurrentRoom()
 	if room == nil || room.Monster != "Werewolf" || room.MonsterHealth <= 0 {
@@ -110,7 +117,8 @@ func (g *Game) checkNougatWerewolf() string {
 		}
 		if strings.EqualFold(item, "Nugget") || strings.EqualFold(item, "Silver Nugget") {
 			room.MonsterHealth = 0
-			return "The Werewolf is warded off by the Nugget and lets you pass unharmed."
+			gained := g.awardVictoryPoints()
+			return fmt.Sprintf("The Nugget destroys the Werewolf! (+%d Experience Points)", gained)
 		}
 	}
 	return ""
@@ -268,7 +276,15 @@ func (g *Game) describeCurrentRoom() string {
 	var b strings.Builder
 	if room.Name == "Exit" && !g.Won {
 		g.Won = true
-		b.WriteString("You have found one of Collodon's Pile's 3 exits and escaped! YOU HAVE WON.\n")
+		// "Well done, Axil the Very Able - you have made it to an exit" is
+		// the real game's own confirmed win text (a direct frame-by-frame
+		// review of a full walkthrough video), replacing this port's
+		// earlier own invented wording. The same footage shows the
+		// original also locks OPTIONS out immediately afterward
+		// ("Options? - not now!") - not modeled here, since this port's
+		// own Options menu already has nothing meaningful left to do once
+		// Won is true.
+		b.WriteString("Well done, Axil the Very Able - you have made it to an exit! (one of Collodon's Pile's 3 real exits) YOU HAVE WON.\n")
 		if g.Player.Grade < character.Philosophus {
 			b.WriteString("(A source states Axil must first attain the rank of Philosophus to truly locate an exit — this port doesn't yet gate on Grade, since no confirmed path to that rank has been extracted.)\n")
 		}

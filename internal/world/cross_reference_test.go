@@ -22,13 +22,18 @@ func TestSharedNamedRoomsFiltersCellCodeCoincidences(t *testing.T) {
 // independently documented in Level1Grid's own doc comment before this
 // test existed; "Furnace Room" joined in round 126 (CollodonsPile's
 // own doc comment - a real, independently-sourced match to Level1Grid's
-// A8, cross-confirmed on BOTH name and "no exits"). Locks all 4 in
-// against an accidental future rename breaking the connection silently,
-// and confirms the scan finds no OTHERS beyond what's already reasoned
+// A8, cross-confirmed on BOTH name and "no exits"). "Exit" joined once
+// CollodonsPile got its own real Exit room (Pile Collodom's North exit,
+// confirmed via a full walkthrough video) - same honest treatment as
+// TestSharedNamedRoomsExitIsNotClaimedAsOneRoom below: a real name
+// match, not proof these are literally the same physical room (the
+// dungeon has multiple real exits). Locks all 5 in against an
+// accidental future rename breaking the connection silently, and
+// confirms the scan finds no OTHERS beyond what's already reasoned
 // about.
 func TestSharedNamedRoomsCollodonsPileLevel1Grid(t *testing.T) {
 	shared := SharedNamedRooms(CollodonsPile(), Level1Grid())
-	want := []string{"Agile Stair", "Room of Stings", "Room of Arrows", "Furnace Room"}
+	want := []string{"Agile Stair", "Room of Stings", "Room of Arrows", "Furnace Room", "Exit"}
 	if len(shared) != len(want) {
 		t.Errorf("SharedNamedRooms(CollodonsPile, Level1Grid) = %v, want exactly %v", shared, want)
 	}

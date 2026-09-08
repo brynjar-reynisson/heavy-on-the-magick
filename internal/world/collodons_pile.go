@@ -358,7 +358,17 @@ func CollodonsPile() *World {
 		{ID: roomArrows, Name: "Room of Arrows", Level: 1, Exits: map[Direction]RoomID{East: roomNidus, North: roomWolfdorp}, TollItem: "Slat", HasTable: true},
 		{ID: roomNidus, Name: "Nidus", Level: 1, Exits: map[Direction]RoomID{West: roomPilefoot}, Monster: "Cyclops", MonsterHealth: 3},
 		{ID: roomPilefoot, Name: "Pilefoot", Level: 1, Exits: map[Direction]RoomID{North: roomPileCollodom}, DoorPasswords: []string{"ELEVEN"}, DoorHints: []string{"To enter say a number of Magick words."}},
-		{ID: roomPileCollodom, Name: "Pile Collodom", Level: 1},
+		// Pile Collodom's real North exit, confirmed via a direct frame-
+		// by-frame review of a full walkthrough video: walking North from
+		// Pile Collodom is the exact move that reaches CollodonsPile's own
+		// first real, walkable win condition - this dataset's own "Exit"
+		// room, matching the naming convention already used by
+		// Level1Grid's G3 and Level4Grid's G2 (2 other real, independently
+		// confirmed Exit cells). Before this, CollodonsPile itself had NO
+		// reachable Exit at all - the win condition only fired in the
+		// separate, unmerged level-grid datasets.
+		{ID: roomPileCollodom, Name: "Pile Collodom", Level: 1, Exits: map[Direction]RoomID{North: roomExit}},
+		{ID: roomExit, Name: "Exit", Level: 1},
 		{ID: roomFurnace, Name: "Furnace Room", Level: 1},
 	} {
 		w.AddRoom(r)
@@ -384,5 +394,6 @@ const (
 	roomNidus
 	roomPilefoot
 	roomPileCollodom
+	roomExit
 	roomFurnace
 )

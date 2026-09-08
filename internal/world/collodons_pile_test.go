@@ -2,19 +2,22 @@ package world
 
 import "testing"
 
-// TestCollodonsPileHasFourteenRooms: 13 real rooms from the CASA
+// TestCollodonsPileHasFifteenRooms: 13 real rooms from the CASA
 // walkthrough's own path, plus Furnace Room - a real room too (see
 // CollodonsPile's doc comment), but sourced differently (a first-hand
 // playthrough account, not the walkthrough's own path) and reached only
 // via a failed INVOKE's real punishment teleport, not a normal
-// directional exit. Room of Misery's real West exit (see its own doc
-// comment) leads to the EXISTING Sothic Complex room, not a 15th room -
-// a real frame-by-frame video review corrected an earlier guess that it
-// was a separate "Sign" room.
-func TestCollodonsPileHasFourteenRooms(t *testing.T) {
+// directional exit - plus a real "Exit" room (Pile Collodom's own real
+// North exit, confirmed via a full walkthrough video - see its own doc
+// comment), CollodonsPile's first real, walkable win condition. Room of
+// Misery's real West exit (see its own doc comment) leads to the
+// EXISTING Sothic Complex room, not an extra room of its own - a real
+// frame-by-frame video review corrected an earlier guess that it was a
+// separate "Sign" room.
+func TestCollodonsPileHasFifteenRooms(t *testing.T) {
 	w := CollodonsPile()
-	if len(w.Rooms) != 14 {
-		t.Errorf("len(w.Rooms) = %d, want 14 (13 from the walkthrough path + Furnace Room)", len(w.Rooms))
+	if len(w.Rooms) != 15 {
+		t.Errorf("len(w.Rooms) = %d, want 15 (13 from the walkthrough path + Furnace Room + Exit)", len(w.Rooms))
 	}
 }
 

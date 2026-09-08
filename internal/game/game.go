@@ -372,7 +372,14 @@ func (g *Game) Handle(cmd parser.Command) string {
 					// Neophyte to Zelator.
 					if room.Name == "Secunda Porta" && g.Player.Grade == character.Neophyte {
 						g.Player.Grade = character.Zelator
-						return "The door swings open. You feel a change within you - you are now a Zelator."
+						// "...raised to the grade of Zelator in the Outer
+						// Order" is the real game's own confirmed promotion
+						// text (a direct frame-by-frame review of a full
+						// walkthrough video) - "Outer Order" is a real,
+						// correct Golden Dawn term (Neophyte through
+						// Philosophus are Outer Order grades; Adeptus Minor
+						// and above are Inner Order), not invented flavor.
+						return "The door swings open. You are raised to the grade of Zelator in the Outer Order."
 					}
 					return "The door swings open."
 				}
