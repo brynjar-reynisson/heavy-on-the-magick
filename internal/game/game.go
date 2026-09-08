@@ -367,6 +367,14 @@ func (g *Game) Handle(cmd parser.Command) string {
 		if room := g.World.CurrentRoom(); room != nil {
 			for _, pw := range room.DoorPasswords {
 				if strings.EqualFold(pw, cmd.Verb) {
+					// ROUND 181: clears the real lock this room's own
+					// DoorPasswords represents - see game.move's doc
+					// comment (fixing a real bug: before this round, a
+					// locked door never actually blocked movement at
+					// all, so this clearing had no observable effect
+					// either way; now it's the real "you're through"
+					// state a player's move depends on).
+					room.DoorPasswords = nil
 					// Confirmed real per the CASA walkthrough: passing
 					// Secunda Porta's door is what promotes Axil from
 					// Neophyte to Zelator.

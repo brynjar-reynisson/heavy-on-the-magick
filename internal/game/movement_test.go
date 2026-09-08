@@ -41,6 +41,40 @@ func TestHandleFireBlocksMovementWithoutClasp(t *testing.T) {
 	}
 }
 
+// TestHandleWaterBlocksMovementUntilCleared covers round 181's real
+// fix: world.Room.Water (since round 169) was only ever checked by
+// passWater ("WATER, FALL") and reported as a LOOK-time hint - it
+// never actually blocked movement, so a player could walk straight
+// past a real Water hazard without ever saying the confirmed command
+// (flagged directly: "'WATER, FALL' should be a hindrance until
+// that's spoken"). Unlike Fire (blocks entering the room ahead), Water
+// blocks LEAVING the current room in any direction until cleared, since
+// passWater's own real command is said from within the watery room
+// itself - blocking entry would make it unreachable to clear at all.
+func TestHandleWaterBlocksMovementUntilCleared(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Flooded", Water: true, Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "Dry Room"})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("NORTH"))
+	if !strings.Contains(got, "water blocks") {
+		t.Errorf("Handle(NORTH) out of a Water room before clearing it = %q, want it blocked", got)
+	}
+	if g.World.CurrentRoom().Name != "Flooded" {
+		t.Errorf("current room after a blocked Water move = %q, want unchanged (Flooded)", g.World.CurrentRoom().Name)
+	}
+
+	g.Handle(parser.Parse("WATER, FALL"))
+	got = g.Handle(parser.Parse("NORTH"))
+	if strings.Contains(got, "water blocks") {
+		t.Errorf("Handle(NORTH) after WATER, FALL = %q, want it to succeed", got)
+	}
+	if g.World.CurrentRoom().Name != "Dry Room" {
+		t.Errorf("current room after a cleared Water move = %q, want \"Dry Room\"", g.World.CurrentRoom().Name)
+	}
+}
+
 // TestHandleLookMentionsGuards covers round 152's real fix: before this,
 // world.Room.Guards (a real, already-functional "GUARDS, DOOR" obstacle
 // since round 19) had no LOOK-time hint at all - a player with no way to
@@ -227,9 +261,13 @@ func TestHandleAbbreviatedMovement(t *testing.T) {
 func TestLevel1ExplorationReachingExitWins(t *testing.T) {
 	// Real, validated path from the start room (A1) to the Exit cell
 	// (G3), found via BFS over Level1Grid's confirmed connectivity:
-	// A1-B1-C1-C2-C3-C4-D4-E4-F4-G4-G3.
+	// A1-B1-C1-C2-C3-C4-D4-E4-F4-G4-G3. D4 has a real Guards obstacle
+	// (round 60) - since round 181's fix (Guards now actually blocks
+	// movement, not just a LOOK-time hint - see game.move's doc
+	// comment), "GUARDS, DOOR" is a real, required step on this path,
+	// not just flavor.
 	g := NewLevel1Exploration()
-	path := []string{"SOUTH", "SOUTH", "EAST", "EAST", "EAST", "SOUTH", "SOUTH", "SOUTH", "SOUTH", "WEST"}
+	path := []string{"SOUTH", "SOUTH", "EAST", "EAST", "EAST", "SOUTH", "GUARDS, DOOR", "SOUTH", "SOUTH", "SOUTH", "WEST"}
 	var last string
 	for _, dir := range path {
 		last = g.Handle(parser.Parse(dir))
@@ -251,7 +289,7 @@ func TestLevel1ExplorationReachingExitWins(t *testing.T) {
 // sourced requirement is surfaced as an honest additional note.
 func TestReachingExitBelowPhilosophusStillWinsButNotesTheRealRequirement(t *testing.T) {
 	g := NewLevel1Exploration()
-	path := []string{"SOUTH", "SOUTH", "EAST", "EAST", "EAST", "SOUTH", "SOUTH", "SOUTH", "SOUTH", "WEST"}
+	path := []string{"SOUTH", "SOUTH", "EAST", "EAST", "EAST", "SOUTH", "GUARDS, DOOR", "SOUTH", "SOUTH", "SOUTH", "WEST"}
 	var last string
 	for _, dir := range path {
 		last = g.Handle(parser.Parse(dir))
@@ -270,7 +308,7 @@ func TestReachingExitBelowPhilosophusStillWinsButNotesTheRealRequirement(t *test
 func TestReachingExitAsPhilosophusOmitsTheNote(t *testing.T) {
 	g := NewLevel1Exploration()
 	g.Player.Grade = character.Philosophus
-	path := []string{"SOUTH", "SOUTH", "EAST", "EAST", "EAST", "SOUTH", "SOUTH", "SOUTH", "SOUTH", "WEST"}
+	path := []string{"SOUTH", "SOUTH", "EAST", "EAST", "EAST", "SOUTH", "GUARDS, DOOR", "SOUTH", "SOUTH", "SOUTH", "WEST"}
 	var last string
 	for _, dir := range path {
 		last = g.Handle(parser.Parse(dir))
@@ -415,6 +453,7 @@ func TestCollodonsPileGarlicDefeatsMorfangVampire(t *testing.T) {
 	g.Handle(parser.Parse("EAST"))          // Secunda Porta
 	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North
 	g.Handle(parser.Parse("NORTH"))         // Trollwynd
+	g.Handle(parser.Parse("PICKUP KEY"))    // real Room of Stings toll currency (round 180)
 	g.Handle(parser.Parse("NORTH"))         // Agile Stair
 	g.Handle(parser.Parse("SOUTH-EAST"))    // Methos
 	g.Handle(parser.Parse("SOUTH"))         // Sothic Complex
@@ -425,7 +464,9 @@ func TestCollodonsPileGarlicDefeatsMorfangVampire(t *testing.T) {
 	if got := g.Handle(parser.Parse("PICKUP GARLIC")); !strings.Contains(got, "Garlic") {
 		t.Fatalf("test setup bug: PICKUP GARLIC in Wolfdorp = %q, want it to succeed", got)
 	}
+	g.Handle(parser.Parse("DOOR, WOLF")) // unlocks Wolfdorp's own door (round 181: now actually required)
 	g.Handle(parser.Parse("NORTH-WEST")) // Room of Stings
+	g.Handle(parser.Parse("DROP KEY"))   // pays Room of Stings' own real toll (round 181: now actually required)
 	g.Handle(parser.Parse("NORTH"))      // Morfang - has the real Vampire
 
 	room := g.World.CurrentRoom()
@@ -447,22 +488,44 @@ func TestCollodonsPileGarlicDefeatsMorfangVampire(t *testing.T) {
 // actual DEFAULT (CollodonsPile) game: picks up the real, already-
 // placed Slat in Morfang, carries it East through Room of Arrows to
 // Nidus (all real, already-connected rooms on the confirmed
-// walkthrough path), and drops it on the real Cyclops there.
+// walkthrough path), and drops it on the real Cyclops there. Also
+// exercises round 181's real locked-door fix along the whole path
+// (Room of Stings/Morfang/Room of Arrows all now genuinely require
+// paying their real TollItem to proceed) - including the Slat's own
+// double duty (Room of Arrows' toll AND the Cyclops kill both need it,
+// resolved by payToll leaving the paid item retrievable rather than
+// deleting it, per its own doc comment).
 func TestCollodonsPileSlatDefeatsNidusCyclops(t *testing.T) {
 	g := New()
 	g.Handle(parser.Parse("EAST"))          // Secunda Porta
 	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North
 	g.Handle(parser.Parse("NORTH"))         // Trollwynd
+	g.Handle(parser.Parse("PICKUP KEY"))    // real Room of Stings toll currency (round 180)
 	g.Handle(parser.Parse("NORTH"))         // Agile Stair
 	g.Handle(parser.Parse("SOUTH-EAST"))    // Methos
 	g.Handle(parser.Parse("SOUTH"))         // Sothic Complex
 	g.Handle(parser.Parse("SOUTH"))         // Wolfdorp
+	g.Handle(parser.Parse("PICKUP BAG"))    // real Morfang toll currency (round 64)
+	g.Handle(parser.Parse("DOOR, WOLF"))    // unlocks Wolfdorp's own door (round 181: now actually required)
 	g.Handle(parser.Parse("NORTH-WEST"))    // Room of Stings
+	g.Handle(parser.Parse("DROP KEY"))      // pays Room of Stings' own real toll (round 181: now actually required)
 	g.Handle(parser.Parse("NORTH"))         // Morfang - has the real Slat
 	if got := g.Handle(parser.Parse("PICKUP SLAT")); !strings.Contains(got, "Slat") {
 		t.Fatalf("test setup bug: PICKUP SLAT in Morfang = %q, want it to succeed", got)
 	}
-	g.Handle(parser.Parse("EAST")) // Room of Arrows
+	g.Handle(parser.Parse("DROP BAG"))  // pays Morfang's own real toll (round 181: now actually required)
+	g.Handle(parser.Parse("EAST"))      // Room of Arrows
+	g.Handle(parser.Parse("DROP SLAT")) // pays Room of Arrows' own real toll (round 181: now actually required)
+	// ROUND 181: payToll leaves the paid item retrievable on the real
+	// table it's placed on (see payToll's doc comment) rather than
+	// deleting it outright - the SAME Slat that just paid this room's
+	// toll is picked back up here and carried onward to Nidus, since
+	// game.checkSlatCyclops's own real mechanic needs it there too. No
+	// source suggests 2 separate Slats exist; this is the honest way
+	// both already-verified mechanics stay reachable together.
+	if got := g.Handle(parser.Parse("PICKUP SLAT")); !strings.Contains(got, "Slat") {
+		t.Fatalf("test setup bug: PICKUP SLAT (back) in Room of Arrows = %q, want it to succeed", got)
+	}
 	g.Handle(parser.Parse("EAST")) // Nidus - has the real Cyclops
 
 	room := g.World.CurrentRoom()

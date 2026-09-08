@@ -45,13 +45,32 @@ func (g *Game) passWater() string {
 // payToll handles a real, distinct door mechanic (see world.Room.TollItem's
 // doc comment): unlike a typed DoorPasswords password, a Toll door
 // requires actually carrying and spending the named item (the confirmed
-// source: "a bag of gold is the key (put it on the table)") - so the
-// item is removed from the player's inventory on success, not just
-// checked for.
+// source: "a bag of gold is the key (put it on the table)") - taken out
+// of the player's inventory on success, not just checked for.
+//
+// ROUND 181 correction: the item is moved to the room's own real
+// Items (a table it's physically placed ON, per the confirmed "put it
+// on the table" wording), not deleted from the game entirely as this
+// port previously modeled it. This was found to matter for real,
+// concrete reasons once movement blocking was fixed the same round:
+// Room of Arrows' TollItem "Slat" and game.checkSlatCyclops's own
+// "the Slat kills the Cyclops" mechanic (round 146) both need the
+// SAME real, sourced Slat - deleting it at the toll would make the
+// already-verified Morfang-to-Nidus path impossible. Leaving it
+// retrievable on the table lets a player pay the toll, then pick the
+// same Slat back up and carry it onward - both real mechanics stay
+// reachable, honestly, without inventing a second Slat no source
+// confirms exists.
 func (g *Game) payToll(room *world.Room) string {
 	for i, item := range g.Player.Items {
 		if strings.EqualFold(item, room.TollItem) {
 			g.Player.Items = append(g.Player.Items[:i], g.Player.Items[i+1:]...)
+			room.Items = append(room.Items, item)
+			// ROUND 181: clears the real lock this room's own TollItem
+			// represents - see game.move's doc comment (fixing a real
+			// bug: before this round, a Toll door never actually
+			// blocked movement at all).
+			room.TollItem = ""
 			return fmt.Sprintf("You place the %s on the table. The door swings open.", item)
 		}
 	}

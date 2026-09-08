@@ -8675,6 +8675,91 @@ vocabulary word in a specific, recurring way (N/M confusion, now seen
 twice) - when in doubt between what a screen appears to say and what
 the game's own extracted data confirms, trust the extracted data.
 
+### Round 181: found and fixed a real, significant bug - locked doors never actually locked anything
+
+The user asked several real questions in one message, the most
+consequential of which surfaced a genuine, previously-invisible bug:
+"Let's take note of one-way-exits, where you can say go south, but
+once there, you have a door locked to the north. Those are important
+hindrances" and separately "'WATER, FALL' - should be a hindrance
+until that's spoken."
+
+Checking the code against this directly found that **none** of this
+port's 4 real, sourced "obstacle" mechanics actually blocked movement
+at all: `world.Room.Water`, `Guards`, `DoorPasswords`, and `TollItem`
+were only ever checked by their own dedicated commands
+(`WATER, FALL`/`GUARDS, DOOR`/`DOOR, <password>`/`DROP <item>`) and
+surfaced as LOOK-time hints (rounds 152/169/172) - `game.move` itself
+never consulted any of them. A player could walk straight through
+Secunda Porta's real, sourced `DoorPasswords: ["SILENCE"]` (or any
+other locked door in the game) without ever saying the password at
+all. Only `Fire` ever actually blocked movement (round 80). This is a
+real, significant correctness gap that had been shipping since each
+mechanic's own original round (9/19/64/169) - confirmed live before
+touching anything: `go run ./cmd/hotm`, `EAST` then `NORTH` from
+Secunda Porta reached Trollwynd immediately, no password needed.
+
+Fixed by adding the same pre-move gate Fire already had, for all 4:
+- `Water`/`Guards`/`DoorPasswords`/`TollItem` now block leaving the
+  CURRENT room in any direction until cleared - unlike Fire (checked
+  against the destination, permanently bypassed by carrying the
+  Clasp), these are all cleared by a one-time action taken from
+  WITHIN the room itself, so blocking entry would make them
+  impossible to ever clear.
+- The DOOR-password success path now actually clears
+  `room.DoorPasswords` (previously just returned a message with no
+  state change - harmless before this fix, load-bearing after it).
+- `payToll` was corrected at the same time, for a good reason found by
+  testing this fix against the existing test suite rather than
+  assumed: it used to delete the paid item outright, but the confirmed
+  source text is "put it on the table" - now the item is moved into
+  the room's own real Items (retrievable), not vanished. This turned
+  out to matter for a genuine, pre-existing conflict between two
+  independently-sourced mechanics that had been invisible until movement
+  was actually gated: Room of Arrows' `TollItem: "Slat"` (round 64) and
+  `game.checkSlatCyclops`'s "the Slat kills the Cyclops" (round 146)
+  both need the SAME real Slat - deleting it at the toll would make the
+  already-verified Morfang→Room of Arrows→Nidus path impossible.
+  Leaving it on the table lets a player pay the toll, pick the same
+  Slat back up, and carry it on to Nidus - both real mechanics reachable
+  together, honestly, with no invented second Slat.
+
+This surfaced real, necessary updates across many existing tests that
+had silently relied on the old (broken) no-blocking behavior to reach
+rooms past a locked door without ever unlocking it - fixed by inserting
+the actual real password/toll-payment step each path already had
+available (`DOOR, SILENCE`, `DOOR, WOLF`, dropping the real Key/Bag/Slat
+at each real TollItem room), not by weakening the fix.
+
+Added `TestHandleWaterBlocksMovementUntilCleared`,
+`TestGuardsBlockMovementUntilCleared`, and updated
+`TestLevel1ExplorationReachingExitWins`/`TestReachingExitBelowPhilosophusStillWinsButNotesTheRealRequirement`
+(Level1Grid's own real win path genuinely crosses a Guards-obstacle
+cell, D4 - true both before and after this fix, just never enforced
+before) to include the real `"GUARDS, DOOR"` step. Ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live end-to-end: the real Room of
+Misery→...→Nidus path now requires every one of its real locked doors
+to be genuinely unlocked in order, with the Slat correctly serving
+double duty.
+
+**How to apply**: a mechanic that's fully implemented (a command that
+correctly clears an obstacle flag) can still be a no-op in practice if
+nothing else in the codebase ever CHECKS that flag - this is a
+different, sneakier bug shape than "the command doesn't exist" or "the
+command has the wrong text," and it can hide for many rounds precisely
+because every unit test for the command itself still passes (they test
+the command's own effect, not whether anything downstream depended on
+it). Worth periodically asking, for any state-clearing mechanic: is
+there a corresponding CHECK somewhere that actually gates behavior on
+that state, or does the state just get set and cleared into the void?
+Fixing a real bug like this can also surface a second, previously-
+harmless design conflict between two otherwise-correct, independently-
+shipped mechanics (the double-duty Slat) - the right fix is usually to
+make the shared resource durable/retrievable (matching the source's
+own "put it on the table" wording more faithfully) rather than pick a
+winner or invent a duplicate.
+
 ## Open next steps
 
 - ~~Quadra Porta's real Philosophus promotion isn't wired yet~~ —

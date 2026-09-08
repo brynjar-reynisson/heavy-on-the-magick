@@ -119,7 +119,8 @@ func TestHandleFreezeAwardsExperiencePoints(t *testing.T) {
 	g := New()
 	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
-	g.Handle(parser.Parse("NORTH")) // Trollwynd
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North (round 181: now actually required)
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd
 	before := g.Player.ExperiencePoints
 
 	got := g.Handle(parser.Parse("FREEZE"))
@@ -136,7 +137,8 @@ func TestHandleBlastDefeatsMonsterAwardsExperiencePoints(t *testing.T) {
 	g := New()
 	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
-	g.Handle(parser.Parse("NORTH")) // Trollwynd
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North (round 181: now actually required)
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd
 	room := g.World.CurrentRoom()
 	before := g.Player.ExperiencePoints
 
@@ -158,7 +160,8 @@ func TestHandleFreezeDefeatsMonsterInstantly(t *testing.T) {
 	g := New()
 	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
-	g.Handle(parser.Parse("NORTH")) // Trollwynd
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North (round 181: now actually required)
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd
 
 	got := g.Handle(parser.Parse("FREEZE"))
 	if !strings.Contains(got, "FREEZE") {
@@ -186,7 +189,8 @@ func TestHandleBlastCostsStamina(t *testing.T) {
 	g := New()
 	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
-	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a Monster
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North (round 181: now actually required)
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd, has a Monster
 	before := g.Player.Stamina
 	g.Handle(parser.Parse("BLAST"))
 	if g.Player.Stamina != before-combatStaminaCost {
@@ -198,7 +202,8 @@ func TestHandleFreezeCostsStamina(t *testing.T) {
 	g := New()
 	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
-	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a Monster
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North (round 181: now actually required)
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd, has a Monster
 	before := g.Player.Stamina
 	g.Handle(parser.Parse("FREEZE"))
 	if g.Player.Stamina != before-combatStaminaCost {
@@ -210,7 +215,8 @@ func TestHandleCombatCanKillPlayer(t *testing.T) {
 	g := New()
 	withGrimoire(g)
 	g.Handle(parser.Parse("EAST"))
-	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a Monster
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North (round 181: now actually required)
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd, has a Monster
 	g.Player.Stamina = combatStaminaCost
 
 	got := g.Handle(parser.Parse("BLAST"))

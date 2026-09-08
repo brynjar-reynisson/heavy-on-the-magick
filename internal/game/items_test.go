@@ -194,7 +194,8 @@ func TestHandleSwapItemUnrelatedDropDoesNothing(t *testing.T) {
 func TestHandleExamineReportsMonster(t *testing.T) {
 	g := New()
 	g.Handle(parser.Parse("EAST"))
-	g.Handle(parser.Parse("NORTH")) // Trollwynd, has a Monster (Troll - see collodons_pile.go round 101)
+	g.Handle(parser.Parse("DOOR, SILENCE")) // unlocks the door North (round 181: now actually required)
+	g.Handle(parser.Parse("NORTH"))         // Trollwynd, has a Monster (Troll - see collodons_pile.go round 101)
 
 	got := g.Handle(parser.Parse("EXAMINE"))
 	if !strings.Contains(got, "Troll") {

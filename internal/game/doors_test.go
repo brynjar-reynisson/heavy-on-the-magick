@@ -24,6 +24,31 @@ func TestPassGuardsClearsRealObstacle(t *testing.T) {
 	}
 }
 
+// TestGuardsBlockMovementUntilCleared covers round 181's real fix:
+// world.Room.Guards never actually blocked movement before (only
+// LOOK's hint and passGuards existed) - a player could walk straight
+// past a real Guards obstacle without ever saying "GUARDS, DOOR".
+func TestGuardsBlockMovementUntilCleared(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Guards = true
+	got := g.Handle(parser.Parse("EAST"))
+	if !strings.Contains(got, "Guards bar") {
+		t.Errorf("Handle(EAST) out of a Guards room before clearing it = %q, want it blocked", got)
+	}
+	if g.World.CurrentRoom().Name != "Room of Misery" {
+		t.Errorf("current room after a blocked Guards move = %q, want unchanged (Room of Misery)", g.World.CurrentRoom().Name)
+	}
+
+	g.Handle(parser.Parse("GUARDS, DOOR"))
+	got = g.Handle(parser.Parse("EAST"))
+	if strings.Contains(got, "Guards bar") {
+		t.Errorf("Handle(EAST) after GUARDS, DOOR = %q, want it to succeed", got)
+	}
+	if g.World.CurrentRoom().Name != "Secunda Porta" {
+		t.Errorf("current room after a cleared Guards move = %q, want \"Secunda Porta\"", g.World.CurrentRoom().Name)
+	}
+}
+
 func TestPassGuardsWithNoGuardsPresent(t *testing.T) {
 	g := New() // Room of Misery has no Guards
 	got := g.Handle(parser.Parse("GUARDS, DOOR"))
@@ -205,14 +230,16 @@ func TestHandleDropPaysRealToll(t *testing.T) {
 	g := New()
 	g.Handle(parser.Parse("EAST")) // Secunda Porta
 	g.Handle(parser.Parse("DOOR, SILENCE"))
-	g.Handle(parser.Parse("NORTH")) // Trollwynd
-	g.Handle(parser.Parse("SOUTH")) // Sothic Complex
-	g.Handle(parser.Parse("SOUTH")) // Wolfdorp
+	g.Handle(parser.Parse("NORTH"))      // Trollwynd
+	g.Handle(parser.Parse("PICKUP KEY")) // real Room of Stings toll currency (round 180)
+	g.Handle(parser.Parse("SOUTH"))      // Sothic Complex
+	g.Handle(parser.Parse("SOUTH"))      // Wolfdorp
 	room := g.World.CurrentRoom()
 	if room.Name != "Wolfdorp" {
 		t.Fatalf("test setup bug: expected to be in Wolfdorp, got %q", room.Name)
 	}
 	g.Handle(parser.Parse("PICKUP BAG"))
+	g.Handle(parser.Parse("DOOR, WOLF")) // unlocks Wolfdorp's own door (round 181: now actually required)
 	g.Handle(parser.Parse("NORTH-WEST")) // Room of Stings
 	if g.World.CurrentRoom().Name != "Room of Stings" {
 		t.Fatalf("test setup bug: expected to be in Room of Stings, got %q", g.World.CurrentRoom().Name)
@@ -221,6 +248,7 @@ func TestHandleDropPaysRealToll(t *testing.T) {
 		t.Errorf("Handle(DROP BAG) at Room of Stings (needs a Key, not a Bag) = %q, should not open the door", got)
 	}
 	g.Handle(parser.Parse("PICKUP BAG")) // take it back before moving on
+	g.Handle(parser.Parse("DROP KEY"))   // pays Room of Stings' own real toll (round 181: now actually required to leave)
 
 	g.Handle(parser.Parse("NORTH")) // Morfang, needs the Bag
 	if g.World.CurrentRoom().Name != "Morfang" {
@@ -249,8 +277,9 @@ func TestHandleDropKeyOpensRoomOfStings(t *testing.T) {
 		t.Fatalf("test setup bug: expected to be in Trollwynd, got %q", g.World.CurrentRoom().Name)
 	}
 	g.Handle(parser.Parse("PICKUP KEY"))
-	g.Handle(parser.Parse("SOUTH")) // Sothic Complex
-	g.Handle(parser.Parse("SOUTH")) // Wolfdorp
+	g.Handle(parser.Parse("SOUTH"))      // Sothic Complex
+	g.Handle(parser.Parse("SOUTH"))      // Wolfdorp
+	g.Handle(parser.Parse("DOOR, WOLF")) // unlocks Wolfdorp's own door (round 181: now actually required)
 	g.Handle(parser.Parse("NORTH-WEST"))
 	if g.World.CurrentRoom().Name != "Room of Stings" {
 		t.Fatalf("test setup bug: expected to be in Room of Stings, got %q", g.World.CurrentRoom().Name)

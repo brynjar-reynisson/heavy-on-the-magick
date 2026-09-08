@@ -11,6 +11,47 @@ import (
 
 func (g *Game) move(dir world.Direction) string {
 	if room := g.World.CurrentRoom(); room != nil {
+		// ROUND 181 fix: Water was previously only checked by passWater
+		// ("WATER, FALL") and reported as a LOOK-time hint - it never
+		// actually blocked movement at all, so a player could walk
+		// straight past a real Water hazard without ever saying the
+		// confirmed command (the user directly flagged this: "'WATER,
+		// FALL' should be a hindrance until that's spoken"). Unlike
+		// Fire (checked against the DESTINATION, and permanently
+		// bypassed by carrying the Clasp), Water is checked against the
+		// CURRENT room and cleared by a one-time spoken command said
+		// from within it (game.passWater's own existing "current room"
+		// check) - so the block has to be "you can't leave a watery
+		// room in ANY direction until you clear it", not "you can't
+		// enter one", or the player could never reach it to say the
+		// clearing command at all.
+		if room.Water {
+			return "Standing water blocks your way. Perhaps a command would help."
+		}
+		// ROUND 181 fix: the same bug as Water above, for the same
+		// reason - world.Room.Guards (real since round 19, "GUARDS,
+		// DOOR") never actually blocked movement either, despite
+		// passGuards existing specifically to clear it and LOOK
+		// warning "Guards bar your way here." A player could walk
+		// straight past a Guards obstacle without ever saying the
+		// confirmed command. Blocks leaving the guarded room in any
+		// direction until cleared, same as Water.
+		if room.Guards {
+			return "Guards bar your way. Perhaps a command would help."
+		}
+		// ROUND 181 fix: the same bug class again - a real locked door
+		// (world.Room.DoorPasswords/TollItem, real since round 9/64)
+		// never actually blocked movement either; a player could just
+		// walk past a locked door without ever saying the password or
+		// paying the toll. Both are cleared on success (see the
+		// DOOR-target dispatch and payToll), so this naturally stops
+		// blocking once the real door is actually opened - this is
+		// exactly the "one-way feeling" hindrance the user flagged
+		// (walk in one direction freely, find the way back/onward
+		// locked until you solve it).
+		if len(room.DoorPasswords) > 0 || room.TollItem != "" {
+			return "The door is locked. You'll need the right word or item."
+		}
 		if destID, ok := room.Exits[dir]; ok {
 			if dest := g.World.Rooms[destID]; dest != nil && dest.Fire && !g.hasItem("Clasp") {
 				return "Flames block your way. You'd need something to protect you from the fire."
