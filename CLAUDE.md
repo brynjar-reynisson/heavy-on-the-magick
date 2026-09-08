@@ -8050,6 +8050,52 @@ window-focus-stealing for live GUI screenshots becomes unreliable
 say so plainly and fall back to code review + the passing test suite,
 or the focus-free text frontend, for verification instead.
 
+### Round 174 correction: Room of Misery's West exit leads to Sothic Complex, not a separate "Sign" room
+
+Installed `ffmpeg` (via winget) to sample the same Let's Play video
+directly as still frames (`ffmpeg -ss ... -vf fps=... frame_%03d.png`,
+reviewed via contact-sheet montages for efficiency, then individual
+frames at full resolution) - a real, useful new capability for this
+project beyond single ad hoc clipboard screenshots.
+
+This immediately caught a real mistake in round 174's own just-shipped
+"Sign" room: the footage's real status panel, after walking West from
+Room of Misery, reads the room's name as "SOTHIC COMPLEX" - not a
+distinct "Sign" room as guessed from Level2Grid's own "SIGN!"-labeled
+F3 cell. "Sign" was that clean grid map's own micro-label for this
+specific cell's content (the SATOR AREPO wall plaque), not the zone's
+real name - the same "one zone, multiple real cells" pattern already
+established for Wolfdorp/Nidus/Trollwynd/Pilefoot elsewhere in this
+file, just not recognized as applying here the first time.
+
+Fixed: removed the fabricated `roomSign` node entirely; Room of
+Misery's real West exit now points at the EXISTING `roomSothicComplex`
+(reached from a second, independent real direction - Trollwynd's South
+exit is the original, CASA-walkthrough-sourced path); added Sothic
+Complex's own real East exit back to Room of Misery, confirmed round-
+trip in the same footage. The already-extracted SATOR AREPO art
+(`graphics.SignSample`, F3) is real and stays - it's simply understood
+now as one of 2 real cells within the existing Sothic Complex room,
+not its own room, and is used as the higher-confidence (exact-cell)
+default art for that room name in `cmd/hotm-gui`, ahead of the
+already-shipped zone-representative `SothicComplexSample` (F7).
+
+`TestCollodonsPileHasFourteenRooms` (was "Fifteen") and
+`TestCollodonsPileRoomOfMiseryHasRealWestExit` updated to match. Ran
+the full `gofmt`/`build`/`vet`/`test` suite clean, and verified live via
+`go run ./cmd/hotm`: `WEST` from Room of Misery now correctly reaches
+Sothic Complex (showing its own real Items/Exits), and `EAST` returns
+to Room of Misery.
+
+**How to apply**: a single wrong guess can ship and pass every test
+that only checks internal consistency (a real room, a real reciprocal
+exit) without ever cross-checking against the specific, real, in-game
+NAME the footage actually shows - worth treating any "this connects to
+a NEW room" claim as provisional until the destination's own displayed
+name is confirmed, not just its rough content/position. Owning a local
+video-frame-extraction tool (ffmpeg) paid for itself on the very first
+real use.
+
 ## Open next steps
 
 - **TRANSFUSION's real cost isn't modeled yet** (round 147): the

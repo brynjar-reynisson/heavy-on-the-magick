@@ -2,42 +2,42 @@ package world
 
 import "testing"
 
-// TestCollodonsPileHasFifteenRooms: 13 real rooms from the CASA
+// TestCollodonsPileHasFourteenRooms: 13 real rooms from the CASA
 // walkthrough's own path, plus Furnace Room - a real room too (see
 // CollodonsPile's doc comment), but sourced differently (a first-hand
 // playthrough account, not the walkthrough's own path) and reached only
 // via a failed INVOKE's real punishment teleport, not a normal
-// directional exit - plus the Sign room, Room of Misery's real West
-// exit (see roomSign's doc comment), sourced the same way (a direct
-// account of real gameplay footage).
-func TestCollodonsPileHasFifteenRooms(t *testing.T) {
+// directional exit. Room of Misery's real West exit (see its own doc
+// comment) leads to the EXISTING Sothic Complex room, not a 15th room -
+// a real frame-by-frame video review corrected an earlier guess that it
+// was a separate "Sign" room.
+func TestCollodonsPileHasFourteenRooms(t *testing.T) {
 	w := CollodonsPile()
-	if len(w.Rooms) != 15 {
-		t.Errorf("len(w.Rooms) = %d, want 15 (13 from the walkthrough path + Furnace Room + Sign)", len(w.Rooms))
+	if len(w.Rooms) != 14 {
+		t.Errorf("len(w.Rooms) = %d, want 14 (13 from the walkthrough path + Furnace Room)", len(w.Rooms))
 	}
 }
 
 // TestCollodonsPileRoomOfMiseryHasRealWestExit covers a real exit
-// confirmed via a direct account of actual gameplay footage (a Let's
-// Play video showing "EXITS: W E" in Room of Misery), independently
-// corroborated by Level2Grid's own already-named "Sign" cell (F3,
-// immediately adjacent to F4/Room of Misery) - see roomSign's doc
-// comment. Round-trip: unlike Furnace Room's genuine one-way
-// punishment teleport, Sign is a simple alcove with a real East exit
-// back to Room of Misery, not a dead end.
+// confirmed via a direct frame-by-frame review of real gameplay footage
+// (a Let's Play video showing "EXITS: W E" in Room of Misery, then "YOU
+// ARE IN THE SOTHIC COMPLEX" after walking West) - see Room of Misery's
+// own doc comment for the correction history (an earlier guess, from
+// Level2Grid's own "Sign"-labeled F3 cell, wrongly modeled this as a
+// separate room). Round-trip: the same footage shows walking back East
+// returns to Room of Misery.
 func TestCollodonsPileRoomOfMiseryHasRealWestExit(t *testing.T) {
 	w := CollodonsPile()
 	dest, ok := w.Rooms[roomMisery].Exits[West]
 	if !ok {
-		t.Fatal("Room of Misery has no West exit, want one leading to the Sign room")
+		t.Fatal("Room of Misery has no West exit, want one leading to Sothic Complex")
 	}
-	signRoom := w.Rooms[dest]
-	if signRoom.Name != "Sign" {
-		t.Errorf("Room of Misery's West exit leads to %q, want \"Sign\"", signRoom.Name)
+	if dest != roomSothicComplex {
+		t.Errorf("Room of Misery's West exit leads to room ID %v, want roomSothicComplex", dest)
 	}
-	back, ok := signRoom.Exits[East]
+	back, ok := w.Rooms[roomSothicComplex].Exits[East]
 	if !ok || back != roomMisery {
-		t.Errorf("Sign room's East exit = (%v, %v), want a real return to Room of Misery", back, ok)
+		t.Errorf("Sothic Complex's East exit = (%v, %v), want a real return to Room of Misery", back, ok)
 	}
 }
 

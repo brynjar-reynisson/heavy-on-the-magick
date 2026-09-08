@@ -74,8 +74,9 @@ func TestMorfangSampleDecodesToRealArt(t *testing.T) {
 }
 
 // TestSignSampleDecodesToRealArt mirrors TestCorridorSampleDecodesToRealArt
-// for the Sign room's real screenshot - exact-cell confidence (see
-// SignSample's doc comment).
+// for Sothic Complex's exact-cell (F3) real screenshot (see SignSample's
+// doc comment for the correction: this cell belongs to the existing
+// Sothic Complex room, not a separate "Sign" room).
 func TestSignSampleDecodesToRealArt(t *testing.T) {
 	assertRealArt(t, SignSample(), "SignSample()")
 }

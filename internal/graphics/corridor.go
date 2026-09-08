@@ -464,6 +464,14 @@ func MorfangSample() image.Image {
 // suggesting it may be a recurring decorative element rather than
 // anything room-specific.
 //
+// A real gameplay video later confirmed a SECOND, exact-cell (higher-
+// confidence) sample of this same room exists in this file too: see
+// SignSample (F3) below - Room of Misery's real West exit leads directly
+// into Sothic Complex, at a different cell than this one. cmd/hotm-gui's
+// room-art map uses SignSample as the default for "Sothic Complex" (the
+// exact-confirmed cell), keeping this one as a second, still-real,
+// still-valid sample of the same multi-cell zone.
+//
 //go:embed assets/sothic_complex_sample.png
 var sothicComplexSamplePNG []byte
 
@@ -478,32 +486,44 @@ func SothicComplexSample() image.Image {
 	return img
 }
 
-// assets/sign_sample.png is CollodonsPile's Sign room (Room of Misery's
-// real West exit - see collodons_pile.go's roomSign) at EXACT-cell
-// confidence, the same tier as Room of Misery/Stings/Arrows/Agile Stair/
-// Furnace Room above. Located precisely via FFT-based exact template
-// matching (not the coarser coarse-to-fine pixel search used in earlier
-// rounds, which returned a false-positive match elsewhere in this
-// atlas's repetitive wall-stripe texture before this more precise method
-// was used instead): matched the already-embedded RoomOfMiserySample
-// (F4) and SothicComplexSample (F7) against the full atlas, both to a
+// assets/sign_sample.png is CollodonsPile's Sothic Complex room, at F3 -
+// EXACT-cell confidence, the same tier as Room of Misery/Stings/Arrows/
+// Agile Stair/Furnace Room above, and a HIGHER-confidence sample than
+// SothicComplexSample (F7, below) for this same room name: a direct
+// frame-by-frame review of real gameplay footage confirmed Room of
+// Misery's West exit leads to a room whose own real status panel reads
+// "SOTHIC COMPLEX" - correcting an earlier guess (from Level2Grid's own
+// "Sign"-labeled F3 cell) that this was a separate, standalone room.
+// F3 and F7 are simply two different real cells within the same
+// zone-abstracted "Sothic Complex" room (the same "one zone, several
+// real cells" pattern already established for Wolfdorp/Nidus/Trollwynd/
+// Pilefoot) - this file's own room-art map picks F3 as the one actually
+// shown, since it's the exact cell confirmed for the path most players
+// take (from the default starting room), while F7 remains available as
+// a second, real, valid sample of the same room, just not the default.
+//
+// Located precisely via FFT-based exact template matching (not the
+// coarser coarse-to-fine pixel search used in earlier rounds, which
+// returned a false-positive match elsewhere in this atlas's repetitive
+// wall-stripe texture before this more precise method was used
+// instead): matched the already-embedded RoomOfMiserySample (F4) and
+// SothicComplexSample (F7) against the full atlas, both to a
 // numerically exact (sum-of-squared-differences ~= 0) pixel position,
 // confirming both sit on the SAME row (y=1979) and giving a precise,
 // derived Level-2 column width (583.33px, from their 3-column, 1750px
-// separation) - independent of, and a refinement on, the coarser column
-// spacing estimates earlier samples in this file used. F3 (one column
-// left of F4) was computed from that real spacing, then visually
-// confirmed: the crop shows the real "SATOR AREPO TENET OPERA ROTAS"
-// word-square art exactly as already described in RoomOfMiserySample's
-// own doc comment (seen then only as a neighboring-cell cross-check,
-// never before extracted as its own asset).
+// separation). F3 (one column left of F4) was computed from that real
+// spacing, then visually confirmed: the crop shows the real "SATOR
+// AREPO TENET OPERA ROTAS" word-square art exactly as already described
+// in RoomOfMiserySample's own doc comment (seen then only as a
+// neighboring-cell cross-check, never before extracted as its own
+// asset).
 //
 //go:embed assets/sign_sample.png
 var signSamplePNG []byte
 
-// SignSample decodes the embedded real Sign-room screenshot (the SATOR
-// AREPO word-square). Panics on failure, matching CorridorSample()
-// above.
+// SignSample decodes the embedded real Sothic-Complex-zone (F3)
+// screenshot - the SATOR AREPO word-square. Panics on failure, matching
+// CorridorSample() above.
 func SignSample() image.Image {
 	img, _, err := image.Decode(bytes.NewReader(signSamplePNG))
 	if err != nil {

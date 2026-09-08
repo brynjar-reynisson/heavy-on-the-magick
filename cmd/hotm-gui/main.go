@@ -942,10 +942,14 @@ func selectGame() (g *game.Game, modeTitle string, roomArt map[string]image.Imag
 			"Nidus":          graphics.NidusSample(),
 			"Trollwynd":      graphics.TrollwyndSample(),
 			"Pilefoot":       graphics.PilefootSample(),
-			"Sothic Complex": graphics.SothicComplexSample(),
+			// SignSample (F3), not SothicComplexSample (F7): a real
+			// gameplay video confirmed F3 is the exact cell reached via
+			// Room of Misery's own West exit - the higher-confidence of
+			// the file's 2 real samples for this room - see SignSample's
+			// doc comment.
+			"Sothic Complex": graphics.SignSample(),
 			"Methos":         graphics.MethosSample(),
 			"Morfang":        graphics.MorfangSample(),
-			"Sign":           graphics.SignSample(),
 		}
 	}
 }

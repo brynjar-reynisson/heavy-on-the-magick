@@ -324,29 +324,34 @@ package world
 func CollodonsPile() *World {
 	w := New(roomMisery)
 	for _, r := range []*Room{
-		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta, West: roomSign}, Items: []string{"Grimoire", "Poison-smeared book"}, HasTable: true},
-		// roomSign: a real West exit from Room of Misery, confirmed via a
-		// direct account of actual gameplay footage (a Let's Play video) -
-		// independently corroborated by this project's own already-real
-		// Level2Grid data: F3, immediately adjacent to F4 (confirmed as
-		// this same Room of Misery, see level2_grid.go's doc comment), is
-		// already named "Sign" there (round 56, read directly off the
-		// clean grid map: F3 is drawn "SIGN!"). Its only real content is
-		// the SATOR AREPO word-square art seen on-screen (round 105's
-		// writeup independently noted this same wall plaque while
-		// extracting Room of Misery's own screenshot, one column over
-		// from F4). A real East exit back to Room of Misery IS included
-		// here, unlike Furnace Room's genuinely one-way punishment
-		// teleport (game.punishFailedInvoke) - the source describes this
-		// as a simple alcove you walk into to read the sign and leave,
-		// not a deliberate trap, so modeling it as inescapable would be a
-		// worse, unsupported guess than the obvious return path.
-		{ID: roomSign, Name: "Sign", Level: 2, Exits: map[Direction]RoomID{East: roomMisery}},
+		// Room of Misery's West exit: corrected via a direct frame-by-frame
+		// review of real gameplay footage (a Let's Play video, downloaded
+		// and sampled with ffmpeg) - initially guessed (from Level2Grid's
+		// own F3 cell, labeled "SIGN!" on the clean grid map) to lead to a
+		// separate, standalone "Sign" room. The actual footage shows the
+		// real status panel reading "YOU ARE IN THE SOTHIC COMPLEX" after
+		// walking West from Room of Misery - i.e. this is the SAME
+		// already-real Sothic Complex room below (reached from a totally
+		// different direction, Trollwynd's South exit), not a distinct
+		// room. "Sign" was the clean grid map's own micro-label for this
+		// specific cell's content (the SATOR AREPO wall plaque) within
+		// the broader Sothic Complex zone, not a separate room name -
+		// the same "one zone, multiple real cells/entrances" pattern
+		// already established for Wolfdorp/Nidus/Trollwynd elsewhere in
+		// this file. Real round-trip confirmed in the footage too
+		// (walking back East returns to Room of Misery).
+		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta, West: roomSothicComplex}, Items: []string{"Grimoire", "Poison-smeared book"}, HasTable: true},
 		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}, Items: []string{"Sign"}},
 		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "Troll", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll"}, HasTable: true},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget", "Erlstone"}, HasTable: true, Monster: "Vampire", MonsterHealth: 2},
-		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower"}, HasTable: true},
+		// Sothic Complex now has 2 real entrances (see Room of Misery's
+		// own West exit above) - East back to Room of Misery, South to
+		// Wolfdorp (the original, CASA-walkthrough-sourced path from
+		// Trollwynd). Both are real, confirmed compass directions from
+		// 2 independent sources, not fabricated to make a zone-
+		// abstracted room "feel" fully connected.
+		{ID: roomSothicComplex, Name: "Sothic Complex", Level: 2, Exits: map[Direction]RoomID{East: roomMisery, South: roomWolfdorp}, Items: []string{"Scroll", "Sunflower"}, HasTable: true},
 		{ID: roomWolfdorp, Name: "Wolfdorp", Level: 1, Exits: map[Direction]RoomID{NorthWest: roomStings}, DoorPasswords: []string{"WOLF", "LUNACY"}, DoorHints: []string{"Cry and enter door.", "To enter is madness."}, Monster: "Werewolf", MonsterHealth: 2, Items: []string{"Garlic", "Bag", "Loaf", "Sword"}, HasTable: true, HasChest: true},
 		{ID: roomStings, Name: "Room of Stings", Level: 1, Exits: map[Direction]RoomID{North: roomMorfang}, TollItem: "Key", HasTable: true},
 		{ID: roomMorfang, Name: "Morfang", Level: 1, Exits: map[Direction]RoomID{East: roomArrows}, Monster: "Vampire", MonsterHealth: 2, Items: []string{"Slat"}, TollItem: "Bag", HasTable: true, HasChest: true},
@@ -380,5 +385,4 @@ const (
 	roomPilefoot
 	roomPileCollodom
 	roomFurnace
-	roomSign
 )
