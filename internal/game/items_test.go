@@ -248,6 +248,23 @@ func TestHandlePickupNougatSaysNotFood(t *testing.T) {
 	}
 }
 
+// TestHandlePickupEggSaysNotFood covers round 180's addition to the
+// same real, confirmed set (see notFoodItems' doc comment): a finer,
+// 2-second-interval re-review of the same video found the identical
+// exact response for a real Egg pickup at Wraithvale (Level2Grid A5).
+func TestHandlePickupEggSaysNotFood(t *testing.T) {
+	g := NewLevel2Exploration()
+	id, ok := g.World.FindRoomByName("Wraithvale")
+	if !ok {
+		t.Fatal("test setup bug: Level2Grid has no room named Wraithvale")
+	}
+	g.World.Teleport(id)
+	got := g.Handle(parser.Parse("PICKUP EGG"))
+	if !strings.Contains(got, "not food") {
+		t.Errorf("Handle(PICKUP EGG) = %q, want it to say it's not food", got)
+	}
+}
+
 func TestHandlePickupPoisonedItemCostsStamina(t *testing.T) {
 	g := New() // Room of Misery has a real sourced item: Poison-smeared book
 	before := g.Player.Stamina

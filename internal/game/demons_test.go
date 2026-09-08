@@ -69,7 +69,10 @@ func TestHandleAstarotTeleportRequiresSword(t *testing.T) {
 // TestHandleAstarotTeleportSucceeds pins the real, hint-screen-confirmed
 // example command ("ASTAROT, WOLFDORP" — see parser.Parse's package doc
 // comment) actually teleporting the player, once they carry Astarot's
-// confirmed Charm (Sword).
+// confirmed Charm (Sword). The success wording ("Best place for you")
+// is the game's own exact confirmed text (round 180 - seen 3 separate
+// times in the same footage), replacing this port's own earlier
+// invented "In an instant, you are transported to X" wording.
 func TestHandleAstarotTeleportSucceeds(t *testing.T) {
 	g := New()
 	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sword")
@@ -80,17 +83,23 @@ func TestHandleAstarotTeleportSucceeds(t *testing.T) {
 	if !strings.Contains(got, "Wolfdorp") {
 		t.Errorf("Handle(ASTAROT, WOLFDORP) = %q, want it to name Wolfdorp", got)
 	}
+	if !strings.Contains(got, "Best place for you") {
+		t.Errorf("Handle(ASTAROT, WOLFDORP) = %q, want the real confirmed success phrase \"Best place for you\"", got)
+	}
 	if got := g.World.CurrentRoom(); got == nil || got.Name != "Wolfdorp" {
 		t.Errorf("after ASTAROT, WOLFDORP, current room = %+v, want Wolfdorp", got)
 	}
 }
 
+// TestHandleAstarotTeleportUnknownLocation covers round 180's real,
+// video-confirmed rejection text - "No such place." - replacing this
+// port's own earlier invented wording.
 func TestHandleAstarotTeleportUnknownLocation(t *testing.T) {
 	g := New()
 	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sword")
 	got := g.Handle(parser.Parse("ASTAROT, NARNIA"))
-	if !strings.Contains(got, "doesn't recognize") {
-		t.Errorf("Handle(ASTAROT, NARNIA) = %q, want an honest unknown-location rejection", got)
+	if !strings.Contains(got, "No such place") {
+		t.Errorf("Handle(ASTAROT, NARNIA) = %q, want the real confirmed rejection \"No such place.\"", got)
 	}
 	if got := g.World.CurrentRoom(); got == nil || got.Name != "Room of Misery" {
 		t.Errorf("after an unknown-location ASTAROT command, current room = %+v, want unchanged (Room of Misery)", got)

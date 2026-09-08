@@ -8577,29 +8577,142 @@ but never mined for the exact "Foot" item sitting right there in the
 same sentence). Worth doing this kind of re-audit pass on any
 sufficiently rich source, not just once per source.
 
+### Round 180: re-extracted the third video at 2-second intervals (then 0.25-second for one ambiguous moment) - closed the 16-round-old Room of Stings Key gap, completed the Porta promotion sequence, and corrected 2 more invented response strings
+
+The user asked for a finer re-pass of the same third video (2-second
+sampling instead of 10-second, "so that nothing is missed") plus 3
+specific things to check: the Egg/Shell "hindrance" mechanic, whether
+each monster-kill item (Slat/Cyclops, Nugget/Werewolf, Garlic/Vampire)
+is correctly modeled, and whether keys can now be matched to their
+doors. Re-extracted all 2219 frames (fps=1/2) into 23 ten-by-ten
+contact-sheet montages and reviewed all of them, dropping to 0.25-
+second sampling for the one genuinely ambiguous moment (the Egg pickup
+sequence) per the user's own suggested technique.
+
+**Room of Stings' Key - resolved, 16 rounds after round 64 first found
+this gap.** The finer sampling caught a real Key pickup at Trollwynd
+("YOU ARE IN TROLLWYND... PICK UP KEY... YOU TAKE THE KEY") and again
+at Gorburg - both already-real, already-placed CollodonsPile/Level3Grid
+rooms. This also resolves an old, previously-unconnected clue: round
+82's own raw CASA walkthrough quote ("N, DROP CLASP, Pick up KEY")
+places the pickup in an unnamed room whose one identifying action -
+"DROP CLASP" - is exactly what happens at Trollwynd (Clasp has been a
+real Trollwynd item since round 63). Two independent sources agree.
+Added "Key" to Trollwynd's Items - `Handle`d live end-to-end
+(`go run ./cmd/hotm`): picked up the Key at Trollwynd, carried it to
+Room of Stings, "The door swings open."
+
+**The monster-kill items check came back clean** - Slat/Cyclops,
+Nugget-or-Nougat-or-Silver-Nugget/Werewolf, and Garlic/Vampire are all
+already correctly implemented (rounds 127/145/146/150) and were
+re-confirmed via fresh footage in this pass, no changes needed.
+
+**The Egg/Shell "hindrance" - investigated thoroughly via 0.25-second
+sampling, no clear mechanical consequence found.** The real sequence:
+picking up a real Egg at "Wraithvale" (Level2Grid A5, alongside the
+already-placed Snake) gives the exact text "IT'S NOT FOOD" with no
+immediate effect; dropping a separately-carried Shell "on the rock"
+right after also produced no observable Stamina loss or monster
+appearance in this specific instance - the room's own static idol
+artwork briefly looked like a rising creature at the coarser 2-second
+sampling, but the 0.25-second frames show it was just the menu list
+("MAGICK, BLAST, INVOKE...") being drawn progressively, not a real
+monster. Added Egg to Wraithvale's Items and to `notFoodItems`
+(matching Nougat/Garlic's exact "IT'S NOT FOOD" text) - this is
+probably `numbered_room_contents.go`'s own long-unplaced #12 ("Egg -
+rock, protected"), which round 138 failed to place via zone-banner
+cross-reference. The "hindrance" itself is left an open question -
+real content confirmed, no real consequence observed to model.
+
+**3 more real corrections from the same finer pass:**
+- **Astarot's rejection text**: "No such place." is the game's own
+  exact wording for an unrecognized destination (seen live: "ASTAROT,
+  SLYMOLE" → "NO SUCH PLACE", then, once Slymole was confirmed real by
+  reaching it, "ASTAROT, SLYMOLE" → "BEST PLACE FOR YOU") - replacing
+  this port's own invented "doesn't recognize a place called" wording.
+- **Astarot's success text**: "Best place for you" is the game's own
+  exact confirmed success phrase - seen 3 separate times across the
+  footage ("ASTAROT, SLYMOLE", "ASTAROT, LICHGATE", and the original
+  Wolfdorp sequence) - replacing this port's invented "In an instant,
+  you are transported to X" wording (the destination name is still
+  included, since no source contradicts keeping it).
+- **A 3rd, now-complete Porta promotion**: "DOOR, SOROMOROS" at Quadra
+  Porta raises the player from Practicus to Philosophus - completing
+  the real Secunda/Tertia/Quadra Porta sequence
+  (Neophyte→Zelator→Practicus→Philosophus), matching all 4 confirmed
+  "Porta" room names and `character.Grade`'s own enum exactly. The
+  on-screen "SOROMOROS" is almost certainly this game's own confirmed
+  vocabulary word "SORONOROS" (round 135) misread the same N/M way
+  "Nidus" was misread as "Midus" in round 178's footage - the
+  vocabulary table (extracted directly from game memory) is more
+  authoritative than a video screen's font rendering, so the
+  implementation uses "SORONOROS". Also found (not yet placed): a
+  second real password location - "Paradise" (Level 2), riddle "An eye
+  for an eye to enter Paradise", password "LONG" (round 135's other
+  previously-unplaced password) - leading directly to a real Exit.
+
+Neither Quadra Porta nor Paradise is placed at an exact cell in any
+dataset - both follow the same "mechanic real, not yet reachable"
+pattern as Tertia Porta (round 178).
+
+Added `TestCollodonsPileTrollwyndHasKey`, `TestHandleDropKeyOpensRoomOfStings`,
+`TestLevel2GridA5HasEgg`, `TestHandlePickupEggSaysNotFood`,
+`TestHandleQuadraPortaDoorPromotesToPhilosophus`, and updated
+`TestHandleAstarotTeleportUnknownLocation`/`TestHandleAstarotTeleportSucceeds`
+to check the real confirmed wording. Ran the full `gofmt`/`build`/`vet`/
+`test` suite (with a repeated `-count=2` run) clean throughout.
+
+**How to apply**: a finer sampling interval on the SAME source can
+close gaps a coarser pass genuinely walked past without noticing (the
+Key at Trollwynd sat in a 2-second frame that a 10-second sample simply
+never landed on). But finer sampling can also manufacture false
+positives from render artifacts (the "rising creature" that turned out
+to be a progressively-drawn menu) - when something looks ambiguous or
+alarming at a coarse interval, drop to an even finer one (this round
+used 0.25 seconds) before concluding it's a real mechanic, exactly as
+the user suggested. A video screen's own font can misread a confirmed
+vocabulary word in a specific, recurring way (N/M confusion, now seen
+twice) - when in doubt between what a screen appears to say and what
+the game's own extracted data confirms, trust the extracted data.
+
 ## Open next steps
 
-- **Quadra Porta's real Philosophus promotion isn't wired yet** (round
-  178): confirmed via the same video as Tertia Porta's (already wired),
-  but deliberately not implemented this round - round 147 already
-  shipped a "must be Philosophus to find an Exit" note on the win
-  condition, and adding an actual Philosophus-granting door needs some
-  thought about how the two interact (e.g. does reaching Philosophus
-  via Quadra Porta retroactively clear that note for an Exit already
-  standing on?) before wiring it in without a design misstep. Neither
-  Tertia nor Quadra Porta is placed at an exact cell in any dataset
-  yet either - both are known real room names
-  (`known_room_names.go`) with no confirmed placement.
+- ~~Quadra Porta's real Philosophus promotion isn't wired yet~~ —
+  **RESOLVED (round 180)**: the finer, 2-second-interval pass found the
+  real password too ("SOROMOROS" on screen, almost certainly the
+  confirmed vocabulary word "SORONOROS" misread) and confirmed reaching
+  Philosophus this way doesn't conflict with round 147's win-condition
+  note (the note is purely informational and doesn't gate `Won`, so
+  there was no actual interaction to design around). Wired in
+  `game.Handle`. Neither Quadra Porta nor Tertia Porta is placed at an
+  exact cell in any dataset yet - both are known real room names
+  (`known_room_names.go`) with the mechanic real but not yet reachable.
+  Also found a second real password location this round: "Paradise"
+  (Level 2), password "LONG" (round 135's other previously-unplaced
+  password), riddle "An eye for an eye to enter Paradise", leading
+  directly to a real Exit - also not yet placed at an exact cell.
 - **CAULDRON, ACHAD's own final EFFECT is still unconfirmed** (round
   139, location resolved round 178): now that the real room ("Kitchen
   of Ai") and the real setup (Ulna/Thigh/Skull in the cauldron, Scroll
   removed first) are both confirmed, the one remaining unknown is what
   actually happens once the player says "CAULDRON, ACHAD" - no source
   checked so far describes the outcome, only the ritual's own name and
-  setup. Worth a fresh, targeted look if the same third video's
-  ~74 minutes are ever re-reviewed at a finer sampling interval (this
-  pass used 1 frame per 10 seconds, which could plausibly skip a short
-  on-screen result message).
+  setup. Round 180 re-reviewed the same footage at 2-second (then
+  0.25-second) intervals without finding this specific answer - worth
+  a genuinely different source next, not another re-sampling of the
+  same video.
+- **The Egg/Shell "hindrance" mechanic the user recalled from watching
+  the video remains unconfirmed** (round 180): real content was found
+  and placed (a real Egg at Wraithvale, "IT'S NOT FOOD" on pickup, a
+  separately-carried Shell droppable "on the rock" there) via 0.25-
+  second sampling of the exact moment, but no observable game-
+  mechanical consequence (Stamina loss, monster appearance) showed up
+  in the one instance reviewed - it's possible the footage's own player
+  character already knew to complete the swap fast enough to avoid
+  whatever the hindrance is, or that "hindrance" describes something
+  this specific pass didn't capture. Worth watching for a case where
+  the player picks up the Egg WITHOUT following up with the Shell, to
+  see what happens differently.
 - **The Belezbar Pebble/Lichgate-vs-Erlstone conflict** (round 178):
   two real, sourced Belezbar reveals for a generic "Pebble" object
   disagree (numbered map's #59 says "disguised Erlstone"; a different

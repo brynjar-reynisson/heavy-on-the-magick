@@ -167,6 +167,25 @@ func TestLevel2GridA5HasSnake(t *testing.T) {
 	}
 }
 
+// TestLevel2GridA5HasEgg pins round 180's addition: a finer (2-second,
+// then 0.25-second) re-review of the same footage caught a real Egg
+// pickup at the same Wraithvale cell as the Snake - almost certainly
+// numbered_room_contents.go's own long-unplaced #12 "Egg - rock,
+// protected" entry.
+func TestLevel2GridA5HasEgg(t *testing.T) {
+	w := Level2Grid()
+	room := w.Rooms[level2Room("A5")]
+	found := false
+	for _, item := range room.Items {
+		if item == "Egg" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Level2Grid room A5 Items = %v, want it to include \"Egg\"", room.Items)
+	}
+}
+
 // TestLevel2GridGuardsPlacements pins the 3 verified Guards obstacles
 // within the playable 50-cell component - see Level2Grid's doc comment
 // for why 2 more real Guards icons (G5, H5) are deliberately excluded.

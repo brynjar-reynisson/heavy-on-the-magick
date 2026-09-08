@@ -110,6 +110,24 @@ package world
 // separately-flagged "Wraithvale: Vampire" suspicion either way -
 // left open.
 //
+// A5's "Egg" (round 180): a much finer (2-second, then 0.25-second for
+// the exact moment) re-review of the same footage caught the real
+// pickup precisely: "PICK UP EGG... YOU TAKE THE EGG: IT'S NOT FOOD" -
+// directly at this same Wraithvale cell, alongside the Snake. This is
+// almost certainly numbered_room_contents.go's own long-unplaced #12
+// entry ("Egg - rock, protected") - round 138 tried and failed to find
+// a confident zone banner for it; direct gameplay footage succeeds
+// where that method didn't. Real, sourced, and honestly NOT modeled
+// as a SwapItem/RevealItem "protected" mechanic (round 132's
+// convention) here: the Egg was directly pickupable with no prior
+// action needed, contradicting that model's "hidden until swapped"
+// shape for this specific pair - see game.notFoodItems and
+// CLAUDE.md's round 180 writeup for the fuller picture, including an
+// unresolved "hindrance" question the user separately flagged that
+// this footage's own frame-by-frame sequence did not show a clear
+// mechanical consequence for (no Stamina loss, no monster appeared in
+// the specific instance reviewed).
+//
 // Guards: a later round re-derived this file's own row/column pixel
 // calibration directly (validated against A6/A8's own printed labels,
 // plus the "AGILE STAIR" box - real, at B8 here, not A7/A8 like
@@ -185,7 +203,7 @@ var level2Cells = []*Room{
 	{ID: level2Room("A2"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A3"), South: level2Room("B2"), West: level2Room("A1")}},
 	{ID: level2Room("A3"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A4"), South: level2Room("B3"), West: level2Room("A2")}},
 	{ID: level2Room("A4"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A5"), South: level2Room("B4"), West: level2Room("A3")}},
-	{ID: level2Room("A5"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A6"), South: level2Room("B5"), West: level2Room("A4")}, Monster: "Vampire", MonsterHealth: 2, Items: []string{"Snake"}},
+	{ID: level2Room("A5"), Name: "Wraithvale", Level: 2, Exits: map[Direction]RoomID{East: level2Room("A6"), South: level2Room("B5"), West: level2Room("A4")}, Monster: "Vampire", MonsterHealth: 2, Items: []string{"Snake", "Egg"}},
 	{ID: level2Room("A6"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A7"), South: level2Room("B6"), West: level2Room("A5")}},
 	{ID: level2Room("A7"), Level: 2, Exits: map[Direction]RoomID{East: level2Room("A8"), South: level2Room("B7"), West: level2Room("A6")}},
 	{ID: level2Room("A8"), Level: 2, Exits: map[Direction]RoomID{West: level2Room("A7")}},

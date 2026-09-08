@@ -231,8 +231,22 @@ package world
 // summarized list instead of checking the raw quote. "Key" has been
 // REMOVED from Wolfdorp's Items; Room of Stings' TollItem "Key" is
 // once again honestly unplaced/unsourced within CollodonsPile, the
-// same status it held from round 64 through round 80. Lesson for
-// future rounds: when a categorized/summarized answer places a fact in
+// same status it held from round 64 through round 80.
+//
+// RESOLVED (round 180): that same raw quote's "N, DROP CLASP, Pick up
+// KEY" step names the unnamed room precisely, in hindsight - "DROP
+// CLASP" is exactly what happens at Trollwynd (Clasp has been a real,
+// placed Trollwynd item since round 63). A full frame-by-frame review
+// of a finely-sampled (2-second interval) fourth pass over the third
+// gameplay video directly confirms it: the player picks up a real Key
+// at Trollwynd ("YOU ARE IN TROLLWYND... PICK UP KEY... YOU TAKE THE
+// KEY"). Two independent sources (a raw walkthrough quote misread once
+// already, and now direct live gameplay footage) agree exactly. Added
+// "Key" to Trollwynd's Items - Room of Stings' TollItem is finally
+// reachable in real default-mode gameplay, closing a gap open since
+// round 64.
+//
+// Lesson for future rounds: when a categorized/summarized answer places a fact in
 // a named room, verify against the RAW literal source text before
 // shipping - a summary can silently misattribute an action to whichever
 // room name happens to appear nearest it in the text, even across
@@ -413,7 +427,7 @@ func CollodonsPile() *World {
 		// (walking back East returns to Room of Misery).
 		{ID: roomMisery, Name: "Room of Misery", Level: 2, Exits: map[Direction]RoomID{East: roomSecundaPorta, West: roomSothicComplex}, Items: []string{"Grimoire", "Poison-smeared book"}, HasTable: true},
 		{ID: roomSecundaPorta, Name: "Secunda Porta", Level: 2, Exits: map[Direction]RoomID{North: roomTrollwynd}, DoorPasswords: []string{"SILENCE"}, Items: []string{"Sign"}},
-		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "Troll", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll", "Mirror"}, HasTable: true},
+		{ID: roomTrollwynd, Name: "Trollwynd", Level: 3, Exits: map[Direction]RoomID{North: roomAgileStair, South: roomSothicComplex}, Monster: "Troll", MonsterHealth: 3, Items: []string{"Clasp", "Nougat", "Scroll", "Mirror", "Key"}, HasTable: true},
 		{ID: roomAgileStair, Name: "Agile Stair", Level: 4, Exits: map[Direction]RoomID{SouthEast: roomMethos}},
 		{ID: roomMethos, Name: "Methos", Level: 4, Exits: map[Direction]RoomID{South: roomSothicComplex}, Items: []string{"Nugget", "Erlstone", "Ulna", "Thigh", "Skull"}, HasTable: true, Monster: "Wraith", MonsterHealth: 2},
 		// Sothic Complex now has 2 real entrances (see Room of Misery's

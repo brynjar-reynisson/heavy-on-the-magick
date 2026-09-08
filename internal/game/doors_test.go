@@ -133,6 +133,30 @@ func TestHandleTertiaPortaDoorPromotesToPracticus(t *testing.T) {
 	}
 }
 
+// TestHandleQuadraPortaDoorPromotesToPhilosophus covers round 180's
+// real, video-confirmed third promotion door (completing the real
+// Secunda/Tertia/Quadra Porta sequence): passing Quadra Porta's real
+// password ("SORONOROS", a confirmed vocabulary word - the video's own
+// "SOROMOROS" is almost certainly the same N/M font-legibility issue
+// round 178 already caught for "Nidus"/"Midus") raises Axil from
+// Practicus to Philosophus. No shipped World.Room is named "Quadra
+// Porta" yet - same "mechanic real, not yet reachable" pattern as
+// Tertia Porta above.
+func TestHandleQuadraPortaDoorPromotesToPhilosophus(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Quadra Porta", DoorPasswords: []string{"SORONOROS"}})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	g.Player.Grade = character.Practicus
+
+	got := g.Handle(parser.Parse("DOOR, SORONOROS"))
+	if g.Player.Grade != character.Philosophus {
+		t.Errorf("Grade after Quadra Porta's door = %v, want Philosophus", g.Player.Grade)
+	}
+	if !strings.Contains(got, "Philosophus") {
+		t.Errorf("Handle(DOOR, SORONOROS) at Quadra Porta = %q, want it to mention becoming a Philosophus", got)
+	}
+}
+
 func TestHandleDoorPasswordWrong(t *testing.T) {
 	g := New()
 	g.Handle(parser.Parse("EAST")) // Secunda Porta's real password is SILENCE, not THANKS
@@ -208,5 +232,31 @@ func TestHandleDropPaysRealToll(t *testing.T) {
 	}
 	if g.hasItem("Bag") {
 		t.Error("Bag should be spent (removed from inventory) after paying the real toll")
+	}
+}
+
+// TestHandleDropKeyOpensRoomOfStings covers round 180's real, video-
+// confirmed placement: a Key, picked up at Trollwynd, is real Room of
+// Stings TollItem currency - closing a gap open since round 64 (Room
+// of Stings' own TollItem "Key" had no confirmed pickup source
+// anywhere in CollodonsPile until now).
+func TestHandleDropKeyOpensRoomOfStings(t *testing.T) {
+	g := New()
+	g.Handle(parser.Parse("EAST"))          // Secunda Porta
+	g.Handle(parser.Parse("DOOR, SILENCE")) // Trollwynd
+	g.Handle(parser.Parse("NORTH"))
+	if g.World.CurrentRoom().Name != "Trollwynd" {
+		t.Fatalf("test setup bug: expected to be in Trollwynd, got %q", g.World.CurrentRoom().Name)
+	}
+	g.Handle(parser.Parse("PICKUP KEY"))
+	g.Handle(parser.Parse("SOUTH")) // Sothic Complex
+	g.Handle(parser.Parse("SOUTH")) // Wolfdorp
+	g.Handle(parser.Parse("NORTH-WEST"))
+	if g.World.CurrentRoom().Name != "Room of Stings" {
+		t.Fatalf("test setup bug: expected to be in Room of Stings, got %q", g.World.CurrentRoom().Name)
+	}
+	got := g.Handle(parser.Parse("DROP KEY"))
+	if !strings.Contains(got, "swings open") {
+		t.Errorf("Handle(DROP KEY) at Room of Stings with the real Trollwynd Key = %q, want it to open the door", got)
 	}
 }

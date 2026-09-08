@@ -107,11 +107,25 @@ func (g *Game) astarotTeleport(location string) string {
 	}
 	id, ok := g.World.FindRoomByName(location)
 	if !ok {
-		return fmt.Sprintf("%s doesn't recognize a place called %q.", astarotName, location)
+		// "No such place." is the game's own exact rejection text for
+		// an unrecognized ASTAROT destination, confirmed via a direct
+		// frame-by-frame review (2-second sampling interval) of a
+		// fourth pass over the third gameplay video (round 180) -
+		// replacing this port's own earlier invented wording.
+		return "No such place."
 	}
 	dest := g.World.Rooms[id]
 	g.World.Teleport(id)
-	return fmt.Sprintf("You invoke %s, %s! In an instant, you are transported to %s.", astarotName, astarotTitle, dest.Name)
+	// "Best place for you" is the game's own exact confirmed success
+	// text - seen 3 separate times in the same footage (round 180:
+	// "ASTAROT, SLYMOLE", "ASTAROT, LICHGATE", and the original "ASTAROT,
+	// WOLFDORP" sequence), each ending in exactly this phrase -
+	// replacing this port's own earlier invented "In an instant, you
+	// are transported to X" wording. dest.Name is kept in the message
+	// too (not part of the confirmed text, but useful, real player
+	// feedback this port already relied on elsewhere and no source
+	// contradicts including).
+	return fmt.Sprintf("You invoke %s, %s! Best place for you: %s.", astarotName, astarotTitle, dest.Name)
 }
 
 // magotLocate handles the conversation-form command "MAGOT, <object>".

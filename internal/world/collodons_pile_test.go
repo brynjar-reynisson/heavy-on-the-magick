@@ -198,15 +198,37 @@ func TestCollodonsPileWolfdorpHasFoot(t *testing.T) {
 	}
 }
 
+// TestCollodonsPileTrollwyndHasKey pins the round-180 resolution: a
+// full frame-by-frame review (2-second sampling interval) of the same
+// third gameplay video shows the player picking up a real Key at
+// Trollwynd - matching the CASA walkthrough's own raw quote ("N, DROP
+// CLASP, Pick up KEY") once it's read correctly (Clasp is a real,
+// already-placed Trollwynd item). Room of Stings' TollItem "Key" is
+// finally reachable in real default-mode gameplay - see
+// CollodonsPile's doc comment for the full resolution writeup.
+func TestCollodonsPileTrollwyndHasKey(t *testing.T) {
+	w := CollodonsPile()
+	room := w.Rooms[roomTrollwynd]
+	found := false
+	for _, item := range room.Items {
+		if item == "Key" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Trollwynd Items = %v, want it to include \"Key\"", room.Items)
+	}
+}
+
 // TestCollodonsPileWolfdorpDoesNotHaveKey pins the round-82 correction:
 // round 81 placed "Key" in Wolfdorp's Items based on a misread
 // AI-summarized list, not the raw source text - the raw text shows the
 // real pickup happens in an unnamed room reached by leaving Wolfdorp
 // (the same "unnamed intermediate room" trap round 64 already caught
 // once for Pilefoot). See CollodonsPile's doc comment for the full
-// correction writeup. Room of Stings' TollItem "Key" is honestly
-// unplaced/unsourced within CollodonsPile again, as it was from round
-// 64 through round 80.
+// correction writeup - round 180 resolved where the Key really is
+// (Trollwynd, see TestCollodonsPileTrollwyndHasKey above), but it is
+// still correctly NOT at Wolfdorp itself.
 func TestCollodonsPileWolfdorpDoesNotHaveKey(t *testing.T) {
 	w := CollodonsPile()
 	room := w.Rooms[roomWolfdorp]

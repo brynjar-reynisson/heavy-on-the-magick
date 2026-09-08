@@ -397,6 +397,29 @@ func (g *Game) Handle(cmd parser.Command) string {
 						g.Player.Grade = character.Practicus
 						return "The door swings open. You are raised to the grade of Practicus in the Outer Order."
 					}
+					// ROUND 180: a fourth, finer-grained (2-second
+					// interval) pass over the same video found the real
+					// password too ("DOOR, SOROMOROS" on screen -
+					// "CLICK!" - almost certainly this game's own
+					// confirmed vocabulary word "SORONOROS", round 135,
+					// misread here the same N/M way "Nidus" was
+					// misread as "Midus" in round 178's footage; the
+					// vocabulary table is extracted directly from game
+					// memory and is more authoritative than a video
+					// screen's font rendering) - Quadra Porta raises the
+					// player to Philosophus, confirmed via the
+					// game's own exact text ("...raised to the grade of
+					// Philosophus in the Outer Order"). This completes
+					// the real Secunda/Tertia/Quadra Porta sequence
+					// (Neophyte->Zelator->Practicus->Philosophus)
+					// matching all 4 confirmed "Porta" room names
+					// (known_room_names.go) and character.Grade's own
+					// existing enum exactly. See world.CollodonsPile's
+					// doc comment for the DoorPasswords placement.
+					if room.Name == "Quadra Porta" && g.Player.Grade == character.Practicus {
+						g.Player.Grade = character.Philosophus
+						return "The door swings open. You are raised to the grade of Philosophus in the Outer Order."
+					}
 					return "The door swings open."
 				}
 			}

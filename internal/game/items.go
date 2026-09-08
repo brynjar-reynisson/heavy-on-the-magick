@@ -22,15 +22,18 @@ const poisonPickupStaminaCost = 3
 
 // notFoodItems are real items the game specifically calls out as "IT'S
 // NOT FOOD" on pickup - confirmed via a direct frame-by-frame review of
-// a full walkthrough video for BOTH Nougat and Garlic, two already-
+// a full walkthrough video for Nougat and Garlic, two already-
 // real, already-placed items whose names sound edible (a real, small
 // joke the original makes, not something to lose in the port). A map
 // (not a hardcoded pair), matching this project's own established
 // convention (see spellRequiresItem) for a fact confirmed on a small
-// set of items that a future round might extend.
+// set of items that a future round might extend. Round 180: a fourth,
+// finer-grained (2-second interval) pass over the same video found the
+// same exact response for a real Egg pickup at Wraithvale too - added.
 var notFoodItems = map[string]bool{
 	"Nougat": true,
 	"Garlic": true,
+	"Egg":    true,
 }
 
 // inventory lists the player's carried items. "INVENTORY" is a real,
