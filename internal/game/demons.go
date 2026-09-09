@@ -3,9 +3,78 @@ package game
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/magic"
 )
+
+// demonPatienceLimit is how long (real time) a demon will wait, once
+// correctly summoned (its Charm on the ground), for the player to name
+// something "worthy" before losing patience - a real, user-recalled
+// detail from watching a failed Asmodee invocation live in SpecEmu:
+// "he didn't say anything worthy soon enough" (round 184). No source
+// states an exact number, so 2 minutes (the user's own estimate, given
+// alongside the nonsense-count rule below in the same request) is used
+// as an honest, user-specified placeholder rather than an extracted
+// fact.
+const demonPatienceLimit = 2 * time.Minute
+
+// demonNonsenseLimit is the other half of the same round-184 rule: how
+// many consecutive unrecognized ("nonsense") objects/locations a
+// summoned demon tolerates before losing patience regardless of how
+// much time has passed.
+const demonNonsenseLimit = 3
+
+// demonSession tracks the real-time "patience" state for whichever
+// demon is currently being addressed via a ground-charm-gated
+// conversation command (ASTAROT/MAGOT/ASMODEE - see invokeWithPatience's
+// own doc comment for why BELEZBAR isn't included).
+type demonSession struct {
+	demon    string
+	since    time.Time
+	nonsense int
+}
+
+// invokeWithPatience wraps a demon ability call (already confirmed to
+// have its Charm correctly grounded) with round 184's real-time/
+// nonsense-count patience rule. worthy reports whether THIS attempt
+// named something the demon actually recognized (a real location/
+// object it acted on); an unworthy ("nonsense") attempt counts toward
+// demonNonsenseLimit, and either limit being reached sends the player
+// to the furnace the same lethal way punishFailedInvoke does for a
+// missing Talisman - the user's own words describe this as the same
+// kind of consequence ("sends Axil to the Furnace"), not a milder one.
+// A worthy attempt clears the session entirely, so a later invocation
+// (of any demon) starts a fresh 2-minute/3-strike allowance.
+//
+// Only used for Astarot/Magot/Asmodee, each of which already has a
+// real, existing "I don't recognize that" failure branch to treat as
+// nonsense. Belezbar's own ability (BELEZBAR, <object>) always
+// "succeeds" in some form (either a real disguise reveal or an honest
+// "appears exactly what it seems") - there's no equivalent failure
+// branch to call nonsense without inventing one, so it's left out of
+// this mechanic rather than guessed at.
+func (g *Game) invokeWithPatience(d magic.Demon, worthy bool, msg string) string {
+	now := time.Now()
+	session := g.demonSession
+	if session == nil || session.demon != d.Name {
+		session = &demonSession{demon: d.Name, since: now}
+		g.demonSession = session
+	} else if now.Sub(session.since) > demonPatienceLimit {
+		g.demonSession = nil
+		return g.sendToFurnace(fmt.Sprintf("%s's patience runs out - you took too long to say anything worthy.", d.Name))
+	}
+	if worthy {
+		g.demonSession = nil
+		return msg
+	}
+	session.nonsense++
+	if session.nonsense >= demonNonsenseLimit {
+		g.demonSession = nil
+		return g.sendToFurnace(fmt.Sprintf("%s has heard enough nonsense.", d.Name))
+	}
+	return msg
+}
 
 // invoke handles INVOKE (Merphish keyword "I"), given the demon name the
 // player named as cmd.Target. Recognizing the 4 confirmed magic.Demons,
@@ -94,14 +163,22 @@ func (g *Game) punishFailedInvoke(d magic.Demon) string {
 	} else {
 		msg = fmt.Sprintf("You begin the ritual to invoke %s, %s... but you have no suitable Talisman (a %s). The ritual backfires!", d.Name, d.Title, d.Charm)
 	}
+	return g.sendToFurnace(msg)
+}
+
+// sendToFurnace implements the shared real, confirmed "furnace room
+// with no exits" punishment (The CRPG Addict's blog, round 126;
+// extended to a real death by the user, round 183) - factored out of
+// punishFailedInvoke so invokeWithPatience's own real-time/nonsense-
+// count punishment (round 184) can reuse the exact same mechanism with
+// its own, different prefix rather than a fabricated separate outcome.
+func (g *Game) sendToFurnace(prefix string) string {
 	if id, ok := g.World.FindRoomByName("Furnace Room"); ok {
 		g.World.Teleport(id)
 		g.Player.Stamina = 0
-		msg += " You are flung into a furnace room with no exits. You die horribly! (GAME OVER)"
-	} else {
-		msg += " You are flung into a furnace room with no exits."
+		return prefix + " You are flung into a furnace room with no exits. You die horribly! (GAME OVER)"
 	}
-	return msg
+	return prefix + " You are flung into a furnace room with no exits."
 }
 
 // astarotTeleport handles the confirmed real conversation-form command
@@ -127,8 +204,9 @@ func (g *Game) punishFailedInvoke(d magic.Demon) string {
 // earlier, harmless rejection/hint messages.
 func (g *Game) astarotTeleport(location string) string {
 	const astarotName, astarotTitle, astarotCharm = "Astarot", "the Spirit of Assemblage", "Sword"
+	d := magic.Demon{Name: astarotName, Title: astarotTitle, Charm: astarotCharm}
 	if !g.roomHasItem(astarotCharm) {
-		return g.punishFailedInvoke(magic.Demon{Name: astarotName, Title: astarotTitle, Charm: astarotCharm})
+		return g.punishFailedInvoke(d)
 	}
 	id, ok := g.World.FindRoomByName(location)
 	if !ok {
@@ -136,8 +214,10 @@ func (g *Game) astarotTeleport(location string) string {
 		// an unrecognized ASTAROT destination, confirmed via a direct
 		// frame-by-frame review (2-second sampling interval) of a
 		// fourth pass over the third gameplay video (round 180) -
-		// replacing this port's own earlier invented wording.
-		return "No such place."
+		// replacing this port's own earlier invented wording. Round
+		// 184: an unrecognized location is exactly the kind of
+		// "nonsense" invokeWithPatience's own patience rule counts.
+		return g.invokeWithPatience(d, false, "No such place.")
 	}
 	dest := g.World.Rooms[id]
 	g.World.Teleport(id)
@@ -150,7 +230,8 @@ func (g *Game) astarotTeleport(location string) string {
 	// too (not part of the confirmed text, but useful, real player
 	// feedback this port already relied on elsewhere and no source
 	// contradicts including).
-	return fmt.Sprintf("You invoke %s, %s! Best place for you: %s.", astarotName, astarotTitle, dest.Name)
+	msg := fmt.Sprintf("You invoke %s, %s! Best place for you: %s.", astarotName, astarotTitle, dest.Name)
+	return g.invokeWithPatience(d, true, msg)
 }
 
 // magotLocate handles the conversation-form command "MAGOT, <object>".
@@ -176,22 +257,28 @@ func (g *Game) astarotTeleport(location string) string {
 // punishFailedInvoke - see astarotTeleport's own doc comment for why.
 func (g *Game) magotLocate(object string) string {
 	const magotName, magotTitle, magotCharm = "Magot", "the Diviner", "Sunflower"
+	d := magic.Demon{Name: magotName, Title: magotTitle, Charm: magotCharm}
 	if !g.roomHasItem(magotCharm) {
-		return g.punishFailedInvoke(magic.Demon{Name: magotName, Title: magotTitle, Charm: magotCharm})
+		return g.punishFailedInvoke(d)
 	}
 	for _, item := range g.Player.Items {
 		if strings.EqualFold(item, object) {
-			return fmt.Sprintf("You invoke %s, %s! No need - you already carry the %s yourself.", magotName, magotTitle, item)
+			msg := fmt.Sprintf("You invoke %s, %s! No need - you already carry the %s yourself.", magotName, magotTitle, item)
+			return g.invokeWithPatience(d, true, msg)
 		}
 	}
 	for _, room := range g.World.Rooms {
 		for _, item := range room.Items {
 			if strings.EqualFold(item, object) {
-				return fmt.Sprintf("You invoke %s, %s! The %s lies in %s.", magotName, magotTitle, item, room.Name)
+				msg := fmt.Sprintf("You invoke %s, %s! The %s lies in %s.", magotName, magotTitle, item, room.Name)
+				return g.invokeWithPatience(d, true, msg)
 			}
 		}
 	}
-	return fmt.Sprintf("You invoke %s, %s! %s senses no such object anywhere nearby.", magotName, magotTitle, magotName)
+	// Round 184: an object Magot can't locate anywhere is exactly the
+	// kind of "nonsense" invokeWithPatience's own patience rule counts.
+	msg := fmt.Sprintf("You invoke %s, %s! %s senses no such object anywhere nearby.", magotName, magotTitle, magotName)
+	return g.invokeWithPatience(d, false, msg)
 }
 
 // asmodeeDestroy handles the conversation-form command "ASMODEE,
@@ -216,8 +303,9 @@ func (g *Game) magotLocate(object string) string {
 // punishFailedInvoke - see astarotTeleport's own doc comment for why.
 func (g *Game) asmodeeDestroy(object string) string {
 	const asmodeeName, asmodeeTitle, asmodeeCharm = "Asmodee", "the Great Destroyer", "Erlstone"
+	d := magic.Demon{Name: asmodeeName, Title: asmodeeTitle, Charm: asmodeeCharm}
 	if !g.roomHasItem(asmodeeCharm) {
-		return g.punishFailedInvoke(magic.Demon{Name: asmodeeName, Title: asmodeeTitle, Charm: asmodeeCharm})
+		return g.punishFailedInvoke(d)
 	}
 	// ROUND 183: "ASMODEE, DOOR" - user-recalled directly from finishing
 	// the same third gameplay video independently ("Asmodee opening the
@@ -227,34 +315,52 @@ func (g *Game) asmodeeDestroy(object string) string {
 	// Item the generic search below would ever find - destroying it
 	// means clearing whatever real lock is on the CURRENT room, the
 	// same state game.move's own locked-door check (round 181) gates
-	// on. Not independently re-verified against the video's own frames
-	// this round - see world.Room.Chasm's doc comment for why the
-	// user's own direct recollection is treated as the primary source.
+	// on.
+	//
+	// ROUND 184 clarification: the user's own reading of the video is
+	// that this only worked "because the ruby stone is present (that I
+	// assume is the talisman for Asmodee)... all other locations would
+	// be without the talisman" - i.e. the door-destroy is gated on the
+	// Charm exactly like every other Asmodee action, not restricted to
+	// one specific unconfirmed room name ("the Tomb" is never confirmed
+	// as a real, placed room anywhere in this project's data, only
+	// mentioned in passing in the video's own flavor text about what
+	// was BEHIND the door). The `roomHasItem(asmodeeCharm)` check above
+	// already enforces exactly this - any room without Erlstone
+	// grounded in it already fails before reaching this line - so no
+	// further restriction is added here, only this clarifying note.
 	if strings.EqualFold(object, "DOOR") {
 		room := g.World.CurrentRoom()
 		if room != nil && (len(room.DoorPasswords) > 0 || room.TollItem != "" || room.Guards) {
 			room.DoorPasswords = nil
 			room.TollItem = ""
 			room.Guards = false
-			return fmt.Sprintf("You invoke %s, %s! The door crumbles to nothing.", asmodeeName, asmodeeTitle)
+			msg := fmt.Sprintf("You invoke %s, %s! The door crumbles to nothing.", asmodeeName, asmodeeTitle)
+			return g.invokeWithPatience(d, true, msg)
 		}
-		return fmt.Sprintf("You invoke %s, %s! %s finds no such object to destroy.", asmodeeName, asmodeeTitle, asmodeeName)
+		msg := fmt.Sprintf("You invoke %s, %s! %s finds no such object to destroy.", asmodeeName, asmodeeTitle, asmodeeName)
+		return g.invokeWithPatience(d, false, msg)
 	}
 	for i, item := range g.Player.Items {
 		if strings.EqualFold(item, object) {
 			g.Player.Items = append(g.Player.Items[:i], g.Player.Items[i+1:]...)
-			return fmt.Sprintf("You invoke %s, %s! The %s you carried crumbles to nothing.", asmodeeName, asmodeeTitle, item)
+			msg := fmt.Sprintf("You invoke %s, %s! The %s you carried crumbles to nothing.", asmodeeName, asmodeeTitle, item)
+			return g.invokeWithPatience(d, true, msg)
 		}
 	}
 	for _, room := range g.World.Rooms {
 		for i, item := range room.Items {
 			if strings.EqualFold(item, object) {
 				room.Items = append(room.Items[:i], room.Items[i+1:]...)
-				return fmt.Sprintf("You invoke %s, %s! The %s in %s crumbles to nothing.", asmodeeName, asmodeeTitle, item, room.Name)
+				msg := fmt.Sprintf("You invoke %s, %s! The %s in %s crumbles to nothing.", asmodeeName, asmodeeTitle, item, room.Name)
+				return g.invokeWithPatience(d, true, msg)
 			}
 		}
 	}
-	return fmt.Sprintf("You invoke %s, %s! %s finds no such object to destroy.", asmodeeName, asmodeeTitle, asmodeeName)
+	// Round 184: an object Asmodee can't find anywhere is exactly the
+	// kind of "nonsense" invokeWithPatience's own patience rule counts.
+	msg := fmt.Sprintf("You invoke %s, %s! %s finds no such object to destroy.", asmodeeName, asmodeeTitle, asmodeeName)
+	return g.invokeWithPatience(d, false, msg)
 }
 
 // belezbarDisguises maps a real, sourced "disguised" item name to its
@@ -315,6 +421,13 @@ var belezbarDisguises = map[string]string{
 //
 // ROUND 183: a failed Charm check now routes through
 // punishFailedInvoke - see astarotTeleport's own doc comment for why.
+//
+// ROUND 184: deliberately NOT wrapped in invokeWithPatience the way
+// Astarot/Magot/Asmodee now are - see that function's own doc comment.
+// Belezbar has no real "I don't recognize that" failure branch to
+// treat as nonsense (every object gets SOME real response), so
+// applying the same time/nonsense-count rule here would mean inventing
+// a new failure mode this project has no source for.
 func (g *Game) belezbarReveal(object string) string {
 	const belezbarName, belezbarTitle, belezbarCharm = "Belezbar", "the Master of Flies", "Mantis"
 	if !g.roomHasItem(belezbarCharm) {

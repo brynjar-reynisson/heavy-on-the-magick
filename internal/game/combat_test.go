@@ -4,7 +4,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/character"
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/parser"
+	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/world"
 )
 
 // withGrimoire grants g's player the real Grimoire item directly (rather
@@ -170,6 +172,27 @@ func TestHandleFreezeDefeatsMonsterInstantly(t *testing.T) {
 	room := g.World.CurrentRoom()
 	if room.MonsterHealth != 0 {
 		t.Errorf("MonsterHealth after FREEZE = %d, want 0 (instant neutralize)", room.MonsterHealth)
+	}
+}
+
+// TestHandleBlastAtMedusaKillsPlayer covers round 184's refinement:
+// targeting Medusa directly with BLAST is fatal regardless of whether
+// a Mirror is carried - looking at her to aim the spell meets her gaze
+// all the same. The real, sourced way to defeat her is still
+// checkMirrorMedusa (dropping the Mirror in her room), not combat.
+func TestHandleBlastAtMedusaKillsPlayer(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "The Pit", Monster: "Medusa", MonsterHealth: 3})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	withGrimoire(g)
+	g.Player.Items = append(g.Player.Items, "Mirror") // even carrying one doesn't save you here
+
+	got := g.Handle(parser.Parse("BLAST"))
+	if !strings.Contains(got, "GAME OVER") {
+		t.Errorf("Handle(BLAST) at a live Medusa = %q, want death", got)
+	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after BLASTing Medusa")
 	}
 }
 

@@ -3,6 +3,7 @@ package game
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/parser"
 )
@@ -367,5 +368,85 @@ func TestHandleBelezbarRevealOrdinaryObject(t *testing.T) {
 	got := g.Handle(parser.Parse("BELEZBAR, GRIMOIRE"))
 	if !strings.Contains(got, "exactly what it seems") {
 		t.Errorf("Handle(BELEZBAR, GRIMOIRE) with no confirmed disguise = %q, want an honest ordinary-object response", got)
+	}
+}
+
+// TestHandleDemonPatienceRunsOutAfterThreeNonsenseAttempts covers round
+// 184's user-specified rule, modeling a real failure the user saw live
+// in SpecEmu ("he didn't say anything worthy soon enough"): a demon
+// sends Axil to the furnace after demonNonsenseLimit consecutive
+// unrecognized attempts, the same lethal outcome as a missing Talisman.
+func TestHandleDemonPatienceRunsOutAfterThreeNonsenseAttempts(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sword")
+
+	var got string
+	for range demonNonsenseLimit {
+		got = g.Handle(parser.Parse("ASTAROT, NARNIA"))
+	}
+	if !strings.Contains(got, "furnace room") {
+		t.Errorf("Handle(ASTAROT, NARNIA) x%d = %q, want the demon to lose patience and send Axil to the furnace", demonNonsenseLimit, got)
+	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after exhausting a demon's patience with nonsense")
+	}
+}
+
+// TestHandleDemonPatienceSurvivesFewerThanLimitNonsenseAttempts is the
+// regression guard: fewer than demonNonsenseLimit nonsense attempts
+// doesn't trigger anything yet.
+func TestHandleDemonPatienceSurvivesFewerThanLimitNonsenseAttempts(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sword")
+
+	for i := range demonNonsenseLimit - 1 {
+		got := g.Handle(parser.Parse("ASTAROT, NARNIA"))
+		if strings.Contains(got, "furnace room") {
+			t.Errorf("Handle(ASTAROT, NARNIA) attempt %d = %q, want no punishment yet", i+1, got)
+		}
+	}
+	if g.Player.IsDead() {
+		t.Error("Player should still be alive before the nonsense limit is reached")
+	}
+}
+
+// TestHandleDemonPatienceClearsOnSuccess covers that a worthy (real)
+// attempt resets the nonsense counter entirely, matching
+// invokeWithPatience's own doc comment - a later nonsense attempt for
+// the same demon starts counting from zero again, not where the
+// earlier, cleared session left off. Uses MAGOT rather than ASTAROT
+// specifically because a successful ASTAROT teleports the player away
+// from the room holding the Sword, which would fail the NEXT attempt
+// for the wrong reason (missing Charm, not nonsense) - MAGOT's locate
+// ability doesn't move the player.
+func TestHandleDemonPatienceClearsOnSuccess(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sunflower")
+
+	g.Handle(parser.Parse("MAGOT, EXCALIBUR")) // 1 nonsense attempt
+	g.Handle(parser.Parse("MAGOT, GRIMOIRE"))  // real, worthy - clears the session
+	got := g.Handle(parser.Parse("MAGOT, EXCALIBUR"))
+	if strings.Contains(got, "furnace room") {
+		t.Errorf("Handle(MAGOT, EXCALIBUR) after an intervening success = %q, want the session reset, not punished", got)
+	}
+}
+
+// TestHandleDemonPatienceTimesOut covers the other half of round 184's
+// rule: exceeding demonPatienceLimit since a session began ends it too,
+// even with 0 nonsense attempts recorded - modeling "soon enough" as a
+// real time limit, not just a strike count.
+func TestHandleDemonPatienceTimesOut(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Sword")
+
+	g.Handle(parser.Parse("ASTAROT, NARNIA")) // starts the session
+	g.demonSession.since = time.Now().Add(-demonPatienceLimit - time.Second)
+
+	got := g.Handle(parser.Parse("ASTAROT, NARNIA"))
+	if !strings.Contains(got, "furnace room") {
+		t.Errorf("Handle(ASTAROT, NARNIA) after the patience timeout = %q, want the demon to lose patience", got)
+	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after a demon's patience timing out")
 	}
 }

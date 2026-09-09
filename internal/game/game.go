@@ -63,6 +63,14 @@ type Game struct {
 	// don't force an unconfirmed integration" discipline already used
 	// for CAULDRON/NEST's own effects.
 	Won bool
+
+	// demonSession tracks real-time "patience" state for whichever demon
+	// is currently being addressed via a ground-charm-gated conversation
+	// command - see demons.go's invokeWithPatience for the full sourcing
+	// (round 184: a user-specified rule modeling "he didn't say anything
+	// worthy soon enough", the failure the user saw live in SpecEmu).
+	// nil whenever no demon is currently "listening".
+	demonSession *demonSession
 }
 
 // New starts a fresh game. The room layout is world.CollodonsPile — real

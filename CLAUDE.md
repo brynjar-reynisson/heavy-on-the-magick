@@ -8967,17 +8967,95 @@ they need different SEVERITY just because they need different WORDING
 - check whether the source actually treats them the same way before
 building two different consequence paths.
 
+### Round 184: refining Medusa's exact death triggers, clarifying Asmodee's door-destroy gate, and implementing round 183's own flagged "worthy soon enough" open question
+
+Direct follow-up corrections from the user on round 183's own work, all
+implemented in the same session:
+
+1. **Medusa's death triggers are narrower and more precise than round
+   183 modeled.** The user clarified: she only kills on (a) entering
+   her room without a Mirror (already real, round 183), or (b)
+   targeting her directly with BLAST - "otherwise, she's just a blocker
+   that isn't crossable." Added the BLAST case to `game.blast` (fatal
+   regardless of whether a Mirror is carried - looking at her to aim
+   the spell meets her gaze all the same; FREEZE isn't included, since
+   the user named BLAST specifically and this project doesn't extend a
+   stated rule past what was actually said). Added a real "blocks
+   leaving" check to `game.move`'s current-room checks (the same
+   pattern as Water/Guards/locked doors): once safely inside with a
+   Mirror, she still bars every exit until actually defeated via the
+   existing `checkMirrorMedusa` (dropping the Mirror in her room,
+   round 178) - carrying a Mirror only makes ENTERING safe, it doesn't
+   defeat her by itself.
+2. **Asmodee's door-destroy gate was already correct, just clarified.**
+   The user reasoned that Asmodee "can only destroy the door we saw in
+   the video, and only because the ruby stone is present... all other
+   locations would be without the talisman." This is exactly what
+   `asmodeeDestroy`'s existing `roomHasItem(asmodeeCharm)` gate already
+   enforces (Erlstone, assumed to be the "ruby stone" the user recalled
+   visually) - any room without Erlstone grounded in it already fails
+   before the DOOR-destroy branch is ever reached, so no further
+   restriction to one specific unconfirmed room name ("the Tomb," never
+   placed anywhere in this project's data) was added - only a
+   clarifying doc comment recording this reasoning.
+3. **Implemented round 183's own flagged open question**: a real-time
+   patience limit (2 minutes) and a nonsense-attempt counter (3
+   consecutive unrecognized objects/locations), either of which sends
+   the player to the same lethal Furnace Room punishment as a missing
+   Talisman - modeling the user's own recalled failure text precisely
+   ("he didn't say anything worthy soon enough"). Both numbers are the
+   user's own explicit estimates, given directly in the request, not
+   extracted from any source. Implemented as `demonSession` (a small
+   per-Game state: which demon is being addressed, when the session
+   started, how many nonsense attempts so far) and `invokeWithPatience`,
+   wrapping ASTAROT/MAGOT/ASMODEE's existing "I don't recognize that"
+   failure branches (each already had one) as the "nonsense" signal,
+   and a real, successful invocation as clearing the session entirely.
+   `punishFailedInvoke`'s own furnace-room-teleport-and-kill logic was
+   factored out into a shared `sendToFurnace` helper so both punishment
+   paths (missing Talisman, and now patience running out) use the exact
+   same real mechanism with different wording. Deliberately NOT applied
+   to Belezbar: its own ability has no existing failure branch (every
+   object gets some real response, either a genuine disguise reveal or
+   an honest "appears exactly what it seems") - inventing one just to
+   hook into this mechanic would be fabricating a new failure mode this
+   project has no source for, so it's left out by design rather than
+   overlooked.
+
+Added `TestHandleMedusaBlocksLeavingUntilDefeated`,
+`TestHandleBlastAtMedusaKillsPlayer`,
+`TestHandleDemonPatienceRunsOutAfterThreeNonsenseAttempts`,
+`TestHandleDemonPatienceSurvivesFewerThanLimitNonsenseAttempts`,
+`TestHandleDemonPatienceClearsOnSuccess`, and
+`TestHandleDemonPatienceTimesOut` (the last directly manipulating
+`demonSession.since`, a same-package unexported field, to simulate real
+time passing without an actual 2-minute sleep). Ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live via `go run ./cmd/hotm`: 3 consecutive
+`ASTAROT, NARNIA` attempts (an unrecognized location) with the Sword
+correctly grounded at Sothic Complex ended in "Astarot has heard enough
+nonsense. You are flung into a furnace room with no exits. You die
+horribly! (GAME OVER)".
+
+**How to apply**: when a user gives concrete numbers for an
+unconfirmed mechanic ("perhaps two minutes," "let's say three"), treat
+them as the specification to implement, not a placeholder needing a
+"real" source - the user is the primary source for this exact request,
+the same standing already established for their own direct
+recollection and live SpecEmu confirmation (round 183). When
+extracting a shared punishment mechanism (the furnace-room
+teleport-and-kill) to reuse for a second, different trigger, keep the
+trigger-specific wording as a parameter rather than duplicating the
+whole mechanism a second time.
+
 ## Open next steps
 
-- **A possible time limit or stricter validity check on a demon
-  invocation isn't modeled** (round 183): the user's own description
-  of the Asmodee failure they hit live in SpecEmu - not naming
-  something "worthy... soon enough" - hints at either a real per-
-  ritual time limit or a stricter check on what counts as a valid
-  object, neither of which this port's one-instant-command-per-call
-  architecture currently models (the same gap already named for HALT,
-  round 182). Worth a closer look if a source ever describes this
-  precisely enough to implement without guessing.
+- ~~A possible time limit or stricter validity check on a demon
+  invocation isn't modeled~~ — **RESOLVED (round 184)**: implemented
+  directly per the user's own explicit specification (a 2-minute real-
+  time limit and a 3-strike nonsense-attempt counter, either ending in
+  the same lethal Furnace Room punishment) - see `demonSession`/
+  `invokeWithPatience` in `internal/game/demons.go`.
 - **Ball/Pellet-without-swapping's real consequence, if any, is still
   unconfirmed** (round 182): checked in a live SpecEmu session (input
   injection didn't register at all - a real, now twice-confirmed

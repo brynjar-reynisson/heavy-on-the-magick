@@ -86,6 +86,36 @@ func TestHandleMedusaSafeWithMirror(t *testing.T) {
 	}
 }
 
+// TestHandleMedusaBlocksLeavingUntilDefeated covers round 184's
+// refinement: safely entering (Mirror carried, no death) doesn't let
+// the player simply walk past her - "otherwise, she's just a blocker
+// that isn't crossable" - until she's actually dealt with via
+// checkMirrorMedusa (dropping the Mirror here), the same "blocks
+// leaving until cleared" pattern as Water/Guards/locked doors.
+func TestHandleMedusaBlocksLeavingUntilDefeated(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "The Pit", Monster: "Medusa", MonsterHealth: 3, Exits: map[world.Direction]world.RoomID{world.South: 0}})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	g.Player.Items = append(g.Player.Items, "Mirror")
+
+	g.Handle(parser.Parse("NORTH")) // enters The Pit safely
+
+	got := g.Handle(parser.Parse("SOUTH"))
+	if g.World.CurrentRoom().Name != "The Pit" {
+		t.Errorf("current room after trying to leave a live Medusa's room = %q, want to stay in \"The Pit\"", g.World.CurrentRoom().Name)
+	}
+	if !strings.Contains(got, "blocks your way") {
+		t.Errorf("Handle(SOUTH) with a live Medusa in the current room = %q, want a real blocking message", got)
+	}
+
+	g.Handle(parser.Parse("DROP MIRROR")) // triggers checkMirrorMedusa
+	got = g.Handle(parser.Parse("SOUTH"))
+	if g.World.CurrentRoom().Name != "Start" {
+		t.Errorf("current room after leaving a defeated Medusa's room = %q, want \"Start\" (got %q)", g.World.CurrentRoom().Name, got)
+	}
+}
+
 // TestHandleFireBlocksMovementWithoutClasp covers the real, sourced
 // Fire mechanic (see world.Room.Fire's doc comment): the CASA
 // walkthrough states the Clasp "enables you to walk through fire" -
