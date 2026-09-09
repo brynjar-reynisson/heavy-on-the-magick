@@ -62,11 +62,26 @@ type Demon struct {
 // Astarot/Magot). The original caution is kept alongside the real
 // ability, not discarded — a destructive power IS a real reason to be
 // careful with it, not a contradiction of the warning.
+// ROUND 185: the user supplied a fuller, cross-referenced description of
+// Magot's and Belezbar's abilities (citing the same World of Spectrum
+// manual PDF, The CRPG Addict's blog, and Hardcore Gaming 101 already
+// used elsewhere in this project, plus a warning about the furnace-room
+// punishment already implemented since round 126/183). Paraphrased
+// further into this file's own terse factual style, not copied verbatim
+// - Magot's entry is unchanged in substance (already read as "locate any
+// named object," now just phrased as a real guide for lost/needed
+// items); Belezbar's is genuinely fuller than the "reveals disguises"
+// reading this project had before: "reveals all deceit and identifies
+// danger... tells you whether a specific object or path... is hazardous
+// or safe" - a real, broader ability than just unmasking a disguised
+// item, now implemented in game.belezbarReveal (a named compass
+// direction is read as a "path" query against this project's own
+// already-modeled real hazards - Fire/Chasm/Water/Medusa).
 var Demons = []Demon{
 	{Name: "ASMODEE", Title: "the Great Destroyer", Number: 122, Sign: "House of Mars", Aspect: "Basilisk", Ability: "Destroys any named object you ask of him - be careful with Asmodee", Charm: "Erlstone", Correspondences: "Colour green; plant Nettle; bows to red gems (no single named gem, unlike the other 3 Princes)"},
 	{Name: "ASTAROT", Title: "the Spirit of Assemblage", Number: 1376, Sign: "Sign of Gemini", Aspect: "Legion", Ability: "Transports the player to a named location, if its name is known", Charm: "Sword", Correspondences: "Perfume Wormwood; favours Orchid and Magpie; gem Tourmaline"},
-	{Name: "BELEZBAR", Title: "the Master of Flies", Number: 20, Sign: "Firmament of Stars", Aspect: "Deceit", Ability: "Reveals the true nature of objects", Charm: "Mantis", Correspondences: "Reveres Amaranth, Musk, and Locust; gem Turquoise"},
-	{Name: "MAGOT", Title: "the Diviner", Number: 443, Sign: "Realm of Air", Aspect: "Baboon", Ability: "Reveals the whereabouts of any named object", Charm: "Sunflower", Correspondences: "Colour yellow; scent Galbanum; gems Topaz and Chalcedony"},
+	{Name: "BELEZBAR", Title: "the Master of Flies", Number: 20, Sign: "Firmament of Stars", Aspect: "Deceit", Ability: "Reveals the true nature of objects, and whether a named object or path is hazardous or safe", Charm: "Mantis", Correspondences: "Reveres Amaranth, Musk, and Locust; gem Turquoise"},
+	{Name: "MAGOT", Title: "the Diviner", Number: 443, Sign: "Realm of Air", Aspect: "Baboon", Ability: "Reveals the whereabouts of any named treasure or key item in the dungeon", Charm: "Sunflower", Correspondences: "Colour yellow; scent Galbanum; gems Topaz and Chalcedony"},
 }
 
 // Two more real numbers from the same grimoire section (round 110),

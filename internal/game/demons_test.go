@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/parser"
+	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/world"
 )
 
 // TestHandleInvokeSucceedsWithCharm pins round 131's correction: the
@@ -368,6 +369,62 @@ func TestHandleBelezbarRevealOrdinaryObject(t *testing.T) {
 	got := g.Handle(parser.Parse("BELEZBAR, GRIMOIRE"))
 	if !strings.Contains(got, "exactly what it seems") {
 		t.Errorf("Handle(BELEZBAR, GRIMOIRE) with no confirmed disguise = %q, want an honest ordinary-object response", got)
+	}
+}
+
+// TestHandleBelezbarWarnsAboutPoisonedItem covers round 185's real,
+// fuller ability (see belezbarReveal's own doc comment): "identifies
+// danger... tells you whether a specific object... is hazardous or
+// safe."
+func TestHandleBelezbarWarnsAboutPoisonedItem(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Mantis")
+	got := g.Handle(parser.Parse("BELEZBAR, POISON-SMEARED BOOK"))
+	if !strings.Contains(got, "hazardous") {
+		t.Errorf("Handle(BELEZBAR, POISON-SMEARED BOOK) = %q, want a real hazard warning", got)
+	}
+}
+
+// TestHandleBelezbarWarnsAboutHazardousPath covers the "path" half of
+// round 185's real ability: a named compass direction is checked
+// against the CURRENT room's real exit that way, reporting a real,
+// already-modeled hazard (Fire here) on the destination.
+func TestHandleBelezbarWarnsAboutHazardousPath(t *testing.T) {
+	g := New()
+	room := g.World.CurrentRoom()
+	room.Items = append(room.Items, "Mantis")
+	room.Exits = map[world.Direction]world.RoomID{world.North: 999}
+	g.World.AddRoom(&world.Room{ID: 999, Name: "Firepit", Fire: true})
+
+	got := g.Handle(parser.Parse("BELEZBAR, NORTH"))
+	if !strings.Contains(got, "hazardous") {
+		t.Errorf("Handle(BELEZBAR, NORTH) toward a real Fire hazard = %q, want a real hazard warning", got)
+	}
+}
+
+// TestHandleBelezbarReportsSafePath is the regression guard: a real
+// exit with no known hazard is reported safe, not hazardous.
+func TestHandleBelezbarReportsSafePath(t *testing.T) {
+	g := New()
+	room := g.World.CurrentRoom()
+	room.Items = append(room.Items, "Mantis")
+	room.Exits = map[world.Direction]world.RoomID{world.North: 999}
+	g.World.AddRoom(&world.Room{ID: 999, Name: "Plain Room"})
+
+	got := g.Handle(parser.Parse("BELEZBAR, NORTH"))
+	if !strings.Contains(got, "safe") {
+		t.Errorf("Handle(BELEZBAR, NORTH) toward a hazard-free room = %q, want a real safe report", got)
+	}
+}
+
+// TestHandleBelezbarNoSuchPath covers the honest negative: a direction
+// with no real exit isn't a real "path" to judge.
+func TestHandleBelezbarNoSuchPath(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Mantis")
+	got := g.Handle(parser.Parse("BELEZBAR, SOUTH-WEST"))
+	if !strings.Contains(got, "no such path") && !strings.Contains(got, "No such path") && !strings.Contains(got, "There is no path") {
+		t.Errorf("Handle(BELEZBAR, SOUTH-WEST) with no real exit that way = %q, want an honest no-path response", got)
 	}
 }
 

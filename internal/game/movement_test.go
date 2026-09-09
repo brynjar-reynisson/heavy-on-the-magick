@@ -46,53 +46,53 @@ func TestHandleChasmSafeWithFlask(t *testing.T) {
 	}
 }
 
-// TestHandleMedusaKillsPlayerWithoutMirror covers round 183's real,
-// user-recalled hazard extension: entering a live Medusa's room
-// without a Mirror is lethal on sight, not just an ordinary fight -
-// the classic "turned to stone" reading of the character. Distinct
-// from checkMirrorMedusa (round 178), which handles actually DROPPING
-// the Mirror once safely inside to kill her.
-func TestHandleMedusaKillsPlayerWithoutMirror(t *testing.T) {
+// TestHandleEnteringMedusaRoomNeverKills covers round 185's correction:
+// the user clarified that entering her room is NEVER lethal by itself
+// (regardless of Mirror) - only trying to move PAST her (see
+// TestHandleMedusaKillsOnMoveAttemptWithoutMirror below) or BLASTing
+// her is.
+func TestHandleEnteringMedusaRoomNeverKills(t *testing.T) {
 	w := world.New(0)
 	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
 	w.AddRoom(&world.Room{ID: 1, Name: "The Pit", Monster: "Medusa", MonsterHealth: 3})
 	g := &Game{Player: character.NewPlayer(), World: w}
-
-	got := g.Handle(parser.Parse("NORTH"))
-	if !strings.Contains(got, "GAME OVER") {
-		t.Errorf("Handle(NORTH) into Medusa's room without a Mirror = %q, want death", got)
-	}
-	if !g.Player.IsDead() {
-		t.Error("Player should be dead after meeting Medusa's gaze without a Mirror")
-	}
-}
-
-// TestHandleMedusaSafeWithMirror is the regression guard: carrying a
-// Mirror lets the player enter safely (checkMirrorMedusa still governs
-// actually defeating her once there).
-func TestHandleMedusaSafeWithMirror(t *testing.T) {
-	w := world.New(0)
-	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
-	w.AddRoom(&world.Room{ID: 1, Name: "The Pit", Monster: "Medusa", MonsterHealth: 3})
-	g := &Game{Player: character.NewPlayer(), World: w}
-	g.Player.Items = append(g.Player.Items, "Mirror")
 
 	got := g.Handle(parser.Parse("NORTH"))
 	if strings.Contains(got, "GAME OVER") {
-		t.Errorf("Handle(NORTH) into Medusa's room WITH a Mirror = %q, want it to succeed", got)
+		t.Errorf("Handle(NORTH) into Medusa's room without a Mirror = %q, want entry to succeed (never lethal by itself)", got)
 	}
 	if g.World.CurrentRoom().Name != "The Pit" {
-		t.Errorf("current room after entering Medusa's room with a Mirror = %q, want \"The Pit\"", g.World.CurrentRoom().Name)
+		t.Errorf("current room after entering Medusa's room = %q, want \"The Pit\"", g.World.CurrentRoom().Name)
 	}
 }
 
-// TestHandleMedusaBlocksLeavingUntilDefeated covers round 184's
-// refinement: safely entering (Mirror carried, no death) doesn't let
-// the player simply walk past her - "otherwise, she's just a blocker
-// that isn't crossable" - until she's actually dealt with via
-// checkMirrorMedusa (dropping the Mirror here), the same "blocks
-// leaving until cleared" pattern as Water/Guards/locked doors.
-func TestHandleMedusaBlocksLeavingUntilDefeated(t *testing.T) {
+// TestHandleMedusaKillsOnMoveAttemptWithoutMirror covers the real
+// death trigger the user described: "only when he tries to walk into
+// her" - i.e. any move attempt from within her room, without a Mirror,
+// meets her gaze. Distinct from checkMirrorMedusa (round 178), which
+// handles actually DROPPING the Mirror to destroy her outright.
+func TestHandleMedusaKillsOnMoveAttemptWithoutMirror(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "The Pit", Monster: "Medusa", MonsterHealth: 3, Exits: map[world.Direction]world.RoomID{world.South: 0}})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	g.Handle(parser.Parse("NORTH")) // enters The Pit safely, no Mirror
+
+	got := g.Handle(parser.Parse("SOUTH"))
+	if !strings.Contains(got, "GAME OVER") {
+		t.Errorf("Handle(SOUTH) trying to walk past Medusa without a Mirror = %q, want death", got)
+	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after trying to walk past Medusa without a Mirror")
+	}
+}
+
+// TestHandleMedusaSafeToLeaveWithMirror is the regression guard:
+// carrying a Mirror makes moving past her safe outright - the same
+// "carried item bypasses a hazard" pattern as Fire/Clasp, not
+// something requiring her to be separately defeated first.
+func TestHandleMedusaSafeToLeaveWithMirror(t *testing.T) {
 	w := world.New(0)
 	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
 	w.AddRoom(&world.Room{ID: 1, Name: "The Pit", Monster: "Medusa", MonsterHealth: 3, Exits: map[world.Direction]world.RoomID{world.South: 0}})
@@ -102,17 +102,35 @@ func TestHandleMedusaBlocksLeavingUntilDefeated(t *testing.T) {
 	g.Handle(parser.Parse("NORTH")) // enters The Pit safely
 
 	got := g.Handle(parser.Parse("SOUTH"))
-	if g.World.CurrentRoom().Name != "The Pit" {
-		t.Errorf("current room after trying to leave a live Medusa's room = %q, want to stay in \"The Pit\"", g.World.CurrentRoom().Name)
+	if strings.Contains(got, "GAME OVER") {
+		t.Errorf("Handle(SOUTH) with a Mirror carried = %q, want it to succeed", got)
 	}
-	if !strings.Contains(got, "blocks your way") {
-		t.Errorf("Handle(SOUTH) with a live Medusa in the current room = %q, want a real blocking message", got)
-	}
-
-	g.Handle(parser.Parse("DROP MIRROR")) // triggers checkMirrorMedusa
-	got = g.Handle(parser.Parse("SOUTH"))
 	if g.World.CurrentRoom().Name != "Start" {
-		t.Errorf("current room after leaving a defeated Medusa's room = %q, want \"Start\" (got %q)", g.World.CurrentRoom().Name, got)
+		t.Errorf("current room after leaving Medusa's room with a Mirror = %q, want \"Start\"", g.World.CurrentRoom().Name)
+	}
+}
+
+// TestHandleMedusaSafeToLeaveAfterDefeat covers the OTHER real way past
+// her: checkMirrorMedusa (dropping the Mirror in her room) destroys her
+// outright, after which leaving is safe even without still carrying a
+// Mirror (MonsterHealth<=0 means the move-attempt check no longer
+// applies at all).
+func TestHandleMedusaSafeToLeaveAfterDefeat(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "The Pit", Monster: "Medusa", MonsterHealth: 3, Exits: map[world.Direction]world.RoomID{world.South: 0}})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	g.Player.Items = append(g.Player.Items, "Mirror")
+
+	g.Handle(parser.Parse("NORTH"))       // enters The Pit safely
+	g.Handle(parser.Parse("DROP MIRROR")) // triggers checkMirrorMedusa
+
+	got := g.Handle(parser.Parse("SOUTH")) // no Mirror carried anymore
+	if strings.Contains(got, "GAME OVER") {
+		t.Errorf("Handle(SOUTH) after Medusa is defeated = %q, want it to succeed", got)
+	}
+	if g.World.CurrentRoom().Name != "Start" {
+		t.Errorf("current room after leaving a defeated Medusa's room = %q, want \"Start\"", g.World.CurrentRoom().Name)
 	}
 }
 

@@ -9048,7 +9048,101 @@ teleport-and-kill) to reuse for a second, different trigger, keep the
 trigger-specific wording as a parameter rather than duplicating the
 whole mechanism a second time.
 
+### Round 185: Medusa's death trigger corrected again, and a genuinely new source expands Magot's and Belezbar's abilities
+
+Two threads this round, both direct user follow-ups.
+
+**Thread 1 - a further Medusa correction.** The user clarified more
+precisely than round 184 had it: "she doesn't kill Axil when he enters
+the room: Only when he tries to walk into her or blast her." Round
+184's "blocks leaving" mechanic (a live Medusa bars every exit from her
+room, non-lethally, until dealt with) was itself wrong in the same
+direction - entering is genuinely, always safe, and the correct model
+is closer to Fire/Clasp than to Water/Guards: `game.move`'s
+current-room check now kills the player on ANY move attempt out of a
+live Medusa's room without a Mirror (removed the earlier, now-wrong
+destination-entry death check entirely), while carrying a Mirror makes
+leaving safe outright - a standing condition, not a one-time trigger
+requiring her to be separately defeated first. `checkMirrorMedusa`
+(dropping the Mirror, round 178) remains a real, separate way to
+destroy her outright, after which the move-attempt check no longer
+applies at all (MonsterHealth<=0). BLAST at her remains fatal
+regardless of Mirror, unchanged from round 184.
+
+**Thread 2 - a genuinely new, cross-referenced source** (citing the
+World of Spectrum manual PDF, The CRPG Addict's blog, and Hardcore
+Gaming 101 - all 3 already used elsewhere in this project, but combined
+here into fuller ability descriptions than any single one had given
+before) describes Magot's and Belezbar's real abilities more fully:
+
+- **Magot** "reveals the exact locations of hidden treasures and key
+  items... acts as your guide" if lost or looking for a needed item -
+  this matches `magotLocate`'s existing implementation exactly (no
+  functional change), just a fuller confirmed description than before.
+- **Belezbar** "reveals all deceit and identifies danger... tells you
+  whether a specific object or path... is hazardous or safe" - this is
+  genuinely BROADER than the "reveals disguises" reading this project
+  had before (round 164). Implemented the new "path" half directly: a
+  named compass direction is now read as a query against the CURRENT
+  room's real exit that way, checking this project's own already-
+  modeled real hazards on the destination (Fire, Chasm, a live Medusa
+  without a Mirror, Water) and reporting hazardous/safe without naming
+  the specific solution item (the same "hint, not the answer"
+  convention `fireHazardHint`/`monsterNearbyHint` already use). Also
+  added a "poison"-item hazard warning, alongside the existing
+  disguise-reveal (still valid - unmasking a disguise IS "revealing
+  deceit"). Since this fuller ability now has a genuine, distinguishable
+  worthy/nonsense split (an unrecognized direction with no real exit,
+  or an object that's neither disguised, hazardous, nor found anywhere),
+  Belezbar is now wrapped in `invokeWithPatience` too - round 184's own
+  note that it had "no failure branch to hook into" no longer applies.
+
+The user also floated their own further extrapolation - that the fire
+and "a snake pit" both required something specific in Axil's inventory
+to cross safely, similar to Fire/Clasp - as a possible additional
+Belezbar use case. The Fire half is already real and modeled (Clasp);
+the "snake pit" specifically is the user's own uncertain recollection
+("also had something similar") with no concrete room/mechanic
+specified, so it was NOT implemented as a new hazard this round -
+recorded as an open item rather than guessed at (see "Open next
+steps").
+
+Added `TestHandleEnteringMedusaRoomNeverKills`,
+`TestHandleMedusaKillsOnMoveAttemptWithoutMirror`,
+`TestHandleMedusaSafeToLeaveWithMirror`,
+`TestHandleMedusaSafeToLeaveAfterDefeat` (replacing round 184's own now-
+incorrect Medusa tests), and `TestHandleBelezbarWarnsAboutPoisonedItem`/
+`TestHandleBelezbarWarnsAboutHazardousPath`/
+`TestHandleBelezbarReportsSafePath`/`TestHandleBelezbarNoSuchPath`. Ran
+the full `gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2`
+run) clean, and verified live via `go run ./cmd/hotm -level3grid`
+(Belezbar's Charm, Mantis, is grounded there by default): `BELEZBAR,
+NORTH` correctly said "There is no path north from here," and
+`BELEZBAR, EAST` correctly said "The way east is safe."
+
+**How to apply**: a correction can itself need a further correction -
+round 184's "blocks leaving" model was a real improvement over round
+183's original (entry-kills) reading, but still wasn't quite what the
+user meant; worth re-reading the user's own exact wording carefully
+rather than assuming the previous round's fix is the final word. A
+richly cross-referenced description spanning several already-used
+sources can still reveal a broader real ability than any single source
+alone had - worth treating "the same sources, combined" as potentially
+new information, not just a repeat of what's already known.
+
 ## Open next steps
+
+- **A "snake pit" hazard requiring a carried item to cross safely,
+  similar to Fire/Clasp, is unconfirmed** (round 185): the user
+  recalled Axil carrying something that "calmed" a snake-pit hazard
+  when crossing it, similar to Fire/Clasp - but this is the user's own
+  uncertain recollection ("also had something similar"), not a
+  concrete room/mechanic. `game.checkSnakeHydra` already models Snake
+  warding off a Hydra (round 145, drop-triggered, not a Fire-style
+  carried-item bypass), which may or may not be the same thing the user
+  is recalling. Worth a closer look (a fresh video pass, or a targeted
+  fetch of an already-used source) before implementing a new hazard
+  mechanic on an uncertain memory.
 
 - ~~A possible time limit or stricter validity check on a demon
   invocation isn't modeled~~ — **RESOLVED (round 184)**: implemented

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/magic"
+	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/world"
 )
 
 // demonPatienceLimit is how long (real time) a demon will wait, once
@@ -422,21 +423,96 @@ var belezbarDisguises = map[string]string{
 // ROUND 183: a failed Charm check now routes through
 // punishFailedInvoke - see astarotTeleport's own doc comment for why.
 //
-// ROUND 184: deliberately NOT wrapped in invokeWithPatience the way
-// Astarot/Magot/Asmodee now are - see that function's own doc comment.
-// Belezbar has no real "I don't recognize that" failure branch to
-// treat as nonsense (every object gets SOME real response), so
-// applying the same time/nonsense-count rule here would mean inventing
-// a new failure mode this project has no source for.
+// ROUND 185: the user supplied a fuller, real description of this
+// ability (cross-referencing the manual PDF, The CRPG Addict's blog,
+// and Hardcore Gaming 101 - see magic.Demons's own doc comment):
+// "reveals all deceit and identifies danger... tells you whether a
+// specific object or path... is hazardous or safe." This is genuinely
+// broader than the "reveals disguises" reading this project had before
+// - a named compass DIRECTION is now read as a "path" query
+// (belezbarPathWarning, checking this project's own already-modeled
+// real hazards on the room that way: Fire/Chasm/Water/a live Medusa),
+// and a named "poison"-flagged item now gets an honest hazard warning
+// too, alongside the existing disguise-reveal (still real, still valid
+// - unmasking a disguise IS "revealing deceit"). Now that this ability
+// has real, distinguishable worthy/nonsense outcomes (an unrecognized
+// direction with no real exit, or an object that's neither disguised,
+// hazardous, nor found anywhere), it's wrapped in invokeWithPatience
+// too - round 184's own note that Belezbar had "no failure branch to
+// hook into" no longer applies now that this fuller ability is
+// implemented.
 func (g *Game) belezbarReveal(object string) string {
 	const belezbarName, belezbarTitle, belezbarCharm = "Belezbar", "the Master of Flies", "Mantis"
+	d := magic.Demon{Name: belezbarName, Title: belezbarTitle, Charm: belezbarCharm}
 	if !g.roomHasItem(belezbarCharm) {
-		return g.punishFailedInvoke(magic.Demon{Name: belezbarName, Title: belezbarTitle, Charm: belezbarCharm})
+		return g.punishFailedInvoke(d)
+	}
+	if dir, ok := world.ParseDirection(object); ok {
+		msg, worthy := g.belezbarPathWarning(d, dir)
+		return g.invokeWithPatience(d, worthy, msg)
 	}
 	for disguised, real := range belezbarDisguises {
 		if strings.EqualFold(disguised, object) {
-			return fmt.Sprintf("You invoke %s, %s! %s is inscribed with the word %s.", belezbarName, belezbarTitle, disguised, real)
+			msg := fmt.Sprintf("You invoke %s, %s! %s is inscribed with the word %s.", belezbarName, belezbarTitle, disguised, real)
+			return g.invokeWithPatience(d, true, msg)
 		}
 	}
-	return fmt.Sprintf("You invoke %s, %s! The %s appears to be exactly what it seems.", belezbarName, belezbarTitle, object)
+	if strings.Contains(strings.ToLower(object), "poison") {
+		msg := fmt.Sprintf("You invoke %s, %s! The %s is hazardous - it will harm you if you touch it.", belezbarName, belezbarTitle, object)
+		return g.invokeWithPatience(d, true, msg)
+	}
+	for _, item := range g.Player.Items {
+		if strings.EqualFold(item, object) {
+			msg := fmt.Sprintf("You invoke %s, %s! The %s appears safe - exactly what it seems.", belezbarName, belezbarTitle, item)
+			return g.invokeWithPatience(d, true, msg)
+		}
+	}
+	for _, room := range g.World.Rooms {
+		for _, item := range room.Items {
+			if strings.EqualFold(item, object) {
+				msg := fmt.Sprintf("You invoke %s, %s! The %s appears safe - exactly what it seems.", belezbarName, belezbarTitle, item)
+				return g.invokeWithPatience(d, true, msg)
+			}
+		}
+	}
+	msg := fmt.Sprintf("You invoke %s, %s! %s senses no such object or path.", belezbarName, belezbarTitle, belezbarName)
+	return g.invokeWithPatience(d, false, msg)
+}
+
+// belezbarPathWarning implements the "path" half of belezbarReveal's
+// real ability (round 185): a named compass direction is checked
+// against the CURRENT room's real exit that way, reporting whether the
+// destination carries one of this project's own already-modeled real
+// hazards - Fire, Chasm, Water, or a live Medusa without a Mirror (the
+// exact instances the user named: "the chasm, the water and Medusa...
+// the fire also comes to mind"). Deliberately doesn't name the specific
+// item that resolves each hazard - the same "hint, not the solution"
+// convention fireHazardHint/monsterNearbyHint already use, just an
+// active, directed query instead of a passive LOOK-time one. worthy is
+// false only when no real exit exists that way at all - there's no
+// real path there to judge safe or hazardous.
+func (g *Game) belezbarPathWarning(d magic.Demon, dir world.Direction) (msg string, worthy bool) {
+	dirName := strings.ToLower(dir.String())
+	room := g.World.CurrentRoom()
+	var dest *world.Room
+	if room != nil {
+		if destID, ok := room.Exits[dir]; ok {
+			dest = g.World.Rooms[destID]
+		}
+	}
+	if dest == nil {
+		return fmt.Sprintf("You invoke %s, %s! There is no path %s from here.", d.Name, d.Title, dirName), false
+	}
+	switch {
+	case dest.Fire && !g.hasItem("Clasp"):
+		return fmt.Sprintf("You invoke %s, %s! The way %s is hazardous - flames block it.", d.Name, d.Title, dirName), true
+	case dest.Chasm && !g.hasItem("Flask"):
+		return fmt.Sprintf("You invoke %s, %s! The way %s is hazardous - a chasm lies beyond.", d.Name, d.Title, dirName), true
+	case dest.Monster == "Medusa" && dest.MonsterHealth > 0 && !g.hasItem("Mirror"):
+		return fmt.Sprintf("You invoke %s, %s! The way %s is hazardous - a deadly gaze waits there.", d.Name, d.Title, dirName), true
+	case dest.Water:
+		return fmt.Sprintf("You invoke %s, %s! The way %s is blocked by standing water.", d.Name, d.Title, dirName), true
+	default:
+		return fmt.Sprintf("You invoke %s, %s! The way %s is safe.", d.Name, d.Title, dirName), true
+	}
 }

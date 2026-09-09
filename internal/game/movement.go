@@ -52,18 +52,23 @@ func (g *Game) move(dir world.Direction) string {
 		if len(room.DoorPasswords) > 0 || room.TollItem != "" {
 			return "The door is locked. You'll need the right word or item."
 		}
-		// ROUND 184 refinement: the user clarified Medusa's exact death
-		// triggers precisely - entering her room without a Mirror
-		// (handled by the destination check below), or targeting her
-		// with BLAST (see blast's own doc comment). "Otherwise, she's
-		// just a blocker that isn't crossable" - once safely in her
-		// room (Mirror carried, no death), she still blocks LEAVING in
-		// any direction, the same "blocks until cleared" pattern as
-		// Water/Guards/locked doors above, cleared only by the real,
-		// already-confirmed Mirror mechanic (checkMirrorMedusa,
-		// triggered by dropping the Mirror here - round 178).
-		if room.Monster == "Medusa" && room.MonsterHealth > 0 {
-			return "Medusa blocks your way. Only the Mirror, laid before her, can end this."
+		// ROUND 185 correction: the user clarified more precisely than
+		// round 184 had it - Medusa does NOT kill on simple entry.
+		// Death only comes from trying to move PAST her (she blocks
+		// the room, so any move attempt from within it counts as
+		// "walking into her") without a Mirror, or from targeting her
+		// with BLAST (see blast's own doc comment). Carrying a Mirror
+		// is what makes moving past her safe - the same "carried item
+		// bypasses a hazard" pattern as Fire/Clasp (a standing
+		// condition, not a one-time trigger), not something that
+		// merely blocks until she's separately defeated.
+		// checkMirrorMedusa (dropping the Mirror here) remains a
+		// real, separate, sourced way to destroy her outright
+		// (round 178's "THE MIRROR DESTROYS MEDUSA"), after which
+		// MonsterHealth<=0 and this check no longer applies at all.
+		if room.Monster == "Medusa" && room.MonsterHealth > 0 && !g.hasItem("Mirror") {
+			g.Player.Stamina = 0
+			return "You try to move past Medusa and meet her gaze. You turn to stone. (GAME OVER)"
 		}
 		if destID, ok := room.Exits[dir]; ok {
 			if dest := g.World.Rooms[destID]; dest != nil {
@@ -79,29 +84,6 @@ func (g *Game) move(dir world.Direction) string {
 				if dest.Chasm && !g.hasItem("Flask") {
 					g.Player.Stamina = 0
 					return "There is no bridge without a Flask. You plunge into the chasm and die. (GAME OVER)"
-				}
-				// ROUND 183: same source, same session - "medusa...
-				// will outright kill Axil if he doesn't have the
-				// required items" (a Mirror - already real, sourced,
-				// placed at Trollwynd since round 177, and already the
-				// confirmed instant-kill item for a live Medusa via
-				// game.checkMirrorMedusa on DROP). This extends that
-				// same real fact to the moment of ENTERING a live
-				// Medusa's room, not just fighting her once there -
-				// consistent with the classic "turned to stone by her
-				// gaze" reading of the character, not invented flavor.
-				//
-				// ROUND 184 refinement: this is exactly (and only) one
-				// of Medusa's 2 real death triggers per the user's own
-				// clarification - the other is targeting her with BLAST
-				// (see blast's own doc comment), unconditional on the
-				// Mirror. Carrying a Mirror only makes ENTERING safe -
-				// it doesn't defeat her by itself; the "blocks leaving"
-				// check above still applies once inside until she's
-				// actually dealt with via checkMirrorMedusa.
-				if dest.Monster == "Medusa" && dest.MonsterHealth > 0 && !g.hasItem("Mirror") {
-					g.Player.Stamina = 0
-					return "Medusa's gaze meets yours. You turn to stone. (GAME OVER)"
 				}
 			}
 		}

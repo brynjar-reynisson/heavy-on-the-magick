@@ -81,15 +81,17 @@ func (g *Game) blast() string {
 	if room == nil || room.Monster == "" || room.MonsterHealth <= 0 {
 		return "You BLAST, but there's nothing here to hit."
 	}
-	// ROUND 184: the user clarified Medusa's exact death triggers
-	// precisely - entering her room without a Mirror (see move's own
-	// destination check) is one; targeting her directly with BLAST is
-	// the other, unconditional on whether a Mirror is carried (looking
-	// at her to aim the spell meets her gaze all the same). FREEZE
-	// isn't included - the user named BLAST specifically, and this
-	// project doesn't extend a stated rule past what was actually said.
-	// The real, sourced way to defeat her is still checkMirrorMedusa
-	// (dropping the Mirror in her room, round 178), not combat at all.
+	// ROUND 184/185: the user clarified Medusa's exact death triggers
+	// precisely - trying to walk past her without a Mirror (see move's
+	// own current-room check) is one; targeting her directly with BLAST
+	// is the other, unconditional on whether a Mirror is carried
+	// (looking at her to aim the spell meets her gaze all the same).
+	// Entering her room is never lethal by itself (round 185 correction
+	// - see move's own doc comment). FREEZE isn't included - the user
+	// named BLAST specifically, and this project doesn't extend a
+	// stated rule past what was actually said. The real, sourced way to
+	// defeat her is still checkMirrorMedusa (dropping the Mirror in her
+	// room, round 178), not combat at all.
 	if room.Monster == "Medusa" {
 		g.Player.Stamina = 0
 		return "You BLAST toward Medusa and meet her gaze. You turn to stone. (GAME OVER)"
