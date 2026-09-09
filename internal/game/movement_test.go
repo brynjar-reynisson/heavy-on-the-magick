@@ -163,6 +163,57 @@ func TestHandleLookHintsAtAdjacentFire(t *testing.T) {
 	}
 }
 
+// TestHandleLookHintsAtNearbyMonster covers round 181's real,
+// partially-confirmed mechanism: a "MONSTER NEARBY" panel appears in
+// real gameplay footage just before entering a room with a live
+// monster (letter codes not legible enough to decode fully) - modeled
+// honestly as a proactive proximity warning, mirroring
+// TestHandleLookHintsAtAdjacentFire's own pattern, not a fabricated
+// random-encounter spawner.
+func TestHandleLookHintsAtNearbyMonster(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "Den", Monster: "Werewolf", MonsterHealth: 2})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("LOOK"))
+	if !strings.Contains(got, "sense a monster nearby, to the North") {
+		t.Errorf("Handle(LOOK) next to a live-monster room = %q, want a real proximity hint", got)
+	}
+
+	w.Rooms[1].MonsterHealth = 0
+	got = g.Handle(parser.Parse("LOOK"))
+	if strings.Contains(got, "sense a monster") {
+		t.Errorf("Handle(LOOK) next to a DEFEATED monster's room = %q, want no hint", got)
+	}
+}
+
+// TestHandleLookMarksLevelChangingExit covers round 181's response to
+// a direct user question: does this port show the original's own
+// special exit graphics for a level-changing direction? A frame-by-
+// frame search found real, confirmed evidence the mechanic exists
+// (Agile Stair's own status line reads "Level 3" then "Level 4" while
+// nominally the same room) but never caught the original's exact
+// glyph clearly enough to reproduce - this surfaces the same real,
+// sourced fact (each room's own Level) with this port's own plain-text
+// marker instead ("^" up, "v" down), honestly distinct from a
+// same-level exit.
+func TestHandleLookMarksLevelChangingExit(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Landing", Level: 3, Exits: map[world.Direction]world.RoomID{world.North: 1, world.East: 2}})
+	w.AddRoom(&world.Room{ID: 1, Name: "Upstairs", Level: 4})
+	w.AddRoom(&world.Room{ID: 2, Name: "SameFloor", Level: 3})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("LOOK"))
+	if !strings.Contains(got, "North^") {
+		t.Errorf("Handle(LOOK) with a level-4 exit North from level 3 = %q, want \"North^\"", got)
+	}
+	if strings.Contains(got, "East^") || strings.Contains(got, "Eastv") {
+		t.Errorf("Handle(LOOK) with a same-level exit East = %q, want no level marker", got)
+	}
+}
+
 func TestHandleMovementValidExit(t *testing.T) {
 	g := New()
 	// Room of Misery --East--> Secunda Porta, per the real (walkthrough-

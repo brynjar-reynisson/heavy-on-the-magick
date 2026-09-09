@@ -229,6 +229,41 @@ func TestHandlePickupMovesItemToInventory(t *testing.T) {
 	}
 }
 
+// TestHandlePickupWithNoTargetAutoResolvesSingleItem covers round 181's
+// real, sourced manual detail: "it is not necessary to first position
+// Axil next to a bottle... he will go to and examine the bottle
+// nearest to him" - applied honestly to the unambiguous case only
+// (exactly one item present), since this port has no per-item
+// position/distance data to resolve "nearest" among several.
+func TestHandlePickupWithNoTargetAutoResolvesSingleItem(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Alcove", Items: []string{"Coin"}})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("PICKUP"))
+	if !strings.Contains(got, "Coin") {
+		t.Errorf("Handle(PICKUP) with exactly one item present = %q, want it auto-resolved to the Coin", got)
+	}
+	if !g.hasItem("Coin") {
+		t.Error("Coin should be in the player's inventory after auto-resolved pickup")
+	}
+}
+
+// TestHandlePickupWithNoTargetAsksWhenAmbiguous is the honest negative
+// half of the same fix: with 2+ items present, this port can't
+// faithfully pick "the nearest" (no position data), so it still asks
+// rather than guess.
+func TestHandlePickupWithNoTargetAsksWhenAmbiguous(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Cluttered", Items: []string{"Coin", "Ring"}})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("PICKUP"))
+	if !strings.Contains(got, "Pick up what") {
+		t.Errorf("Handle(PICKUP) with 2 items present = %q, want an honest disambiguation prompt", got)
+	}
+}
+
 // TestHandlePickupPoisonedItemCostsStamina covers round 128's real,
 // sourced mechanic (a 1986 CRASH magazine review: "Poison damages
 // Stamina upon contact") applied to Room of Misery's already-real

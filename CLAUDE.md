@@ -8760,8 +8760,145 @@ make the shared resource durable/retrievable (matching the source's
 own "put it on the table" wording more faithfully) rather than pick a
 winner or invent a duplicate.
 
+### Round 182: the rest of the user's question list - a real pickup auto-resolve, a monster-proximity hint, real level-change exit markers, and 2 honest, well-checked non-implementations
+
+Continued directly from round 181, working through the remaining 4
+items from the same user message.
+
+**HALT and multi-item disambiguation.** The manual's own confirmed
+grammar states Axil auto-walks to "the bottle nearest to him" without
+needing to be told which one when only one candidate exists. This
+port's `game.pickup` required an explicit target unconditionally -
+fixed: with no target and exactly one item in the room, it now
+auto-resolves and picks it up directly (the concrete, honestly-scoped
+half of the manual's mechanic - this port has no per-item position
+data to pick "the nearest of several," so with 2+ items it still asks
+"Pick up what?" rather than guess). HALT itself is left as its
+existing honest stub, with its doc comment now explaining precisely
+why: the manual's HALT behavior presumes a real-time animated walk
+with a position to interrupt mid-stride, and this port has neither
+(one instant command per `Handle` call, no sub-room position at all) -
+a genuine architectural difference from the original, not a bug a
+cosmetic HALT effect could paper over.
+
+**A real, if partially-confirmed, monster-proximity mechanism.**
+Re-examined the "MONSTER NEARBY" left-panel mode found in round 181's
+footage (distinct from the normal EXITS/status/inventory panels,
+appearing just before a room with a live monster is entered) - the
+exact letter codes shown weren't legible enough to decode with
+confidence. Rather than invent a random-encounter spawner no source
+confirms (every monster in this port is a real, sourced, static
+per-room placement - inventing dynamic respawning would fabricate a
+mechanic, not port one), implemented the confirmed, narrower half
+honestly: `game.monsterNearbyHint`, mirroring `fireHazardHint`'s own
+established LOOK-time pattern exactly - a proactive "You sense a
+monster nearby, to the <direction>" warning for an adjacent room with
+a live monster. Doesn't change whether/when a monster can be fought,
+only whether the player is warned before walking into it.
+
+**Real level-change exit markers.** 3 separate frame-by-frame searches
+(a 10-second pass, a 2-second pass, and one more targeted attempt this
+round) never caught the original's own special exit graphic for a
+level-changing direction clearly enough to reproduce it pixel-for-
+pixel, despite finding solid corroborating evidence the underlying
+mechanic is real (Agile Stair's own status line reads "Level 3" then
+"Level 4" while nominally the same room). Rather than leave the
+already-real, already-tracked `world.Room.Level` data unused,
+`game.exitList` now marks any exit whose destination is on a different
+Level with this port's own plain-text indicator ("^" up, "v" down) -
+the concept is real and sourced even though the exact original icon
+isn't reproduced. Verified live: Trollwynd (Level 3) correctly shows
+"North^" (Agile Stair, Level 4) and "Southv" (Sothic Complex, Level 2).
+
+**Ball/Pellet-without-swapping: investigated via 2 different methods,
+both genuine dead ends, honestly recorded as such.** The user asked
+specifically to check in SpecEmu. A live SpecEmu session was already
+running (loaded at Room of Misery) - attempted 4 different input-
+injection methods (SendInput scan codes, SendInput virtual-key codes,
+the F5 shortcut, and a precisely-mapped mouse click on the toolbar's
+own pause-toggle button) and confirmed none of them register at all
+(the emulator's own status bar stays at a static "0%" throughout,
+consistent with a genuinely frozen/paused CPU state that no injected
+input could unstick) - the same "input injection doesn't work in this
+environment" limitation this project has hit and documented several
+times before for `cmd/hotm-gui` testing, now confirmed for SpecEmu too.
+Fell back to re-checking the 2 already-known text sources with a
+sharper, more targeted question ("what happens if you skip the Ball
+swap?") plus a third, different source type (The CRPG Addict's blog,
+already productive for other mechanics in earlier rounds) - all 3 came
+back clean negatives; none describe any consequence for picking up the
+Pellet directly. This is now a well-checked dead end across both the
+requested method and its most promising fallback, not an unexplored
+gap - worth trying again only if either SpecEmu's input-injection issue
+gets resolved in a future session, or a genuinely different source
+turns up.
+
+**Shivering-cloak idle animation: investigated, honestly not
+implemented.** Checked whether this project's own already-extracted
+room art gives more than one real frame of Axil's own idle sprite to
+animate between - `graphics.RoomOfMiserySample()` does show him
+standing (confirmed, matches the live SpecEmu screenshot exactly), but
+no other extracted sample shows a second, distinct pose. Implementing
+a genuine 2-frame shivering animation would require either finding
+more real extracted frames of this specific animation (not yet done)
+or fabricating a second frame this port has no source for - the
+second would break this whole project's sourcing discipline, so it
+wasn't done. A real, honestly-documented graphics-fidelity gap, not
+silently dropped.
+
+Added `TestHandlePickupWithNoTargetAutoResolvesSingleItem`,
+`TestHandlePickupWithNoTargetAsksWhenAmbiguous`,
+`TestHandleLookHintsAtNearbyMonster`, and
+`TestHandleLookMarksLevelChangingExit`. Ran the full `gofmt`/`build`/
+`vet`/`test` suite (with a repeated `-count=2` run) clean throughout.
+
+**How to apply**: not every item on a user's question list resolves
+the same way - some (pickup auto-resolve, level-change markers) had
+clear, safely-scoped real fixes; one (monster proximity) had partial
+evidence honestly modeled as a narrower confirmed mechanic instead of
+the fuller thing asked about; two (Ball/Pellet, shivering animation)
+were genuinely investigated across multiple real methods and came back
+honest, well-checked negatives. Treating a live emulator as "just
+another source to check" is right in principle, but this session's
+own environment has a real, now twice-confirmed input-injection
+limitation (`cmd/hotm-gui` earlier, SpecEmu here) - worth checking
+early (a quick key-send-and-screenshot round-trip) before investing
+further in a live-automation plan that this specific environment can't
+support today.
+
 ## Open next steps
 
+- **Ball/Pellet-without-swapping's real consequence, if any, is still
+  unconfirmed** (round 182): checked in a live SpecEmu session (input
+  injection didn't register at all - a real, now twice-confirmed
+  environment limitation, see round 182's writeup) and via 3 different
+  text sources (World of Spectrum's instructions, the CASA walkthrough,
+  The CRPG Addict's blog) - all clean negatives. Worth another look only
+  if SpecEmu's input-injection issue is ever resolved in a future
+  session, or a genuinely different source (a magazine review not yet
+  checked, a different fan wiki) turns up.
+- **A genuine idle-animation gap: no second real frame of Axil's own
+  sprite has been extracted** (round 182): the user directly asked
+  about a "shivering cloak" idle animation the original apparently has.
+  `graphics.RoomOfMiserySample()` shows Axil's one real, confirmed
+  standing pose, but no other extracted sample shows a second, distinct
+  one to animate between - implementing a genuine 2-frame animation
+  needs either finding more real frames (not yet attempted - would mean
+  hunting `heavymap-speccy-screenshots.png` or a fresh gameplay video
+  for a moment where this animation is visible in 2+ consecutive
+  frames) or accepting a non-source-based animation as this port's own
+  invented touch, which breaks the project's sourcing discipline
+  without the user's explicit sign-off.
+- **The exact original "level-changing exit" graphic hasn't been
+  found** (round 182): 3 separate frame-by-frame searches across 2
+  sampling rates confirmed the underlying mechanic is real (Agile
+  Stair's status line reads "Level 3" then "Level 4" while nominally
+  the same room) but never caught the actual glyph. This port's own
+  `game.exitList` now surfaces the same real, sourced Level data with
+  its own plain-text marker ("^"/"v") as an honest stand-in - worth
+  revisiting with a fresh, even finer-grained video pass (or the
+  screenshot atlas's own room-transition frames) if the exact original
+  icon ever needs to be reproduced pixel-for-pixel.
 - ~~Quadra Porta's real Philosophus promotion isn't wired yet~~ —
   **RESOLVED (round 180)**: the finer, 2-second-interval pass found the
   real password too ("SOROMOROS" on screen, almost certainly the

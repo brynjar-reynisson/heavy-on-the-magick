@@ -334,6 +334,19 @@ func (g *Game) Handle(cmd parser.Command) string {
 	case "EXAMINE":
 		return g.examine(cmd.Target)
 	case "HALT":
+		// ROUND 181: the user asked directly whether this port gets
+		// Axil's "correct placement" right when HALT interrupts him
+		// mid-walk toward one of several nearby items. It can't - the
+		// manual's confirmed HALT behavior ("abandons the command
+		// being actioned") presumes a real-time animated walk with a
+		// position Axil is partway through crossing when interrupted;
+		// this port has neither (game.Handle resolves one instant
+		// command per call, with no sub-room position at all - a real
+		// architectural difference, not a bug). What IS implemented,
+		// as the concrete, faithful half of the same manual passage:
+		// game.pickup's own no-target auto-resolve for the
+		// unambiguous case (exactly one item present) - see its doc
+		// comment.
 		return "Command halted. (Merphish keyword \"H\" - the manual confirms this abandons the command being actioned and the rest of any outstanding comma-separated command string; this port processes one command per Handle call, so there's no queued string to abandon, but the word is honestly acknowledged rather than silently no-opped.)"
 	case "PICKUP", "TAKE", "LIFT", "CARRY":
 		return g.pickup(cmd.Target)

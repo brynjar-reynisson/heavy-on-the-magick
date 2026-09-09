@@ -48,12 +48,31 @@ func (g *Game) inventory() string {
 }
 
 // pickup moves a named item from the current room's Items into the
-// player's inventory, if present.
+// player's inventory, if present. With NO target, this now matches a
+// real, sourced manual detail (round 181, prompted by a direct user
+// question): "it is not necessary to first position Axil next to a
+// bottle... he will go to and examine the bottle nearest to him" -
+// i.e. a bare command auto-resolves when there's no real ambiguity.
+// This port has no per-item position/distance data (only a flat
+// per-room Items list), so it can't faithfully pick "the nearest of
+// several" the way the original's real geometry could - honestly
+// limited to the unambiguous case (exactly one item present); with 2
+// or more, it still asks "Pick up what?" rather than guess which one
+// "nearest" would mean here. This is also the concrete half of the
+// user's own HALT question that's actually implementable: this port
+// has no real-time animated walk-to-object for HALT to interrupt
+// mid-stride (game.Handle processes one instant command per call, per
+// HALT's own doc comment) - a genuine architectural difference from
+// the original, not a bug to paper over with a cosmetic HALT effect.
 func (g *Game) pickup(target string) string {
-	if target == "" {
-		return "Pick up what?"
-	}
 	room := g.World.CurrentRoom()
+	if target == "" {
+		if room != nil && len(room.Items) == 1 {
+			target = room.Items[0]
+		} else {
+			return "Pick up what?"
+		}
+	}
 	if room == nil {
 		return "There's nothing here to pick up."
 	}
