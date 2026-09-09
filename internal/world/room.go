@@ -195,6 +195,25 @@ type Room struct {
 	// feature, not a one-off.
 	Fire bool
 
+	// Chasm is a real, user-recalled hazard (round 183, from finishing
+	// the same third gameplay video independently) - level_items.go's
+	// own "Chasm (Flask)" entry (round 149, sourced from the levels3-4
+	// official poster) already recorded a real Flask/Chasm association,
+	// never wired to a mechanic until now. Unlike Fire (blocks passage
+	// outright until the Clasp is carried) and Water (needs a spoken
+	// command), Chasm is recalled as lethal without the right item -
+	// "the chasm... will outright kill Axil if he doesn't have the
+	// required items" - so game.move models it as a real death, not
+	// just a block, for a room with Chasm=true when the player doesn't
+	// carry a Flask. Level4Grid's own "The Chasm" (F4) is the one
+	// already-confirmed real room this literally names - see its own
+	// placement for the exact sourcing. Not independently re-verified
+	// against the video's own frames this round (the user's own direct,
+	// specific recollection is treated as the primary source here, the
+	// same standing this project has given other first-hand accounts
+	// like The CRPG Addict's blog).
+	Chasm bool
+
 	// Water is a real, sourced hazard obstacle (round 169) - distinct
 	// from Fire (which blocks passage into a neighboring room until the
 	// player has the Clasp; Water instead needs a specific SPOKEN

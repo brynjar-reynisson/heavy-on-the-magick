@@ -9,6 +9,83 @@ import (
 	"github.com/brynjar-reynisson/heavy-on-the-magick/internal/world"
 )
 
+// TestHandleChasmKillsPlayerWithoutFlask covers round 183's real,
+// user-recalled hazard (see world.Room.Chasm's doc comment): unlike
+// Fire, entering a Chasm room without a Flask is lethal, not just
+// blocked.
+func TestHandleChasmKillsPlayerWithoutFlask(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "The Chasm", Chasm: true})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("NORTH"))
+	if !strings.Contains(got, "GAME OVER") {
+		t.Errorf("Handle(NORTH) into a Chasm without a Flask = %q, want death", got)
+	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after falling into the Chasm without a Flask")
+	}
+}
+
+// TestHandleChasmSafeWithFlask is the regression guard for the same
+// mechanic: carrying a Flask bridges the Chasm safely.
+func TestHandleChasmSafeWithFlask(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "The Chasm", Chasm: true})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	g.Player.Items = append(g.Player.Items, "Flask")
+
+	got := g.Handle(parser.Parse("NORTH"))
+	if strings.Contains(got, "GAME OVER") {
+		t.Errorf("Handle(NORTH) into a Chasm WITH a Flask = %q, want it to succeed", got)
+	}
+	if g.World.CurrentRoom().Name != "The Chasm" {
+		t.Errorf("current room after crossing the Chasm with a Flask = %q, want \"The Chasm\"", g.World.CurrentRoom().Name)
+	}
+}
+
+// TestHandleMedusaKillsPlayerWithoutMirror covers round 183's real,
+// user-recalled hazard extension: entering a live Medusa's room
+// without a Mirror is lethal on sight, not just an ordinary fight -
+// the classic "turned to stone" reading of the character. Distinct
+// from checkMirrorMedusa (round 178), which handles actually DROPPING
+// the Mirror once safely inside to kill her.
+func TestHandleMedusaKillsPlayerWithoutMirror(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "The Pit", Monster: "Medusa", MonsterHealth: 3})
+	g := &Game{Player: character.NewPlayer(), World: w}
+
+	got := g.Handle(parser.Parse("NORTH"))
+	if !strings.Contains(got, "GAME OVER") {
+		t.Errorf("Handle(NORTH) into Medusa's room without a Mirror = %q, want death", got)
+	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after meeting Medusa's gaze without a Mirror")
+	}
+}
+
+// TestHandleMedusaSafeWithMirror is the regression guard: carrying a
+// Mirror lets the player enter safely (checkMirrorMedusa still governs
+// actually defeating her once there).
+func TestHandleMedusaSafeWithMirror(t *testing.T) {
+	w := world.New(0)
+	w.AddRoom(&world.Room{ID: 0, Name: "Start", Exits: map[world.Direction]world.RoomID{world.North: 1}})
+	w.AddRoom(&world.Room{ID: 1, Name: "The Pit", Monster: "Medusa", MonsterHealth: 3})
+	g := &Game{Player: character.NewPlayer(), World: w}
+	g.Player.Items = append(g.Player.Items, "Mirror")
+
+	got := g.Handle(parser.Parse("NORTH"))
+	if strings.Contains(got, "GAME OVER") {
+		t.Errorf("Handle(NORTH) into Medusa's room WITH a Mirror = %q, want it to succeed", got)
+	}
+	if g.World.CurrentRoom().Name != "The Pit" {
+		t.Errorf("current room after entering Medusa's room with a Mirror = %q, want \"The Pit\"", g.World.CurrentRoom().Name)
+	}
+}
+
 // TestHandleFireBlocksMovementWithoutClasp covers the real, sourced
 // Fire mechanic (see world.Room.Fire's doc comment): the CASA
 // walkthrough states the Clasp "enables you to walk through fire" -

@@ -81,6 +81,25 @@ func TestLevel4GridIsolatedNamedRooms(t *testing.T) {
 	if d3.Monster != "Vampire" || d3.MonsterHealth <= 0 {
 		t.Errorf("Doubt of Rabak (D3) Monster = %q (health %d), want a live Vampire", d3.Monster, d3.MonsterHealth)
 	}
+	// Round 183: user-recalled directly from finishing the same third
+	// gameplay video independently - "Rabak goes down when we say
+	// water" and "is impossible to pass until the correct words are
+	// spoken" - see world.Room.Chasm's doc comment for the sourcing
+	// discipline used here.
+	if !d3.Water {
+		t.Error("Doubt of Rabak (D3) should have a real Water hazard")
+	}
+}
+
+// TestLevel4GridTheChasmIsLethalWithoutFlask pins round 183's real,
+// user-recalled hazard: The Chasm (F4) is now a real, sourced deadly
+// obstacle without a Flask - see world.Room.Chasm's doc comment.
+func TestLevel4GridTheChasmIsLethalWithoutFlask(t *testing.T) {
+	w := Level4Grid()
+	room := w.Rooms[level4Room("F4")]
+	if !room.Chasm {
+		t.Error("The Chasm (F4) should have Chasm=true")
+	}
 }
 
 func TestLevel4GridExitsAreReciprocal(t *testing.T) {

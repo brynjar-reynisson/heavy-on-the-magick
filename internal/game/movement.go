@@ -53,8 +53,34 @@ func (g *Game) move(dir world.Direction) string {
 			return "The door is locked. You'll need the right word or item."
 		}
 		if destID, ok := room.Exits[dir]; ok {
-			if dest := g.World.Rooms[destID]; dest != nil && dest.Fire && !g.hasItem("Clasp") {
-				return "Flames block your way. You'd need something to protect you from the fire."
+			if dest := g.World.Rooms[destID]; dest != nil {
+				if dest.Fire && !g.hasItem("Clasp") {
+					return "Flames block your way. You'd need something to protect you from the fire."
+				}
+				// ROUND 183: user-recalled directly from finishing the
+				// same third gameplay video ("the chasm... will
+				// outright kill Axil if he doesn't have the required
+				// items") - see world.Room.Chasm's doc comment. Unlike
+				// Fire, this is lethal, not just blocking - a real,
+				// harsher hazard class this port hadn't modeled before.
+				if dest.Chasm && !g.hasItem("Flask") {
+					g.Player.Stamina = 0
+					return "There is no bridge without a Flask. You plunge into the chasm and die. (GAME OVER)"
+				}
+				// ROUND 183: same source, same session - "medusa...
+				// will outright kill Axil if he doesn't have the
+				// required items" (a Mirror - already real, sourced,
+				// placed at Trollwynd since round 177, and already the
+				// confirmed instant-kill item for a live Medusa via
+				// game.checkMirrorMedusa on DROP). This extends that
+				// same real fact to the moment of ENTERING a live
+				// Medusa's room, not just fighting her once there -
+				// consistent with the classic "turned to stone by her
+				// gaze" reading of the character, not invented flavor.
+				if dest.Monster == "Medusa" && dest.MonsterHealth > 0 && !g.hasItem("Mirror") {
+					g.Player.Stamina = 0
+					return "Medusa's gaze meets yours. You turn to stone. (GAME OVER)"
+				}
 			}
 		}
 	}

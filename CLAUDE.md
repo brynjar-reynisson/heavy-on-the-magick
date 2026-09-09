@@ -8866,8 +8866,118 @@ early (a quick key-send-and-screenshot round-trip) before investing
 further in a live-automation plan that this specific environment can't
 support today.
 
+### Round 183: the user finished the third video independently - 2 new lethal hazards, a real Rabak/Water placement, Asmodee opening doors, and a significant correction to how ALL 4 demons punish a failed invocation
+
+The user finished watching the same third gameplay video on their own
+and asked about 4 specific things they recalled, explicitly flagging
+that Medusa and the Chasm are LETHAL without the right item, and that
+Rabak is genuinely impassable (not just difficult) until the right
+words are spoken. None of this was independently re-verified against
+the video's own frames this round - the user's own direct, specific
+recollection (confirmed live in SpecEmu for the Asmodee case - see
+below) is treated as the primary source, the same standing this
+project has given other first-hand accounts (The CRPG Addict's blog).
+
+1. **Medusa is now lethal on sight without a Mirror.** Round 178's
+   `checkMirrorMedusa` already handles actually killing Medusa once
+   safely in her room (by dropping the Mirror there), but entering her
+   room WITHOUT one previously had no special consequence at all - just
+   an ordinary monster encounter. `game.move` now kills the player
+   outright when entering a room with a live Medusa without a Mirror
+   ("Medusa's gaze meets yours. You turn to stone.") - the classic
+   Gorgon reading of the character, not invented flavor. Carrying a
+   Mirror is still just safe passage; `checkMirrorMedusa` still governs
+   actually defeating her once there.
+
+2. **A new lethal hazard: The Chasm, without a Flask.** `level_items.go`'s
+   own "Chasm (Flask)" entry (round 149, sourced from the official
+   levels3-4 poster) had sat as real, unwired data for many rounds.
+   Added `world.Room.Chasm` and a `game.move` check: entering a Chasm
+   room without a Flask is fatal ("There is no bridge without a Flask.
+   You plunge into the chasm and die."), unlike Fire (which just blocks
+   passage) - a genuinely harsher hazard class this port hadn't modeled
+   before. Set on Level4Grid's own already-real "The Chasm" (F4).
+
+3. **Doubt of Rabak gets a real Water hazard.** "Rabak goes down when we
+   say water" and "is impossible to pass until the correct words are
+   spoken" maps directly onto `game.passWater`'s own already-real
+   "WATER, FALL" mechanic (round 169) and round 181's fix making Water
+   actually block movement - just a second real placement beyond
+   Level3Grid's own confirmed "Water" cell. Added to Level4Grid's D3
+   ("Doubt of Rabak", already real, already carrying a Vampire).
+
+4. **Asmodee can destroy a locked door.** Matches round 180's own
+   earlier frame ("ASMODEE, DOOR... ASMODEE DESTROYS... THE DOOR TO THE
+   TOMB"). A locked door is a structural room fact (DoorPasswords/
+   TollItem/Guards), not a named Item the existing generic search would
+   ever find - `asmodeeDestroy` now special-cases "DOOR", clearing
+   whatever real lock is on the current room.
+
+5. **A significant correction, confirmed live: ALL 4 demons kill Axil
+   on a failed invocation, not just a harmless rejection.** The user
+   first flagged this for Asmodee specifically, then generalized to all
+   4, then confirmed it live in their own SpecEmu session mid-round:
+   "I just invoked Asmodee in SpecEmu and he sent Axil to the furnace
+   when he didn't say anything worthy soon enough." Round 126 had
+   already modeled this exact punishment (teleport to the real Furnace
+   Room) - but only for BARE `INVOKE <demon>` with no Charm at all; the
+   4 real "DEMON, <object>" conversation-form commands
+   (astarotTeleport/magotLocate/asmodeeDestroy/belezbarReveal) each had
+   their OWN separate, harmless rejection/hint messages instead,
+   including a distinct "you're carrying it but haven't grounded it"
+   hint that never triggered any punishment at all. All 4 now route a
+   failed Charm check through the SAME `punishFailedInvoke` used by
+   bare INVOKE - and `punishFailedInvoke` itself now confirms real
+   death, not just banishment: reaching the Furnace Room kills the
+   player ("You die horribly!"), matching the user's own words exactly.
+   This covers BOTH failure shapes identically (no Charm at all, and
+   carrying it without grounding it) - the message wording still
+   distinguishes the two cases, but the outcome is now the same lethal
+   one either way. Worlds without a real Furnace Room (Level2-4Grid)
+   still fall back to the non-lethal rejection - an honest scope limit,
+   not a fabricated destination for a room that doesn't exist there.
+
+The user also mentioned, in passing, that the failure they hit was
+described as not naming something "worthy... soon enough" - a possible
+hint at either a stricter validity check on the invoked object or a
+genuine time limit within a single ritual. Neither is modeled this
+round (this port's `Handle` processes one instant command per call,
+the same architectural gap already named for HALT in round 182) -
+recorded honestly as an open question rather than guessed at.
+
+Added `TestHandleMedusaKillsPlayerWithoutMirror`/
+`TestHandleMedusaSafeWithMirror`, `TestHandleChasmKillsPlayerWithoutFlask`/
+`TestHandleChasmSafeWithFlask`, `TestLevel4GridTheChasmIsLethalWithoutFlask`,
+the Water assertion added to `TestLevel4GridIsolatedNamedRooms`,
+`TestHandleAsmodeeDestroysLockedDoor`/`TestHandleAsmodeeDestroyDoorWithNoLock`,
+and updated `TestHandleInvokeCarriedNotDroppedCharmFails` plus all 4
+`TestHandle*Requires*` demon tests to check real death. Ran the full
+`gofmt`/`build`/`vet`/`test` suite (with a repeated `-count=2` run)
+clean, and verified live: `INVOKE ASMODEE` with no Erlstone correctly
+ends in "You die horribly! (GAME OVER)" in the real Furnace Room.
+
+**How to apply**: a user who independently plays or watches through a
+game is a legitimate primary source, same standing as a published
+walkthrough or review - worth implementing directly rather than
+insisting on independent re-verification of every detail, especially
+when they can (and did, mid-round) confirm a mechanic live in a real
+emulator themselves. When a "requires X" gate has 2 real failure
+sub-cases (missing entirely vs. present-but-wrong-state), don't assume
+they need different SEVERITY just because they need different WORDING
+- check whether the source actually treats them the same way before
+building two different consequence paths.
+
 ## Open next steps
 
+- **A possible time limit or stricter validity check on a demon
+  invocation isn't modeled** (round 183): the user's own description
+  of the Asmodee failure they hit live in SpecEmu - not naming
+  something "worthy... soon enough" - hints at either a real per-
+  ritual time limit or a stricter check on what counts as a valid
+  object, neither of which this port's one-instant-command-per-call
+  architecture currently models (the same gap already named for HALT,
+  round 182). Worth a closer look if a source ever describes this
+  precisely enough to implement without guessing.
 - **Ball/Pellet-without-swapping's real consequence, if any, is still
   unconfirmed** (round 182): checked in a live SpecEmu session (input
   injection didn't register at all - a real, now twice-confirmed

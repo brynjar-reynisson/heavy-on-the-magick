@@ -25,18 +25,23 @@ func TestHandleInvokeSucceedsWithCharm(t *testing.T) {
 }
 
 // TestHandleInvokeCarriedNotDroppedCharmFails pins the other half of
-// round 131's correction: merely CARRYING the Charm isn't enough, and
-// gets a distinct, honest hint (not the furnace-room punishment, which
-// is reserved for not having the Charm at all).
+// round 131's correction: merely CARRYING the Charm isn't enough.
+// ROUND 183 correction: this used to get a distinct, harmless hint
+// instead of the furnace-room punishment - the user, having
+// independently finished the same third gameplay video AND confirmed
+// it live in SpecEmu, established that carrying-not-grounded fails the
+// exact same lethal way as having no Charm at all. The message wording
+// still distinguishes the 2 cases (see punishFailedInvoke), but both
+// now lead to the same real furnace-room death.
 func TestHandleInvokeCarriedNotDroppedCharmFails(t *testing.T) {
 	g := New()
 	g.Player.Items = append(g.Player.Items, "Sunflower")
 	got := g.Handle(parser.Parse("I MAGOT"))
-	if !strings.Contains(got, "place it on the ground") {
-		t.Errorf("Handle(I MAGOT) with Sunflower only carried = %q, want a place-it-on-the-ground hint", got)
+	if !strings.Contains(got, "must be on the ground") {
+		t.Errorf("Handle(I MAGOT) with Sunflower only carried = %q, want the carrying-specific hint", got)
 	}
-	if strings.Contains(got, "furnace room") {
-		t.Errorf("Handle(I MAGOT) with the Charm carried (not dropped) = %q, want it to NOT trigger the no-Charm-at-all punishment", got)
+	if !strings.Contains(got, "furnace room") {
+		t.Errorf("Handle(I MAGOT) with the Charm carried (not dropped) = %q, want the same real furnace-room punishment as having no Charm at all", got)
 	}
 }
 
@@ -45,8 +50,11 @@ func TestHandleInvokeCarriedNotDroppedCharmFails(t *testing.T) {
 // playthrough account, the same source round 125 used to resolve
 // CALL's effect): invoking a demon without its Charm doesn't just
 // reject the command, it actually teleports the player to the real
-// Furnace Room. Verifies both the message and the actual World state
-// change, not just text.
+// Furnace Room. Round 183: the user independently finished the same
+// third gameplay video and separately confirmed live in SpecEmu that
+// this is actually lethal - "sends Axil to the furnace room, where he
+// dies horribly" - so this now also checks real death, not just the
+// teleport.
 func TestHandleInvokeWithoutCharmTeleportsToFurnaceRoom(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("I MAGOT")) // no Sunflower carried
@@ -56,13 +64,26 @@ func TestHandleInvokeWithoutCharmTeleportsToFurnaceRoom(t *testing.T) {
 	if room := g.World.CurrentRoom(); room == nil || room.Name != "Furnace Room" {
 		t.Errorf("current room after a failed INVOKE = %+v, want Furnace Room", room)
 	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after being flung into the Furnace Room")
+	}
+	if !strings.Contains(got, "die horribly") {
+		t.Errorf("Handle(I MAGOT) with no Charm = %q, want the real death message", got)
+	}
 }
 
+// TestHandleAstarotTeleportRequiresSword covers round 183's correction:
+// a failed Charm check now kills the player via the same real furnace-
+// room punishment as bare INVOKE (see punishFailedInvoke's doc
+// comment), not a harmless rejection.
 func TestHandleAstarotTeleportRequiresSword(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("ASTAROT, WOLFDORP"))
 	if !strings.Contains(got, "no suitable Talisman") {
 		t.Errorf("Handle(ASTAROT, WOLFDORP) with no Sword carried = %q, want a Talisman rejection", got)
+	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after a failed ASTAROT invocation with no Charm")
 	}
 }
 
@@ -106,11 +127,16 @@ func TestHandleAstarotTeleportUnknownLocation(t *testing.T) {
 	}
 }
 
+// TestHandleMagotLocateRequiresSunflower covers round 183's correction
+// - see TestHandleAstarotTeleportRequiresSword's doc comment.
 func TestHandleMagotLocateRequiresSunflower(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("MAGOT, GRIMOIRE"))
 	if !strings.Contains(got, "no suitable Talisman") {
 		t.Errorf("Handle(MAGOT, GRIMOIRE) with no Sunflower carried = %q, want a Talisman rejection", got)
+	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after a failed MAGOT invocation with no Charm")
 	}
 }
 
@@ -212,11 +238,17 @@ func TestHandleInvokeUnknownDemon(t *testing.T) {
 // sourced ability (Hardcore Gaming 101: "Asmodee destroys any object
 // you ask of him") - the same Charm-on-the-ground gating already
 // established for Astarot/Magot.
+// TestHandleAsmodeeDestroyRequiresErlstone covers round 183's
+// correction - see TestHandleAstarotTeleportRequiresSword's doc
+// comment. Also independently confirmed live in SpecEmu by the user.
 func TestHandleAsmodeeDestroyRequiresErlstone(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("ASMODEE, GRIMOIRE"))
 	if !strings.Contains(got, "no suitable Talisman") {
 		t.Errorf("Handle(ASMODEE, GRIMOIRE) with no Erlstone carried = %q, want a Talisman rejection", got)
+	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after a failed ASMODEE invocation with no Charm")
 	}
 }
 
@@ -264,14 +296,50 @@ func TestHandleAsmodeeDestroyUnknownObject(t *testing.T) {
 	}
 }
 
+// TestHandleAsmodeeDestroysLockedDoor covers round 183's real, user-
+// recalled ability (see asmodeeDestroy's own doc comment): "ASMODEE,
+// DOOR" clears a real locked-door obstacle on the current room -
+// DoorPasswords, TollItem, and Guards are all structural room facts,
+// not named Items the generic search would ever find.
+func TestHandleAsmodeeDestroysLockedDoor(t *testing.T) {
+	g := New()
+	room := g.World.CurrentRoom()
+	room.Items = append(room.Items, "Erlstone")
+	room.DoorPasswords = []string{"SILENCE"}
+
+	got := g.Handle(parser.Parse("ASMODEE, DOOR"))
+	if !strings.Contains(got, "door crumbles") {
+		t.Errorf("Handle(ASMODEE, DOOR) with a real locked door = %q, want it destroyed", got)
+	}
+	if len(room.DoorPasswords) > 0 {
+		t.Error("DoorPasswords should be cleared after ASMODEE, DOOR destroys the lock")
+	}
+}
+
+// TestHandleAsmodeeDestroyDoorWithNoLock is the honest negative: no
+// real lock on the current room means nothing to destroy.
+func TestHandleAsmodeeDestroyDoorWithNoLock(t *testing.T) {
+	g := New()
+	g.World.CurrentRoom().Items = append(g.World.CurrentRoom().Items, "Erlstone")
+	got := g.Handle(parser.Parse("ASMODEE, DOOR"))
+	if !strings.Contains(got, "no such object") {
+		t.Errorf("Handle(ASMODEE, DOOR) with no real lock present = %q, want an honest not-found response", got)
+	}
+}
+
 // TestHandleBelezbarRevealRequiresMantis covers round 164's real
 // ability (completing all 4 demons - Astarot/Magot/Asmodee already had
 // one) - the same Charm-on-the-ground gating as the other 3.
+// TestHandleBelezbarRevealRequiresMantis covers round 183's correction
+// - see TestHandleAstarotTeleportRequiresSword's doc comment.
 func TestHandleBelezbarRevealRequiresMantis(t *testing.T) {
 	g := New()
 	got := g.Handle(parser.Parse("BELEZBAR, PEBBLE"))
 	if !strings.Contains(got, "no suitable Talisman") {
 		t.Errorf("Handle(BELEZBAR, PEBBLE) with no Mantis carried = %q, want a Talisman rejection", got)
+	}
+	if !g.Player.IsDead() {
+		t.Error("Player should be dead after a failed BELEZBAR invocation with no Charm")
 	}
 }
 

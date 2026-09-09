@@ -48,9 +48,6 @@ func (g *Game) invoke(target string) string {
 			continue
 		}
 		if !g.roomHasItem(d.Charm) {
-			if g.hasItem(d.Charm) {
-				return fmt.Sprintf("You are carrying the %s, but that isn't enough - place it on the ground and stand back before you invoke %s.", d.Charm, d.Name)
-			}
 			return g.punishFailedInvoke(d)
 		}
 		if d.Ability != "" {
@@ -61,22 +58,47 @@ func (g *Game) invoke(target string) string {
 	return "There is no demon by that name."
 }
 
-// punishFailedInvoke handles invoking a demon without its Charm - a
-// real, confirmed punishment, not just a rejection message. The CRPG
-// Addict's first-hand playthrough account (the same source that
-// confirmed CALL's effect, round 125): "When you INVOKE them, you have
-// to be holding their particular talisman--found within the
-// dungeon--or they send you to a furnace room with no exits." If the
-// active World has a real Furnace Room (world.CollodonsPile does,
-// added round 126; so does world.Level1Grid, independently, as its
-// own isolated A8 cell), the player is genuinely teleported there,
-// same mechanism as game.astarotTeleport. Worlds without one (Level2-
-// 4Grid) fall back to the plain rejection message rather than fail -
-// an honest scope limit, not a fabricated destination.
+// punishFailedInvoke handles invoking a demon without its Charm
+// properly in place - a real, confirmed punishment, not just a
+// rejection message. The CRPG Addict's first-hand playthrough account
+// (the same source that confirmed CALL's effect, round 125): "When you
+// INVOKE them, you have to be holding their particular talisman--found
+// within the dungeon--or they send you to a furnace room with no
+// exits." If the active World has a real Furnace Room
+// (world.CollodonsPile does, added round 126; so does world.Level1Grid,
+// independently, as its own isolated A8 cell), the player is genuinely
+// teleported there, same mechanism as game.astarotTeleport. Worlds
+// without one (Level2-4Grid) fall back to the plain rejection message
+// rather than fail - an honest scope limit, not a fabricated
+// destination.
+//
+// ROUND 183 correction: the user, having independently finished the
+// same third gameplay video, recalled that a failed invocation isn't
+// just a banishment - "sends Axil to the furnace room, where he dies
+// horribly" (the video itself never shows this, since walkthrough
+// footage only shows success paths). Death is now real, tied to
+// actually REACHING the furnace room - if the active World has none
+// (the honest scope limit above), there's no confirmed mechanism for
+// death either, so the plain rejection message stays non-lethal. This
+// now covers BOTH real failure shapes uniformly: having no Charm at
+// all, and carrying it without grounding it (round 131's own "must be
+// on the ground, not merely carried" correction) - the user separately
+// confirmed the OTHER 3 demons kill Axil the same way for either case,
+// not just Asmodee. carrying distinguishes the message's own wording
+// (still accurate either way) without changing the outcome.
 func (g *Game) punishFailedInvoke(d magic.Demon) string {
-	msg := fmt.Sprintf("You begin the ritual to invoke %s, %s... but you have no suitable Talisman (a %s). The ritual backfires!", d.Name, d.Title, d.Charm)
+	carrying := g.hasItem(d.Charm)
+	var msg string
+	if carrying {
+		msg = fmt.Sprintf("You begin the ritual to invoke %s, %s... but the %s must be on the ground, not in your hand. The ritual backfires!", d.Name, d.Title, d.Charm)
+	} else {
+		msg = fmt.Sprintf("You begin the ritual to invoke %s, %s... but you have no suitable Talisman (a %s). The ritual backfires!", d.Name, d.Title, d.Charm)
+	}
 	if id, ok := g.World.FindRoomByName("Furnace Room"); ok {
 		g.World.Teleport(id)
+		g.Player.Stamina = 0
+		msg += " You are flung into a furnace room with no exits. You die horribly! (GAME OVER)"
+	} else {
 		msg += " You are flung into a furnace room with no exits."
 	}
 	return msg
@@ -97,13 +119,16 @@ func (g *Game) punishFailedInvoke(d magic.Demon) string {
 // is a real, already-shipped CollodonsPile room), so this only reaches
 // places that genuinely exist in whichever world is active - no
 // fabricated destinations.
+//
+// ROUND 183: a failed Charm check now routes through
+// punishFailedInvoke - same real, lethal furnace-room punishment as
+// bare INVOKE, per the user's own direct recollection (see
+// punishFailedInvoke's doc comment) - replacing this port's own
+// earlier, harmless rejection/hint messages.
 func (g *Game) astarotTeleport(location string) string {
 	const astarotName, astarotTitle, astarotCharm = "Astarot", "the Spirit of Assemblage", "Sword"
 	if !g.roomHasItem(astarotCharm) {
-		if g.hasItem(astarotCharm) {
-			return fmt.Sprintf("You are carrying the %s, but that isn't enough - place it on the ground and stand back before you invoke %s.", astarotCharm, astarotName)
-		}
-		return fmt.Sprintf("You call out to %s, %s... but you have no suitable Talisman (a %s).", astarotName, astarotTitle, astarotCharm)
+		return g.punishFailedInvoke(magic.Demon{Name: astarotName, Title: astarotTitle, Charm: astarotCharm})
 	}
 	id, ok := g.World.FindRoomByName(location)
 	if !ok {
@@ -146,13 +171,13 @@ func (g *Game) astarotTeleport(location string) string {
 // Echoes the item's real stored casing in both branches, not the
 // player's raw uppercased typed target - the same casing-honesty fix
 // already applied once before to examine().
+//
+// ROUND 183: a failed Charm check now routes through
+// punishFailedInvoke - see astarotTeleport's own doc comment for why.
 func (g *Game) magotLocate(object string) string {
 	const magotName, magotTitle, magotCharm = "Magot", "the Diviner", "Sunflower"
 	if !g.roomHasItem(magotCharm) {
-		if g.hasItem(magotCharm) {
-			return fmt.Sprintf("You are carrying the %s, but that isn't enough - place it on the ground and stand back before you invoke %s.", magotCharm, magotName)
-		}
-		return fmt.Sprintf("You call out to %s, %s... but you have no suitable Talisman (a %s).", magotName, magotTitle, magotCharm)
+		return g.punishFailedInvoke(magic.Demon{Name: magotName, Title: magotTitle, Charm: magotCharm})
 	}
 	for _, item := range g.Player.Items {
 		if strings.EqualFold(item, object) {
@@ -186,13 +211,34 @@ func (g *Game) magotLocate(object string) string {
 // echoes the item's real stored casing, not the player's raw
 // uppercased typed target - same casing-honesty convention as
 // magotLocate/examine.
+//
+// ROUND 183: a failed Charm check now routes through
+// punishFailedInvoke - see astarotTeleport's own doc comment for why.
 func (g *Game) asmodeeDestroy(object string) string {
 	const asmodeeName, asmodeeTitle, asmodeeCharm = "Asmodee", "the Great Destroyer", "Erlstone"
 	if !g.roomHasItem(asmodeeCharm) {
-		if g.hasItem(asmodeeCharm) {
-			return fmt.Sprintf("You are carrying the %s, but that isn't enough - place it on the ground and stand back before you invoke %s.", asmodeeCharm, asmodeeName)
+		return g.punishFailedInvoke(magic.Demon{Name: asmodeeName, Title: asmodeeTitle, Charm: asmodeeCharm})
+	}
+	// ROUND 183: "ASMODEE, DOOR" - user-recalled directly from finishing
+	// the same third gameplay video independently ("Asmodee opening the
+	// door"), matching round 180's own earlier frame ("ASMODEE, DOOR...
+	// ASMODEE DESTROYS... THE DOOR TO THE TOMB"). A locked door is a
+	// structural room fact (DoorPasswords/TollItem/Guards), not a named
+	// Item the generic search below would ever find - destroying it
+	// means clearing whatever real lock is on the CURRENT room, the
+	// same state game.move's own locked-door check (round 181) gates
+	// on. Not independently re-verified against the video's own frames
+	// this round - see world.Room.Chasm's doc comment for why the
+	// user's own direct recollection is treated as the primary source.
+	if strings.EqualFold(object, "DOOR") {
+		room := g.World.CurrentRoom()
+		if room != nil && (len(room.DoorPasswords) > 0 || room.TollItem != "" || room.Guards) {
+			room.DoorPasswords = nil
+			room.TollItem = ""
+			room.Guards = false
+			return fmt.Sprintf("You invoke %s, %s! The door crumbles to nothing.", asmodeeName, asmodeeTitle)
 		}
-		return fmt.Sprintf("You call out to %s, %s... but you have no suitable Talisman (a %s).", asmodeeName, asmodeeTitle, asmodeeCharm)
+		return fmt.Sprintf("You invoke %s, %s! %s finds no such object to destroy.", asmodeeName, asmodeeTitle, asmodeeName)
 	}
 	for i, item := range g.Player.Items {
 		if strings.EqualFold(item, object) {
@@ -266,13 +312,13 @@ var belezbarDisguises = map[string]string{
 // not something this round changes. So this command is only reachable
 // in a real playthrough via `go run ./cmd/hotm -level3grid`, not the
 // default game.New() - verified live that way, not in default mode.
+//
+// ROUND 183: a failed Charm check now routes through
+// punishFailedInvoke - see astarotTeleport's own doc comment for why.
 func (g *Game) belezbarReveal(object string) string {
 	const belezbarName, belezbarTitle, belezbarCharm = "Belezbar", "the Master of Flies", "Mantis"
 	if !g.roomHasItem(belezbarCharm) {
-		if g.hasItem(belezbarCharm) {
-			return fmt.Sprintf("You are carrying the %s, but that isn't enough - place it on the ground and stand back before you invoke %s.", belezbarCharm, belezbarName)
-		}
-		return fmt.Sprintf("You call out to %s, %s... but you have no suitable Talisman (a %s).", belezbarName, belezbarTitle, belezbarCharm)
+		return g.punishFailedInvoke(magic.Demon{Name: belezbarName, Title: belezbarTitle, Charm: belezbarCharm})
 	}
 	for disguised, real := range belezbarDisguises {
 		if strings.EqualFold(disguised, object) {

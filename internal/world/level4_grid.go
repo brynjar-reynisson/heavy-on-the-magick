@@ -160,7 +160,7 @@ func level4CellCode(id RoomID) string {
 var level4Cells = []*Room{
 	{ID: level4Room("F2"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("F3")}},
 	{ID: level4Room("F3"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("F4"), South: level4Room("G3"), West: level4Room("F2")}},
-	{ID: level4Room("F4"), Name: "The Chasm", Level: 4, Exits: map[Direction]RoomID{East: level4Room("F5"), West: level4Room("F3")}},
+	{ID: level4Room("F4"), Name: "The Chasm", Level: 4, Chasm: true, Exits: map[Direction]RoomID{East: level4Room("F5"), West: level4Room("F3")}},
 	{ID: level4Room("F5"), Level: 4, Exits: map[Direction]RoomID{West: level4Room("F4")}},
 	{ID: level4Room("F6"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("F7"), South: level4Room("G6")}},
 	{ID: level4Room("F7"), Level: 4, Exits: map[Direction]RoomID{East: level4Room("F8"), South: level4Room("G7"), West: level4Room("F6")}},
@@ -182,7 +182,16 @@ var level4Cells = []*Room{
 	// connectivity not extracted) same as every other special room in
 	// this project's grid files.
 	{ID: level4Room("D2"), Name: "Scales", Level: 4},
-	{ID: level4Room("D3"), Name: "Doubt of Rabak", Level: 4, Monster: "Vampire", MonsterHealth: 2},
+	// Water (round 183): user-recalled directly from finishing the same
+	// third gameplay video independently - "Rabak goes down when we say
+	// water" and "is impossible to pass until the correct words are
+	// spoken" - matches game.passWater's own already-real "WATER, FALL"
+	// mechanic (round 169) exactly, just at a second real placement
+	// beyond Level3Grid's own already-confirmed "Water" cell. Not
+	// independently re-verified against the video's own frames this
+	// round - see world.Room.Chasm's doc comment for why the user's own
+	// direct recollection is treated as the primary source here.
+	{ID: level4Room("D3"), Name: "Doubt of Rabak", Level: 4, Water: true, Monster: "Vampire", MonsterHealth: 2},
 	{ID: level4Room("E5"), Level: 4, Monster: "Wyvern", MonsterHealth: 3},
 	{ID: level4Room("F1"), Name: "The Crypt", Level: 4},
 	{ID: level4Room("G2"), Name: "Exit", Level: 4},
